@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "esnext"
+    ],
+    "target": "2019",
+    "noImplicitUseStrict": true,
+    "experimentalDecorators": true,
+    "outDir": "dist"
+  }
+}
