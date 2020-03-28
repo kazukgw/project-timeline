@@ -94,43 +94,53 @@
   }
 
   function getItemsFromAllResources(resources) {
-    return resources.schedules.map(s => {
-      var group = !!s.project ? s.project : s.group;
-      var content;
-      var type = !!s.type ? s.type : "range";
-      switch (type) {
-        case "point":
-        case "background":
-        case "range":
-          if (!!s.link) {
-            content = `<a href='${s.link}' target='_blank'>${s.name}</a>`;
+    return resources.schedules
+      .map(s => {
+        var group = !!s.project ? s.project : s.group;
+        var content;
+        var type = !!s.type ? s.type : "range";
+        switch (type) {
+          case "point":
+          case "background":
+          case "range":
+            if (!!s.link) {
+              content = `<a href='${s.link}' target='_blank'>${s.name}</a>`;
+              break;
+            }
+            content = s.name;
             break;
-          }
-          content = s.name;
-          break;
-      }
-      return {
-        id: s.id,
-        content: content,
-        group: group,
-        start: moment.tz(
+        }
+        if (s["start"] == null) {
+          return;
+        }
+        let start = moment.tz(
           s.start.replace("Z", ""),
           moment.HTML5_FMT.DATETIME_LOCAL_MS,
           "UTC"
-        ),
-        end: moment.tz(
-          s.end.replace("Z", ""),
-          moment.HTML5_FMT.DATETIME_LOCAL_MS,
-          "UTC"
-        ),
-        type: type,
-        editable: {
-          remove: false,
-          updateGroup: false,
-          updateTime: true
-        }
-      };
-    });
+        );
+        let end =
+          s["end"] == null
+            ? null
+            : moment.tz(
+                s.end.replace("Z", ""),
+                moment.HTML5_FMT.DATETIME_LOCAL_MS,
+                "UTC"
+              );
+        return {
+          id: s.id,
+          content: content,
+          group: group,
+          start: start,
+          end: end,
+          type: type,
+          editable: {
+            remove: false,
+            updateGroup: false,
+            updateTime: true
+          }
+        };
+      })
+      .filter(v => v != null);
   }
 
   // timeline の オブジェクト移動イベントのハンドラ

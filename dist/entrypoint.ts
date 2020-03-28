@@ -6,19 +6,10 @@ function doGet() {
 
 function getAllResources(sheetName) {
   let app = initApp();
-  let groups = app.groupTable.getAllRecords();
-  let projects = app.projectTable.getAllRecords();
-  let schedules = app.scheduleTable.getAllRecords();
   return JSON.stringify({
-    groups: groups.map((g: TableRecord) => {
-      return g.values;
-    }),
-    projects: projects.map((p: TableRecord) => {
-      return p.values;
-    }),
-    schedules: schedules.map((s: TableRecord) => {
-      return s.values;
-    })
+    groups: app.groupTable.getAllRecordData(),
+    projects: app.projectTable.getAllRecordData(),
+    schedules: app.scheduleTable.getAllRecordData()
   });
 }
 
