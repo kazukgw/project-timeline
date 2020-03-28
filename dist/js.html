@@ -1,96 +1,109 @@
 <!-- moment -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.28/moment-timezone-with-data.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.28/moment-timezone-with-data.min.js"
+></script>
 
 <!-- vis-timeline -->
-<script type="text/javascript" src="//unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+<script
+  type="text/javascript"
+  src="//unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"
+></script>
 <script>
-const gs = google.script;
+  const gs = google.script;
 
-// サーバ側にデータ取得後 Vis-Timeline を初期化, 描画
-gs.run
-  .withSuccessHandler(createVisTimeline)
-  .withFailureHandler((error)=>{ alert('データ取得に失敗しました: ' + error); })
-  .getAllResources();
+  // サーバ側にデータ取得後 Vis-Timeline を初期化, 描画
+  gs.run
+    .withSuccessHandler(createVisTimeline)
+    .withFailureHandler(error => {
+      alert("データ取得に失敗しました: " + error);
+    })
+    .getAllResources();
 
-// Initialize Vis-Timeline
-function createVisTimeline(allResoucesJson) {
-  console.log("allResourcesJson: " + allResoucesJson);
-  var allResouces = JSON.parse(allResoucesJson);
-  var items = getItemsFromAllResources(allResouces);
-  var groups = getGroupsFromAllResources(allResouces);
+  // Initialize Vis-Timeline
+  function createVisTimeline(allResoucesJson) {
+    console.log("allResourcesJson: " + allResoucesJson);
+    var allResouces = JSON.parse(allResoucesJson);
+    var items = getItemsFromAllResources(allResouces);
+    var groups = getGroupsFromAllResources(allResouces);
 
-  var container = document.getElementById("container");
-  var options = {
-    orientation: "top",
-    preferZoom: false,
-    verticalScroll: true,
-    groupOrder: "content",
-    start: moment().subtract(1, 'month'),
-    horizontalScroll: true,
-    zoomMax: 150000000000,
-    zoomMin: 1000000000,
-    tooltip: {
-      template: function (item, element, data) {
-        return `<p> 開始: ${moment(item.start).format('YYYY/MM/DD')} </p>
-               <p> 終了: ${moment(item.end).format('YYYY/MM/DD')} </p>`;
+    var container = document.getElementById("container");
+    var options = {
+      orientation: "top",
+      preferZoom: false,
+      verticalScroll: true,
+      groupOrder: "content",
+      start: moment().subtract(1, "month"),
+      horizontalScroll: true,
+      zoomMax: 150000000000,
+      zoomMin: 1000000000,
+      tooltip: {
+        template: function(item, element, data) {
+          return `<p> 開始: ${moment(item.start).format("YYYY/MM/DD")} </p>
+               <p> 終了: ${moment(item.end).format("YYYY/MM/DD")} </p>`;
+        }
       },
-    },
-    snap: function(date, scale, step) {
-      if(scale === 'month') {
-        date.setHours(0);
-        date.setMinutes(0);
-        date.setSeconds(0);
-        return date;
-      }
-      return 1;
-    },
-    onMove: onMoveHander
-  };
+      snap: function(date, scale, step) {
+        if (scale === "month") {
+          date.setHours(0);
+          date.setMinutes(0);
+          date.setSeconds(0);
+          return date;
+        }
+        return 1;
+      },
+      onMove: onMoveHander
+    };
 
-  console.log("all items: " + JSON.stringify(items));
-  console.log("all groups: " + JSON.stringify(groups));
-  var timeline = new vis.Timeline(
-    container,
-    new vis.DataSet(items),
-    new vis.DataSet(groups),
-    options);
-}
+    console.log("all items: " + JSON.stringify(items));
+    console.log("all groups: " + JSON.stringify(groups));
+    var timeline = new vis.Timeline(
+      container,
+      new vis.DataSet(items),
+      new vis.DataSet(groups),
+      options
+    );
+  }
 
-function getGroupsFromAllResources(resources) {
-  var groupRelation = {};
-  var projects = resources.projects.map((p)=>{
-    groupRelation[p.group] = groupRelation[p.group] == null ? [] : groupRelation[p.group];
-    groupRelation[p.group].push(p.name);
-    return {
-      id: p.name,
-      content: p.name,
-      showNested: false,
-    }
-  });
-  var groups = resources.groups.map((g)=>{
-    return {
-      id: g.name,
-      content: g.name,
-      nestedGroups: groupRelation[g.name],
-      showNested: false,
-    }
-  });
+  function getGroupsFromAllResources(resources) {
+    var groupRelation = {};
+    var projects = resources.projects.map(p => {
+      groupRelation[p.group] =
+        groupRelation[p.group] == null ? [] : groupRelation[p.group];
+      groupRelation[p.group].push(p.name);
+      return {
+        id: p.name,
+        content: p.name,
+        showNested: false
+      };
+    });
+    var groups = resources.groups.map(g => {
+      return {
+        id: g.name,
+        content: g.name,
+        nestedGroups: groupRelation[g.name],
+        showNested: false
+      };
+    });
 
-  return projects.concat(groups);
-}
+    return projects.concat(groups);
+  }
 
-function getItemsFromAllResources(resources) {
-  return resources.schedules.map((s)=>{
-      var group = !!s.project ? s.project: s.group;
+  function getItemsFromAllResources(resources) {
+    return resources.schedules.map(s => {
+      var group = !!s.project ? s.project : s.group;
       var content;
-      var type = !!s.type ? s.type : 'range';
-      switch(type) {
-        case 'point':
-        case 'background':
-        case 'range':
-          if(!!s.link) {
-            content = `<a href='${s.link}' target='_blank'>${s.name}</a>`
+      var type = !!s.type ? s.type : "range";
+      switch (type) {
+        case "point":
+        case "background":
+        case "range":
+          if (!!s.link) {
+            content = `<a href='${s.link}' target='_blank'>${s.name}</a>`;
             break;
           }
           content = s.name;
@@ -100,38 +113,46 @@ function getItemsFromAllResources(resources) {
         id: s.id,
         content: content,
         group: group,
-        start: moment.tz(s.start.replace('Z', ''), moment.HTML5_FMT.DATETIME_LOCAL_MS, 'UTC'),
-        end: moment.tz(s.end.replace('Z', ''), moment.HTML5_FMT.DATETIME_LOCAL_MS, 'UTC'),
+        start: moment.tz(
+          s.start.replace("Z", ""),
+          moment.HTML5_FMT.DATETIME_LOCAL_MS,
+          "UTC"
+        ),
+        end: moment.tz(
+          s.end.replace("Z", ""),
+          moment.HTML5_FMT.DATETIME_LOCAL_MS,
+          "UTC"
+        ),
         type: type,
         editable: {
           remove: false,
           updateGroup: false,
           updateTime: true
         }
-      }
-  });
-}
+      };
+    });
+  }
 
-// timeline の オブジェクト移動イベントのハンドラ
-// サーバ側にデータの変更をリクエストする
-function onMoveHander(item, callback) {
-  console.log('onMoveHander: item update');
-  var itemJson = JSON.stringify({
-    id: item.id,
-    name: item.content,
-    start: item.start,
-    end: item.end
-  });
-  console.log('onMoveHander: itemJson: ' + itemJson);
-  gs.run
-    .withSuccessHandler(()=>{
-      console.log('updated sucessfully');
-      callback(item);
-    })
-    .withFailureHandler(()=>{
-      console.log('failed to update');
-      callback(null);
-    })
-    .updateSchedule(itemJson);
-}
+  // timeline の オブジェクト移動イベントのハンドラ
+  // サーバ側にデータの変更をリクエストする
+  function onMoveHander(item, callback) {
+    console.log("onMoveHander: item update");
+    var itemJson = JSON.stringify({
+      id: item.id,
+      name: item.content,
+      start: item.start,
+      end: item.end
+    });
+    console.log("onMoveHander: itemJson: " + itemJson);
+    gs.run
+      .withSuccessHandler(() => {
+        console.log("updated sucessfully");
+        callback(item);
+      })
+      .withFailureHandler(() => {
+        console.log("failed to update");
+        callback(null);
+      })
+      .updateSchedule(itemJson);
+  }
 </script>
