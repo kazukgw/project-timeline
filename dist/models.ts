@@ -47,27 +47,11 @@ class Table {
     return new TableRecord(this, range);
   }
 
-  public insertRecord(row: TableRecord) {
-    // this.sheetObj.appendRow(this.rowTowValues(row));
-  }
-
   public getAllRecordData(): Array<Object> {
-    let lastRowNumber = this.getLastRowNumber();
-    let allRecordRange = this.sheetObj.getRange(
-      this.recordRangeFirstRowNumber,
-      1,
-      lastRowNumber - this.recordRangeFirstRowNumber + 1,
-      this.headers.length
-    );
+    let allRecordRange = this.getAllRecordRange();
     let headers = this.headers;
     Logger.log(`getAllRecordData: headers: ${headers}`);
-    return allRecordRange.getValues().map((recordDataArray: Array<any>) => {
-      let data = {};
-      recordDataArray.forEach((v: any, i: number) => {
-        data[headers[i]] = v;
-      });
-      return data;
-    }).filter(v => !!v[this.primaryKey]);
+    return this.getRecordDataFromRange(allRecordRange);
   }
 
   public getAllRecords(): Array<TableRecord> {
@@ -98,9 +82,31 @@ class Table {
     return range.getLastRow() + this.recordRangeFirstRowNumber - 1;
   }
 
-  // public getLastRecord(): TableRecord {
-  //     return new TableRecord(this, this.getRangeByRowNumber(this.getLastRecordRowNumber()));
-  // }
+  private getAllRecordRange(): GoogleAppsScript.Spreadsheet.Range {
+    let lastRowNumber = this.getLastRowNumber();
+    return this.sheetObj.getRange(
+      this.recordRangeFirstRowNumber,
+      1,
+      lastRowNumber - this.recordRangeFirstRowNumber + 1,
+      this.headers.length
+    );
+  }
+
+  private getRecordDataFromRange(
+    range: GoogleAppsScript.Spreadsheet.Range
+  ): Array<Object> {
+    let headers = this.headers;
+    return range
+      .getValues()
+      .map((recordDataArray: Array<any>) => {
+        let data = {};
+        recordDataArray.forEach((v: any, i: number) => {
+          data[headers[i]] = v;
+        });
+        return data;
+      })
+      .filter(v => !!v[this.primaryKey]);
+  }
 
   private getRangeByRowNumber(
     rowNumber: number

@@ -1,20 +1,7 @@
-<!-- moment -->
-<script
-  type="text/javascript"
-  src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"
-></script>
-<script
-  type="text/javascript"
-  src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.28/moment-timezone-with-data.min.js"
-></script>
-
-<!-- vis-timeline -->
-<script
-  type="text/javascript"
-  src="//unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"
-></script>
 <script>
-  const gs = google.script;
+  let gs = google.script;
+  var visTLResource;
+  var vistl;
 
   // サーバ側にデータ取得後 Vis-Timeline を初期化, 描画
   gs.run
@@ -25,28 +12,38 @@
     .getAllResources();
 
   // Initialize Vis-Timeline
-  function createVisTimeline(allResoucesJson) {
-    console.log("allResourcesJson: " + allResoucesJson);
-    var allResouces = JSON.parse(allResoucesJson);
-    var items = getItemsFromAllResources(allResouces);
-    var groups = getGroupsFromAllResources(allResouces);
+  function createVisTimeline(dataFromGAS) {
+    console.log("data from gas: " + dataFromGAS);
+    visTLResource = new VisTLResource(JSON.parse(dataFromGAS));
 
-    var container = document.getElementById("container");
-    var options = {
+    vistl = new vis.Timeline(
+      document.getElementById("container"),
+      visTLResource.visItems,
+      visTLResource.visGroups,
+      getVisTLOption()
+    );
+
+    setTimeout(()=>{
+      vistl.setWindow(
+        moment().subtract(2, 'month'),
+        moment().add(10, 'month'));
+    }, 1000);
+
+  }
+
+  function getVisTLOption() {
+    // https://visjs.github.io/vis-timeline/docs/timeline/#Configuration_Options
+    return {
       orientation: "top",
       preferZoom: false,
       verticalScroll: true,
-      groupOrder: "content",
-      start: moment().subtract(1, "month"),
+      groupOrder: "index",
+      start: moment().subtract(3, "months"),
       horizontalScroll: true,
-      zoomMax: 150000000000,
+      zoomMax: 100000000000,
       zoomMin: 1000000000,
-      tooltip: {
-        template: function(item, element, data) {
-          return `<p> 開始: ${moment(item.start).format("YYYY/MM/DD")} </p>
-               <p> 終了: ${moment(item.end).format("YYYY/MM/DD")} </p>`;
-        }
-      },
+      tooltip: { template: tooltipTemplate },
+      tooltipOnItemUpdateTime: true,
       snap: function(date, scale, step) {
         if (scale === "month") {
           date.setHours(0);
@@ -58,93 +55,11 @@
       },
       onMove: onMoveHander
     };
-
-    console.log("all items: " + JSON.stringify(items));
-    console.log("all groups: " + JSON.stringify(groups));
-    var timeline = new vis.Timeline(
-      container,
-      new vis.DataSet(items),
-      new vis.DataSet(groups),
-      options
-    );
-  }
-
-  function getGroupsFromAllResources(resources) {
-    var groupRelation = {};
-    var projects = resources.projects.map(p => {
-      groupRelation[p.group] =
-        groupRelation[p.group] == null ? [] : groupRelation[p.group];
-      groupRelation[p.group].push(p.name);
-      return {
-        id: p.name,
-        content: p.name,
-        showNested: false
-      };
-    });
-    var groups = resources.groups.map(g => {
-      return {
-        id: g.name,
-        content: g.name,
-        nestedGroups: groupRelation[g.name],
-        showNested: false
-      };
-    });
-
-    return projects.concat(groups);
-  }
-
-  function getItemsFromAllResources(resources) {
-    return resources.schedules
-      .map(s => {
-        var group = !!s.project ? s.project : s.group;
-        var content;
-        var type = !!s.type ? s.type : "range";
-        switch (type) {
-          case "point":
-          case "background":
-          case "range":
-            if (!!s.link) {
-              content = `<a href='${s.link}' target='_blank'>${s.name}</a>`;
-              break;
-            }
-            content = s.name;
-            break;
-        }
-        if (s["start"] == null) {
-          return;
-        }
-        let start = moment.tz(
-          s.start.replace("Z", ""),
-          moment.HTML5_FMT.DATETIME_LOCAL_MS,
-          "UTC"
-        );
-        let end =
-          s["end"] == null
-            ? null
-            : moment.tz(
-                s.end.replace("Z", ""),
-                moment.HTML5_FMT.DATETIME_LOCAL_MS,
-                "UTC"
-              );
-        return {
-          id: s.id,
-          content: content,
-          group: group,
-          start: start,
-          end: end,
-          type: type,
-          editable: {
-            remove: false,
-            updateGroup: false,
-            updateTime: true
-          }
-        };
-      })
-      .filter(v => v != null);
   }
 
   // timeline の オブジェクト移動イベントのハンドラ
   // サーバ側にデータの変更をリクエストする
+  // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
   function onMoveHander(item, callback) {
     console.log("onMoveHander: item update");
     var itemJson = JSON.stringify({
@@ -161,8 +76,31 @@
       })
       .withFailureHandler(() => {
         console.log("failed to update");
+        // callback に null を渡すと 変更がキャンセルされる
+        // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
         callback(null);
       })
       .updateSchedule(itemJson);
   }
+
+  function tooltipTemplate(item, element, data) {
+    switch(item.type) {
+      case "point":
+        return `<p>開始: ${moment(item.start).format("YYYY/MM/DD")} </p>`;
+      case "range":
+        return `<p> 開始: ${moment(item.start).format("YYYY/MM/DD")} </p>
+                  <p> 終了: ${moment(item.end).format("YYYY/MM/DD")} </p>`;
+    }
+  }
+
+  function hideGroup(group) {
+    console.log(`hide-btn click: group: ${group}`);
+    visTLResource.setVisibleFalseVisGroup(group);
+  }
+
+  function restoreHidden() {
+    console.log(`btn-restoreHidden`);
+    visTLResource.setVisibleTrueAllVisGroup();
+  }
 </script>
+

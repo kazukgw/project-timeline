@@ -7,7 +7,12 @@
   </head>
   <body>
     <div id="header">XXXASRT Project Roadmap</div>
+    <div id="button-area">
+    <button class="btn btn-restoreHidden" onclick="restoreHidden()">Restore Hidden Items&nbsp;<i class="fa fa-eye"></i></button>
+    </div>
     <div id="container"></div>
+    <?!= includeHtml('js_assets') ?>
+    <?!= includeHtml('js_models') ?>
     <?!= includeHtml('js') ?>
   </body>
 </html>

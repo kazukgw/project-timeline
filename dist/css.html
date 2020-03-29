@@ -1,22 +1,24 @@
 <style type="text/css">
+  /*
+    TODO: ↓
+      - position fixed にしているところ整理
+      - border いろいろ消しているところはもっと少ない要素の変更でリセットできるはず
+   */
   * {
     font-family: "M PLUS 1p", sans-serif;
   }
 
-  html,
   body {
     margin: 0;
     padding: 0;
+    background-size: auto auto;
+    background-color: rgba(238, 238, 238, 1);
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 1) 10px, rgba(255, 255, 255, 1) 20px );
   }
 
-  #container {
-    width: 100%;
-    height: 100%;
-    border: none;
-    font-family: "M PLUS 1p", sans-serif;
-    overflow: scroll;
-    position: absolute;
-    padding: 80px 0 0 0;
+  a,
+  a:visited {
+    color: #404040;
   }
 
   #header {
@@ -31,9 +33,41 @@
     z-index: 1000;
   }
 
+  #button-area {
+    height: 30px;
+    width: 100%;
+    top: 80px;
+    position: fixed;
+    background: white;
+    border-bottom: lightgray 1px solid;
+    z-index: 100;
+  }
+
+  #container {
+    width: 100%;
+    height: 100%;
+    border: none;
+    font-family: "M PLUS 1p", sans-serif;
+    overflow: scroll;
+    position: absolute;
+    top: 110px; /* header と button-area 分だけ margin-top を設定*/
+    padding: 0 0 0 0;
+    border-bottom: 1px solid gray;
+    background-color: white;
+    padding-bottom: 5px;
+  }
+
+
+  /* timeAxis(top) の固定 と位置調整 */
+  .vis-panel.vis-top {
+    margin: 110px 0 0 0; /* header と button-area 分だけ margin-top を設定*/
+    padding: 0;
+    position: fixed;
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
   /* border はいろいろ消す (見栄え目的) */
   .vis-timeline,
-  .vis-group,
   .vis-panel,
   .vis-label {
     border: none !important;
@@ -42,14 +76,6 @@
   /* Group の パネルの border */
   .vis-panel.vis-left .vis-content {
     border-right: 5px lightgray double;
-  }
-
-  /* timeAxis(top) の固定 と位置調整 */
-  .vis-panel.vis-top {
-    margin: 80px 0 0 0;
-    padding: 0;
-    position: fixed;
-    background-color: rgba(255, 255, 255, 0.9);
   }
 
   /* timeAxis(top) の border 調整 */
@@ -65,8 +91,8 @@
     background-color: white;
   }
 
-  .vis-itemset .vis-foreground .vis-group:nth-child(odd) {
-    background-color: rgba(0, 0, 0, 0.05);
+  .vis-itemset .vis-foreground .vis-group {
+    border-bottom: 2px lightgray dashed;
   }
 
   /* type background の デザイン調整 */
@@ -74,5 +100,27 @@
     top: 0px;
     font-size: 10px;
     color: gray;
+  }
+
+  .btn {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    color: gray;
+    padding: 0;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .btn-hidden {
+    margin-left: 10px;
+  }
+
+  /* Darker background on mouse-over */
+  .btn:hover {
+    color: black;
+  }
+
+  .btn.btn-restoreHidden {
+    padding: 5px 0 0 10px;
   }
 </style>

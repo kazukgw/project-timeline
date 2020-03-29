@@ -1,0 +1,142 @@
+<script>
+  class VisTLResource {
+    constructor(dataFromGAS) {
+      this.dataFromGAS = dataFromGAS;
+      this.projectGroupRelation = {};
+      this.schedules = {};
+      this.schedules = {};
+      this.projects = {};
+      this.groups = {};
+      this.visGroups = null;
+      this.visItems = null;
+
+      this.initVisGroups();
+      this.initVisItems();
+    }
+
+    setVisibleTrueAllVisGroup() {
+      let visGroups = this.visGroups;
+      this.visGroups.forEach((g)=>{
+        visGroups.update({id: g.id, visible: true});
+      });
+    }
+
+    setVisibleFalseVisGroup(group) {
+      let visGroups = this.visGroups;
+      let nested = this.projectGroupRelation[group];
+      visGroups.update({ id: group, visible: false });
+      console.log(`nested: ${nested}`);
+      if(nested) {
+        // ちょっとまってからでないと nested が消えない
+        setTimeout(()=>{
+          nested.forEach((v)=>{
+            console.log(`hide nested: ${v}`)
+            visGroups.update({ id: v, visible: false });
+          });
+        }, 100);
+      }
+    }
+
+    initVisGroups() {
+      // https://visjs.github.io/vis-timeline/docs/timeline/#groups
+      let projectGroupRelation = this.projectGroupRelation;
+      let projects = this.projects;
+      this.dataFromGAS.projects.forEach((p, i) => {
+        projectGroupRelation[p.group] = (projectGroupRelation[p.group] == null) ? [] : projectGroupRelation[p.group];
+        projectGroupRelation[p.group].push(p.name);
+        var color = !!p['color'] ? p.color : 'black';
+        var prj = {
+          id: p.name,
+          index: i,
+          content: `${p.name}
+            <button data-group="${p.name}" class="btn btn-hide" onclick="hideGroup('${p.name}')"><i class="fa fa-eye-slash"></i></button>`,
+          showNested: false,
+          style: `color: ${color}; font-weight: bold;`,
+          color: color,
+        };
+        projects[prj.id] = prj;
+      });
+
+      let groups = this.groups;
+      this.dataFromGAS.groups.forEach((g, i) => {
+        var color = !!g['color'] ? g.color : 'white';
+        var grp = {
+          id: g.name,
+          index: i,
+          content: `${g.name}
+            <button data-group="${g.name}" class="btn btn-hide" onclick="hideGroup('${g.name}')"><i class="fa fa-eye-slash"></i></button>`,
+          style: `background-color: ${color}; font-weight: bold;`,
+          color: color,
+          nestedGroups: projectGroupRelation[g.name],
+          showNested: false,
+        };
+        groups[grp.id] = grp;
+      });
+
+      this.visGroups = new vis.DataSet(
+        Object.values(projects).concat(Object.values(groups))
+      );
+    }
+
+    initVisItems() {
+      // https://visjs.github.io/vis-timeline/docs/timeline/#items
+      var schedules = this.schedules;
+      var projects = this.projects;
+      this.dataFromGAS.schedules.forEach(s => {
+        var groupName = !!s.project ? s.project : s.group;
+        var content;
+        var style = null;
+        var type = !!s.type ? s.type : "range";
+
+        var prj = projects[s.project];
+        var color = 'black';
+        if(prj && prj['color']) {
+          color = prj.color;
+        }
+        if(s['color']) {
+          color = s.color;
+        }
+        switch (type) {
+          case "point":
+          case "background":
+          case "range":
+            style = `border-color: ${color}; border-radius: 3px;`;
+            if (!!s.link) {
+              content = `<a href='${s.link}' target='_blank'>${s.name}</a>`;
+              break;
+            }
+            content = s.name;
+            break;
+        }
+
+        if (s["start"] == null) {
+          return;
+        }
+        let start = moment.tz(
+          s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC");
+        let end = (s["end"] == null)
+          ? null
+          : moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC");
+        var sche = {
+          id: s.id,
+          content: content,
+          group: groupName,
+          start: start,
+          end: end,
+          type: type,
+          style: style,
+          color: color,
+          editable: {
+            remove: false,
+            updateGroup: false,
+            updateTime: true
+          }
+        };
+        schedules[sche.id] = sche;
+      });
+
+      this.visItems = new vis.DataSet(Object.values(schedules));
+    }
+  }
+
+</script>
