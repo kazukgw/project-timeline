@@ -1,6 +1,6 @@
 # Project Timeline Visualizer
 
-![screen-shot]()
+![screen-shot](https://raw.githubusercontent.com/kazukgw/project-timeline/master/screenshot_01.png)
 
 
 # TODO
