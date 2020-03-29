@@ -63,7 +63,7 @@
     margin: 110px 0 0 0; /* header と button-area 分だけ margin-top を設定*/
     padding: 0;
     position: fixed;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 1);
   }
 
   /* border はいろいろ消す (見栄え目的) */
@@ -93,6 +93,20 @@
 
   .vis-itemset .vis-foreground .vis-group {
     border-bottom: 2px lightgray dashed;
+  }
+
+  .vis-odd.vis-minor {
+    background: rgba(238, 238, 238, 1);
+  }
+
+  .vis-item.vis-dot {
+    border-color: gray;
+    border-width: 5px;
+    border-radius: 3px;
+  }
+
+  .vis-time-axis.vis-foreground .vis-text {
+    left: 0;
   }
 
   /* type background の デザイン調整 */
