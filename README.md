@@ -12,6 +12,10 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 - [ ] point も update できるように
 - [ ] vis-timeline の option をシートから指定できるように
 - [ ] filter
+- [ ] query parameter に sheet id で 指定して読みだせるように
+- [ ] Schedule の Insert/Update 時はロックをかける
+- [ ] Label 絡むの追加とグルーピング
+- [ ] Template Engine or React によるレンダリング
 - [ ] record の追加機能
 - [ ] group またぎの移動はできないように
 - [ ] position: fixed → sticky
