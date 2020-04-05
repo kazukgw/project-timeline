@@ -1,19 +1,3 @@
-const _org_log = Logger.log;
-function initDebugLogger() {
-  Logger.log = function(message: any) {
-    _org_log(message);
-    LOG_SHEET.appendRow([
-      new Date(),
-      Session.getActiveUser().getEmail(),
-      message
-    ]);
-    let delteNum: number = LOG_SHEET.getMaxRows() - LOG_MAX_ROWS;
-    if (delteNum > 0) {
-      LOG_SHEET.deleteRows(2, delteNum);
-    }
-  };
-}
-
 function includeHtml(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
@@ -31,8 +15,4 @@ function deleteAllTriggers() {
   //   .forSpreadsheet(sheet)
   //   .onEdit()
   //   .create();
-}
-
-function isBlank(val) {
-  return val == null || val === "";
 }

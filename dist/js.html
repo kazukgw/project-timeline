@@ -1,106 +1,34 @@
 <script>
-  let gs = google.script;
-  var visTLResource;
-  var vistl;
+let gs = google.script;
+let rpcClient = new RPCClient(gs);
+let visTLData = new VisTLData(rpcClient);
 
-  // サーバ側にデータ取得後 Vis-Timeline を初期化, 描画
-  gs.run
-    .withSuccessHandler(createVisTimeline)
-    .withFailureHandler(error => {
-      alert("データ取得に失敗しました: " + error);
-    })
-    .getAllResources();
+let sheetIdList = JSON.parse($('#data-sheet-id-list').text());
 
-  // Initialize Vis-Timeline
-  function createVisTimeline(dataFromGAS) {
-    console.log("data from gas: " + dataFromGAS);
-    visTLResource = new VisTLResource(JSON.parse(dataFromGAS));
-
-    vistl = new vis.Timeline(
-      document.getElementById("container"),
-      visTLResource.visItems,
-      visTLResource.visGroups,
-      getVisTLOption()
-    );
+visTLData.initializeData(sheetIdList)
+  .then(()=>{
+    let visTL = new VisTL(rpcClient, visTLData);
+    visTL.create(document.getElementById("container"),);
 
     setTimeout(()=>{
-      vistl.setWindow(
+      visTL.visTL.setWindow(
         moment().subtract(2, 'month'),
         moment().add(10, 'month'));
     }, 1000);
 
-  }
+    setTimeout(()=>{
+      visTL.groupByLabel();
+    }, 6000);
+  });
 
-  function getVisTLOption() {
-    // https://visjs.github.io/vis-timeline/docs/timeline/#Configuration_Options
-    return {
-      orientation: "top",
-      preferZoom: false,
-      verticalScroll: true,
-      groupOrder: "index",
-      start: moment().subtract(3, "months"),
-      horizontalScroll: true,
-      zoomMax: 100000000000,
-      zoomMin: 1000000000,
-      tooltip: { template: tooltipTemplate },
-      tooltipOnItemUpdateTime: true,
-      snap: function(date, scale, step) {
-        if (scale === "month") {
-          date.setHours(0);
-          date.setMinutes(0);
-          date.setSeconds(0);
-          return date;
-        }
-        return 1;
-      },
-      onMove: onMoveHander
-    };
-  }
+function hideGroup(group) {
+  console.log(`hide-btn click: group: ${group}`);
+  visTLData.setVisibleFalseVisGroup(group);
+}
 
-  // timeline の オブジェクト移動イベントのハンドラ
-  // サーバ側にデータの変更をリクエストする
-  // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
-  function onMoveHander(item, callback) {
-    console.log("onMoveHander: item update");
-    var itemJson = JSON.stringify({
-      id: item.id,
-      name: item.content,
-      start: item.start,
-      end: item.end
-    });
-    console.log("onMoveHander: itemJson: " + itemJson);
-    gs.run
-      .withSuccessHandler(() => {
-        console.log("updated sucessfully");
-        callback(item);
-      })
-      .withFailureHandler(() => {
-        console.log("failed to update");
-        // callback に null を渡すと 変更がキャンセルされる
-        // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
-        callback(null);
-      })
-      .updateSchedule(itemJson);
-  }
-
-  function tooltipTemplate(item, element, data) {
-    switch(item.type) {
-      case "point":
-        return `<p>開始: ${moment(item.start).format("YYYY/MM/DD")} </p>`;
-      case "range":
-        return `<p> 開始: ${moment(item.start).format("YYYY/MM/DD")} </p>
-                  <p> 終了: ${moment(item.end).format("YYYY/MM/DD")} </p>`;
-    }
-  }
-
-  function hideGroup(group) {
-    console.log(`hide-btn click: group: ${group}`);
-    visTLResource.setVisibleFalseVisGroup(group);
-  }
-
-  function restoreHidden() {
-    console.log(`btn-restoreHidden`);
-    visTLResource.setVisibleTrueAllVisGroup();
-  }
+function restoreHidden() {
+  console.log(`btn-restoreHidden`);
+  visTLData.setVisibleTrueAllVisGroup();
+}
 </script>
 

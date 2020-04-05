@@ -1,8 +1,43 @@
-// moment を使えるようにするには以下が必要
-// また方などは適宜 import('moment').Moment などして利用する
-declare let moment: typeof import("moment");
+export class TableRecord {
+  public table: Table;
+  public range: GoogleAppsScript.Spreadsheet.Range;
+  public values: Object;
 
-class Table {
+  constructor(table: Table, range: GoogleAppsScript.Spreadsheet.Range) {
+    this.table = table;
+    this.range = range;
+    let rangeVals = this.range.getValues()[0];
+    let values = {};
+    this.table.headers.forEach((k: string, i: number) => {
+      values[k] = rangeVals[i];
+    });
+    this.values = values;
+  }
+
+  public hasPrimaryKey(): boolean {
+    let primaryKey = this.values[this.table.primaryKey];
+    Logger.log(`hasPrimaryKey: ${primaryKey}`);
+    return !!primaryKey;
+  }
+
+  public save() {
+    this.range.setValues([this.valueArray()]);
+  }
+
+  private valueArray(): Array<any> {
+    let valueAry: Array<any> = [];
+    let values = this.values;
+    this.table.headers.forEach((k: string) => {
+      valueAry.push(values[k]);
+    });
+    Logger.log(`valueArray: ${valueAry}`);
+    return valueAry;
+  }
+}
+
+export class Table {
+  readonly spreadSheetId: string;
+  readonly spreadSheetObj: GoogleAppsScript.Spreadsheet.Spreadsheet;
   readonly sheetName: string;
   readonly sheetId: number;
   readonly headers: Array<string>;
@@ -17,10 +52,18 @@ class Table {
     sheetName: string,
     headerRangeFirstRowNumber: number,
     recordRangeFirstRowNumber: number,
-    primaryKey: string
+    primaryKey: string,
+    spreadSheetId: string
   ) {
+    if(spreadSheetId != null) {
+      this.spreadSheetId = spreadSheetId;
+      this.spreadSheetObj = SpreadsheetApp.openById(this.spreadSheetId);
+    } else {
+      this.spreadSheetObj = SpreadsheetApp.getActive();
+      this.spreadSheetId = this.spreadSheetObj.getId();
+    }
     this.sheetName = sheetName;
-    this.sheetObj = SpreadsheetApp.getActive().getSheetByName(sheetName);
+    this.sheetObj = this.spreadSheetObj.getSheetByName(sheetName);
     this.sheetId = this.sheetObj.getSheetId();
     this.headerRangeFirstRowNumber = headerRangeFirstRowNumber;
     this.recordRangeFirstRowNumber = recordRangeFirstRowNumber;
@@ -67,7 +110,9 @@ class Table {
   }
 
   public findRecordByPrimaryKey(key: string): TableRecord | null {
+    Logger.log(`findRecordByPrimaryKey: ${this.sheetName} primaryKey: ${key}`);
     let range = this.findRangeByPrimaryKey(key);
+    // Logger.log(`findRecordByPrimaryKey: range: ${range}`);
     if (range == null) {
       return null;
     }
@@ -117,7 +162,10 @@ class Table {
   private findRangeByPrimaryKey(
     key: string
   ): GoogleAppsScript.Spreadsheet.Range {
-    let textFinder = this.getPrimaryKeyColRange().createTextFinder(key);
+    Logger.log(`findRangeByPrimaryKey: ${this.sheetName} key: ${key}`)
+    let pkColRange = this.getPrimaryKeyColRange();
+    Logger.log(`findRangeByPrimaryKey: pkColRange: ${pkColRange.getA1Notation()}`);
+    let textFinder = pkColRange.createTextFinder(key);
     let range = textFinder.findNext();
     if (range == null) {
       return null;
@@ -129,60 +177,8 @@ class Table {
     return this.sheetObj.getRange(
       this.recordRangeFirstRowNumber,
       this.primaryKeyColumnNumber,
-      this.sheetObj.getLastRow() - this.recordRangeFirstRowNumber,
+      (this.sheetObj.getLastRow() - this.recordRangeFirstRowNumber) + 1,
       1
     );
   }
-}
-
-class TableRecord {
-  public table: Table;
-  public range: GoogleAppsScript.Spreadsheet.Range;
-  public values: Object;
-
-  constructor(table: Table, range: GoogleAppsScript.Spreadsheet.Range) {
-    this.table = table;
-    this.range = range;
-    let rangeVals = this.range.getValues()[0];
-    let values = {};
-    this.table.headers.forEach((k: string, i: number) => {
-      values[k] = rangeVals[i];
-    });
-    this.values = values;
-  }
-
-  public hasPrimaryKey(): boolean {
-    let primaryKey = this.values[this.table.primaryKey];
-    Logger.log(`hasPrimaryKey: ${primaryKey}`);
-    return !isBlank(primaryKey);
-  }
-
-  public save() {
-    this.range.setValues([this.valueArray()]);
-  }
-
-  // public saveAsNewRecord() {
-  //     Logger.log(`saveAsNewRecord: primaryKeyName: ${this.table.primaryKey}`)
-  //     this.values[this.table.primaryKey] = this.getNewKey();
-  //     Logger.log(`saveAsNewRecord: new values: ${this.values}`)
-  //     this.range.setValues([this.valueArray()]);
-  // }
-
-  // public setPrimaryKey() {
-  //     this.range.getCell(1, 1).setValue(this.getNewKey());
-  // }
-
-  private valueArray(): Array<any> {
-    let valueAry: Array<any> = [];
-    let values = this.values;
-    this.table.headers.forEach((k: string) => {
-      valueAry.push(values[k]);
-    });
-    Logger.log(`valueArray: ${valueAry}`);
-    return valueAry;
-  }
-
-  // private getNewKey(): string {
-  //     return Utilities.getUuid();
-  // }
 }

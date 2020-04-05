@@ -9,7 +9,7 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 
 - [x] 指定した色でのカラーリング
 - [x] group hide
-- [ ] point も update できるように
+- [x] point も update できるように
 - [ ] vis-timeline の option をシートから指定できるように
 - [ ] filter
 - [ ] query parameter に sheet id で 指定して読みだせるように
@@ -18,7 +18,7 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 - [ ] Template Engine or React によるレンダリング
 - [ ] record の追加機能
 - [ ] group またぎの移動はできないように
-- [ ] position: fixed → sticky
+- [x] ~~position: fixed → stick~~
 - [ ] range 変更時は range の style 変更 (border を dashed にするとか)
 - [ ] tooltip の内容の拡充
 - [ ] SpreadSheet 側で hide にしているものは最初から表示しない

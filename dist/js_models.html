@@ -1,142 +1,395 @@
 <script>
-  class VisTLResource {
-    constructor(dataFromGAS) {
-      this.dataFromGAS = dataFromGAS;
-      this.projectGroupRelation = {};
-      this.schedules = {};
-      this.schedules = {};
-      this.projects = {};
-      this.groups = {};
-      this.visGroups = null;
-      this.visItems = null;
+class VisTL {
+  constructor(rpcClient, visTLData) {
+    this.rpcClient = rpcClient;
+    this.visTLData = visTLData;
+    this.visTL = null;
+  }
 
-      this.initVisGroups();
-      this.initVisItems();
-    }
+  create(container) {
+    this.visTL = new vis.Timeline(
+      container,
+      visTLData.visItems,
+      visTLData.visGroups,
+      this.getVisTLOption()
+    );
+  }
 
-    setVisibleTrueAllVisGroup() {
-      let visGroups = this.visGroups;
-      this.visGroups.forEach((g)=>{
-        visGroups.update({id: g.id, visible: true});
-      });
-    }
-
-    setVisibleFalseVisGroup(group) {
-      let visGroups = this.visGroups;
-      let nested = this.projectGroupRelation[group];
-      visGroups.update({ id: group, visible: false });
-      console.log(`nested: ${nested}`);
-      if(nested) {
-        // ちょっとまってからでないと nested が消えない
-        setTimeout(()=>{
-          nested.forEach((v)=>{
-            console.log(`hide nested: ${v}`)
-            visGroups.update({ id: v, visible: false });
-          });
-        }, 100);
+  filterGroup() {
+    console.log('filter group');
+    let filtered = this.visTLData.visGroups.get({
+      filter: (g) => {
+        if(g['isLevel0Group']) {
+          return false;
+        }
+        return g.label !== 'Label 1';
       }
-    }
+    });
+    filtered.forEach((g)=>{
+      this.visTLData.visGroups.update({id: g.id, visible: false});
+    });
+  }
 
-    initVisGroups() {
-      // https://visjs.github.io/vis-timeline/docs/timeline/#groups
-      let projectGroupRelation = this.projectGroupRelation;
-      let projects = this.projects;
-      this.dataFromGAS.projects.forEach((p, i) => {
-        projectGroupRelation[p.group] = (projectGroupRelation[p.group] == null) ? [] : projectGroupRelation[p.group];
-        projectGroupRelation[p.group].push(p.name);
-        var color = !!p['color'] ? p.color : 'black';
-        var prj = {
-          id: p.name,
-          index: i,
-          content: `${p.name}
-            <button data-group="${p.name}" class="btn btn-hide" onclick="hideGroup('${p.name}')"><i class="fa fa-eye-slash"></i></button>`,
-          showNested: false,
-          style: `color: ${color}; font-weight: bold;`,
-          color: color,
-        };
-        projects[prj.id] = prj;
-      });
+  groupByLabel() {
+    console.log('group by label');
+    this.visTL.setGroups(this.visTLData.visGroupsByLabel);
+    this.visTL.redraw();
+  }
 
-      let groups = this.groups;
-      this.dataFromGAS.groups.forEach((g, i) => {
-        var color = !!g['color'] ? g.color : 'white';
-        var grp = {
-          id: g.name,
-          index: i,
-          content: `${g.name}
-            <button data-group="${g.name}" class="btn btn-hide" onclick="hideGroup('${g.name}')"><i class="fa fa-eye-slash"></i></button>`,
-          style: `background-color: ${color}; font-weight: bold;`,
-          color: color,
-          nestedGroups: projectGroupRelation[g.name],
-          showNested: false,
-        };
-        groups[grp.id] = grp;
-      });
-
-      this.visGroups = new vis.DataSet(
-        Object.values(projects).concat(Object.values(groups))
-      );
-    }
-
-    initVisItems() {
-      // https://visjs.github.io/vis-timeline/docs/timeline/#items
-      var schedules = this.schedules;
-      var projects = this.projects;
-      this.dataFromGAS.schedules.forEach(s => {
-        var groupName = !!s.project ? s.project : s.group;
-        var content;
-        var style = null;
-        var type = !!s.type ? s.type : "range";
-
-        var prj = projects[s.project];
-        var color = 'black';
-        if(prj && prj['color']) {
-          color = prj.color;
+  getVisTLOption() {
+    // https://visjs.github.io/vis-timeline/docs/timeline/#Configuration_Options
+    return {
+      orientation: "top",
+      preferZoom: false,
+      verticalScroll: true,
+      groupOrder: "index",
+      start: moment().subtract(3, "months"),
+      horizontalScroll: true, zoomMax: 100000000000, zoomMin: 1000000000,
+      tooltip: { template: this.getTooltipTemplateFunc() },
+      tooltipOnItemUpdateTime: true,
+      template: this.getItemTemplateFunc(),
+      groupTemplate: this.getGroupTemplateFunc(),
+      snap: function(date, scale, step) {
+        if (scale === "month") {
+          date.setHours(0); date.setMinutes(0); date.setSeconds(0);
+          return date;
         }
-        if(s['color']) {
-          color = s.color;
-        }
-        switch (type) {
-          case "point":
-          case "background":
-          case "range":
-            style = `border-color: ${color}; border-radius: 3px;`;
-            if (!!s.link) {
-              content = `<a href='${s.link}' target='_blank'>${s.name}</a>`;
-              break;
-            }
-            content = s.name;
-            break;
-        }
+        return 1;
+      },
+      editable: {
+        add: false,
+        updateTime: true,
+        updateGroup: false,
+        remove: false,
+        overrideItems: false
+      },
+      onMove: this.getOnMoveHandler().bind(this)
+    };
+  }
 
-        if (s["start"] == null) {
-          return;
-        }
-        let start = moment.tz(
-          s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC");
-        let end = (s["end"] == null)
-          ? null
-          : moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC");
-        var sche = {
-          id: s.id,
-          content: content,
-          group: groupName,
-          start: start,
-          end: end,
-          type: type,
-          style: style,
-          color: color,
-          editable: {
-            remove: false,
-            updateGroup: false,
-            updateTime: true
-          }
-        };
-        schedules[sche.id] = sche;
-      });
-
-      this.visItems = new vis.DataSet(Object.values(schedules));
+  getItemTemplateFunc() {
+    let defaulTemplate = Handlebars.compile(`
+        {{#if link}}
+        <a href="{{link}}" target="_blank">{{name}}</a>
+        {{else}}
+        <p>{{name}}</p>
+        {{/if}}
+    `)
+    return function(schedule, element, data) {
+      let d = {
+        link: schedule.link,
+        name: schedule.name,
+        color: schedule.color,
+      };
+      if(schedule.type === 'range') {
+        // $(element).closest('.vis-item') では取得できなかった ...
+        let $targ = $(element).parent().parent();
+        $targ.css('border-color', d.color);
+      }
+      if(schedule.type === 'point') {
+        let $targ = $(element).next('div');
+        // console.dir($targ);
+        $targ.css('border-color', d.color);
+      }
+      return defaulTemplate(d);
     }
   }
+
+
+  getGroupTemplateFunc() {
+    let defaulTemplate = Handlebars.compile(`
+      <div>
+        <p>
+          {{name}}
+          {{#if sheetName}}
+            [{{sheetName}}]
+          {{/if}}
+        </p>
+      </div>
+    `);
+    let nestedGroupTemplate = Handlebars.compile(`
+      <div style="color: {{color}}">
+        <p>
+          {{name}}
+          {{#if label}}
+            <span>[{{label}}]<span>
+          {{/if}}
+        </p>
+      </div>
+    `);
+    return function(group, element, data) {
+      if(group['isLevel0Group']) {
+        $(element).closest('.vis-label').css('background-color', group.color);
+        return defaulTemplate({
+          name: group.name,
+          color: group.color,
+          sheetName: null
+        });
+      }
+      return nestedGroupTemplate({ name: group.name, color: group.color });
+    }
+  }
+
+  getTooltipTemplateFunc() {
+    return function (item, element, data) {
+      switch(item.type) {
+        case "point":
+          return `<p>開始: ${moment(item.start).format("YYYY/MM/DD")} </p>`;
+        case "range":
+          return `<p> 開始: ${moment(item.start).format("YYYY/MM/DD")} </p>
+                    <p> 終了: ${moment(item.end).format("YYYY/MM/DD")} </p>`;
+      }
+    }
+  }
+
+  getOnMoveHandler() {
+    // timeline の オブジェクト移動イベントのハンドラ
+    // サーバ側にデータの変更をリクエストする
+    // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
+    let rpcClient = this.rpcClient;
+    return function (item, callback) {
+      rpcClient.updateSchedule(item)
+        .then(()=>{
+          console.log("updated sucessfully");
+          callback(item);
+        }, ()=>{
+          console.log("failed to update");
+          // callback に null を渡すと 変更がキャンセルされる
+          // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
+          callback(null);
+        });
+    }
+  }
+}
+
+class VisTLData {
+  constructor(rpcClient) {
+    this.rpcClient = rpcClient;
+    this.rawData = {};
+
+    this.visItems = new vis.DataSet();
+    this.visGroups = new vis.DataSet();
+    this.visGroupsByLabel = new vis.DataSet();
+  }
+
+  setVisibleTrueAllVisGroup() {
+    let visGroups = this.visGroups;
+    this.visGroups.forEach((g)=>{
+      visGroups.update({id: g.id, visible: true});
+    });
+  }
+
+  setVisibleFalseVisGroup(group) {
+    let visGroups = this.visGroups;
+    let nested = this.projectGroupRelation[group];
+    visGroups.update({ id: group, visible: false });
+    console.log(`nested: ${nested}`);
+    if(nested) {
+      // ちょっとまってからでないと nested が消えない
+      setTimeout(()=>{
+        nested.forEach((v)=>{
+          console.log(`hide nested: ${v}`)
+          visGroups.update({ id: v, visible: false });
+        });
+      }, 100);
+    }
+  }
+
+  initializeData(sheetIdList) {
+    return this.rpcClient.getAllData(sheetIdList)
+      .then((dataList)=>{
+        dataList.forEach((d)=>{
+          this.rawData[d.sheetId] = d.data;
+        });
+        this.initializeProjectGroups();
+        this.initializeLabels();
+        this.initializeProject();
+        this.initializeSchedules();
+        console.log(`initializeData: item count: ${this.visItems.length}`);
+        console.log(`initializeData: group count: ${this.visGroups.length}`);
+        return this;
+      });
+  }
+
+  initializeProjectGroups() {
+    Object.entries(this.rawData).forEach(([sheetId, data])=>{
+      data['projectGroups'].forEach((g, i) =>{
+        if(!g['name']) {
+          return;
+        }
+        let color = !!g['color'] ? g.color : 'white';
+        console.log(`initializeProjectGroups: group: ${this.getResourceId(sheetId, g.name)} ${JSON.stringify(g)}`);
+        this.visGroups.add({
+          id: this.getResourceId(sheetId, g.name),
+          name: g.name,
+          sheetId: sheetId,
+          index: i,
+          color: color,
+          isLevel0Group: true,
+          nestedGroups: [],
+          showNested: true,
+        });
+      });
+    });
+  }
+
+  initializeLabels() {
+    Object.entries(this.rawData).forEach(([sheetId, data])=>{
+      data['labels'].forEach((l, i) =>{
+        if(!l['name']) {
+          return;
+        }
+        let color = !!l['color'] ? l.color : 'white';
+        console.log(`initializeLabels: label: ${this.getResourceId(sheetId, l.name)} ${JSON.stringify(l)}`);
+        this.visGroupsByLabel.add({
+          id: this.getResourceId(sheetId, g.name),
+          name: l.name,
+          sheetId: sheetId,
+          index: i,
+          color: color,
+          isLevel0Group: true,
+          nestedGroups: [],
+          showNested: true,
+        });
+      });
+    });
+  }
+
+  initializeProject() {
+    if(this.visGroups.length == 0) {
+      new Error('project must initialize after projectGroups');
+    }
+    Object.entries(this.rawData).forEach(([sheetId, data])=>{
+      data['projects'].forEach((p, i) =>{
+        let g = this.visGroups.get(this.getResourceId(sheetId, p.projectGroup));
+        console.log(`initializeProject: group: ${this.getResourceId(sheetId, p.projectGroup)} ${JSON.stringify(g)}`);
+        let prj = {
+          id: this.getResourceId(sheetId, p.name),
+          name: p.name,
+          sheetId: sheetId,
+          label: p.label,
+          index: i,
+          color: !!p['color'] ? p.color : g ? g.color : white,
+          showNested: true,
+        };
+        this.visGroups.add(prj);
+
+        if(g) {
+          prj.projectGroupName = g ? g.name : null;
+          prj.projectGroup = g ? g.id : null;
+          g.nestedGroups.push(prj.id)
+        }
+
+        let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, p.label));
+        console.log(`initializeProject: label: ${this.getResourceId(sheetId, p.label)} ${JSON.stringify(l)}`);
+        if(l) {
+          l.nestedGroups.push(prj.id);
+        }
+      });
+    });
+  }
+
+  initializeSchedules() {
+    if(this.visGroups.length == 0) {
+      new Error('schedules must initialize after projects and projectGroups');
+    }
+    Object.entries(this.rawData).forEach(([sheetId, data])=>{
+      data['schedules'].forEach((s, i) =>{
+        if(!s['id'] || !s['start']) {
+          return;
+        }
+
+        let g = this.visGroups.get(this.getResourceId(sheetId, s.projectGroup));
+        console.log(`initializeSchedules: projectGroup: ${this.getResourceId(sheetId, s.projectGroup)} ${JSON.stringify(g)}`);
+        let p = this.visGroups.get(this.getResourceId(sheetId, s.project));
+        console.log(`initializeSchedules: project: ${this.getResourceId(sheetId, s.project)} ${JSON.stringify(p)}`);
+        let parentObj = p || g;
+        let color = !!s['color'] ? s.color: parentObj.color;
+        let sched = {
+          id: this.getResourceId(sheetId, s.id),
+          orgId: s.id,
+          name: s.name,
+          sheetId: sheetId,
+          project: s.project,
+          projectGroup: s.projectGroup,
+          group: parentObj.id,
+          index: i,
+          link: s.link,
+          color: color,
+          type: s.type,
+          start: moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
+          end: (!!s['end'])
+            ? moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC")
+            : null,
+        };
+        this.visItems.add(sched);
+      });
+    });
+  }
+
+  getResourceId(sheetId, resourceId) {
+    return `${sheetId}##${resourceId}`;
+  }
+
+  getItemContentTemplateFunc() {
+    return function() {
+      return `${p.name} <button data-group="${p.name}" class="btn btn-hide" onclick="hideGroup('${p.name}')"><i class="fa fa-eye-slash"></i></button>`;
+    }
+  }
+}
+
+class RPCClient {
+  constructor(gs) {
+    this.gs = gs;
+  }
+
+  getAllData(sheetIdList) {
+    let gs = this.gs;
+    let promises = sheetIdList.map((sheetId)=>{
+      return new Promise((resolve, reject)=>{
+        gs.run
+          .withSuccessHandler((dataFromGAS) => {
+            let d = {
+              sheetId: sheetId,
+              data: JSON.parse(dataFromGAS)
+            };
+            console.log(`getAllData: ${sheetId}: data: ${dataFromGAS}`);
+            resolve(d);
+          })
+          .withFailureHandler((error) => {
+            alert("データ取得に失敗しました: " + error);
+            reject();
+          })
+          .rpc('getAllData', null, sheetId);
+      });
+    });
+    return Promise.all(promises);
+  }
+
+  updateSchedule(schedule) {
+    let gs = this.gs;
+    return new Promise((resolve, reject) => {
+      var scheduleJson = JSON.stringify({
+        id: schedule.orgId,
+        type: schedule.type,
+        content: schedule.content,
+        start: schedule.start,
+        end: schedule.end
+      });
+      gs.run
+        .withSuccessHandler(() => {
+          console.log("updated sucessfully");
+          resolve();
+        })
+        .withFailureHandler((error) => {
+          console.log(`failed to update: error: ${error}`);
+          // callback に null を渡すと 変更がキャンセルされる
+          // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
+          reject();
+        })
+        .rpc('updateSchedule', scheduleJson);
+    });
+  }
+}
 
 </script>
