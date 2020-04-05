@@ -2,33 +2,36 @@
 let gs = google.script;
 let rpcClient = new RPCClient(gs);
 let visTLData = new VisTLData(rpcClient);
+let visTL;
 
-let sheetIdList = JSON.parse($('#data-sheet-id-list').text());
-
-visTLData.initializeData(sheetIdList)
+let sheetList = JSON.parse($('#data-sheet-list').text());
+visTLData.initializeData(sheetList)
   .then(()=>{
-    let visTL = new VisTL(rpcClient, visTLData);
+    visTL = new VisTL(rpcClient, visTLData);
     visTL.create(document.getElementById("container"),);
 
     setTimeout(()=>{
       visTL.visTL.setWindow(
         moment().subtract(2, 'month'),
         moment().add(10, 'month'));
+
+      $('#btn-group-by-projectgroup').on('click', ()=>{
+        visTL.groupByProjectGroup();
+      });
+      $('#btn-group-by-label').on('click', ()=>{
+        visTL.groupByLabel();
+      });
+
+      $('#btn-restore-hidden').on('click', ()=>{
+        visTL.restoreHidden();
+      });
+      $(document).on('click', '.btn-hide', (e)=>{
+        let id = $(e.currentTarget).data('group');
+        visTLData.visGroups.update({id: id, visible: false});
+        visTLData.visGroupsByLabel.update({id: id, visible: false});
+      });
+
     }, 1000);
-
-    setTimeout(()=>{
-      visTL.groupByLabel();
-    }, 6000);
   });
-
-function hideGroup(group) {
-  console.log(`hide-btn click: group: ${group}`);
-  visTLData.setVisibleFalseVisGroup(group);
-}
-
-function restoreHidden() {
-  console.log(`btn-restoreHidden`);
-  visTLData.setVisibleTrueAllVisGroup();
-}
 </script>
 

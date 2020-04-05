@@ -13,6 +13,13 @@ class VisTL {
       visTLData.visGroups,
       this.getVisTLOption()
     );
+
+    console.log('add custom timemarkers');
+    this.visTLData.timeMarkers.forEach((t)=>{
+      console.dir(t);
+      this.visTL.addCustomTime(t.date, t.id);
+      // this.visTL.setCustomTimeMarker(t.name, t.id, false);
+    });
   }
 
   filterGroup() {
@@ -30,9 +37,26 @@ class VisTL {
     });
   }
 
+  restoreHidden() {
+    this.visTLData.visGroups.forEach((g)=>{
+      this.visTLData.visGroups.update({id: g.id, visible: true});
+    });
+    this.visTLData.visGroupsByLabel.forEach((g)=>{
+      this.visTLData.visGroupsByLabel.update({id: g.id, visible: true});
+    });
+  }
+
+  groupByProjectGroup() {
+    console.log('group by project group');
+    this.visTL.setGroups(this.visTLData.visGroups);
+    this.visTL.setItems(this.visTLData.visItems);
+    this.visTL.redraw();
+  }
+
   groupByLabel() {
     console.log('group by label');
     this.visTL.setGroups(this.visTLData.visGroupsByLabel);
+    this.visTL.setItems(this.visTLData.visItems);
     this.visTL.redraw();
   }
 
@@ -44,7 +68,9 @@ class VisTL {
       verticalScroll: true,
       groupOrder: "index",
       start: moment().subtract(3, "months"),
-      horizontalScroll: true, zoomMax: 100000000000, zoomMin: 1000000000,
+      horizontalScroll: true,
+      zoomMax: 100000000000,
+      zoomMin: 1000000000,
       tooltip: { template: this.getTooltipTemplateFunc() },
       tooltipOnItemUpdateTime: true,
       template: this.getItemTemplateFunc(),
@@ -95,15 +121,15 @@ class VisTL {
     }
   }
 
-
   getGroupTemplateFunc() {
     let defaulTemplate = Handlebars.compile(`
       <div>
         <p>
           {{name}}
           {{#if sheetName}}
-            [{{sheetName}}]
+            (<a href="{{sheetUrl}}" target="_blank">{{sheetName}}<a>)
           {{/if}}
+          <button data-group="{{id}}" class="btn btn-hide"><i class="fa fa-eye-slash"></i></button>
         </p>
       </div>
     `);
@@ -114,19 +140,24 @@ class VisTL {
           {{#if label}}
             <span>[{{label}}]<span>
           {{/if}}
+          <button data-group="{{id}}" class="btn btn-hide"><i class="fa fa-eye-slash"></i></button>
         </p>
       </div>
     `);
     return function(group, element, data) {
+      let d = {
+        id: group.id,
+        name: group.name,
+        color: group.color,
+        label: group['label'],
+        sheetName: group.sheetName,
+        sheetUrl: group.sheetUrl,
+      };
       if(group['isLevel0Group']) {
         $(element).closest('.vis-label').css('background-color', group.color);
-        return defaulTemplate({
-          name: group.name,
-          color: group.color,
-          sheetName: null
-        });
+        return defaulTemplate(d);
       }
-      return nestedGroupTemplate({ name: group.name, color: group.color });
+      return nestedGroupTemplate(d);
     }
   }
 
@@ -166,7 +197,9 @@ class VisTLData {
   constructor(rpcClient) {
     this.rpcClient = rpcClient;
     this.rawData = {};
+    this.sheets = {};
 
+    this.timeMarkers = new vis.DataSet();
     this.visItems = new vis.DataSet();
     this.visGroups = new vis.DataSet();
     this.visGroupsByLabel = new vis.DataSet();
@@ -195,14 +228,20 @@ class VisTLData {
     }
   }
 
-  initializeData(sheetIdList) {
+  initializeData(sheetList) {
+    let sheetIdList = [];
+    sheetList.forEach((s)=>{
+      sheetIdList.push(s.id);
+      this.sheets[s.id] = s;
+    });
     return this.rpcClient.getAllData(sheetIdList)
       .then((dataList)=>{
         dataList.forEach((d)=>{
           this.rawData[d.sheetId] = d.data;
         });
-        this.initializeProjectGroups();
+        this.initializeTimeMarkers();
         this.initializeLabels();
+        this.initializeProjectGroups();
         this.initializeProject();
         this.initializeSchedules();
         console.log(`initializeData: item count: ${this.visItems.length}`);
@@ -211,23 +250,19 @@ class VisTLData {
       });
   }
 
-  initializeProjectGroups() {
+  initializeTimeMarkers() {
     Object.entries(this.rawData).forEach(([sheetId, data])=>{
-      data['projectGroups'].forEach((g, i) =>{
-        if(!g['name']) {
+      data['timeMarkers'].forEach((t, i) =>{
+        if(!t['name'] || t['hidden']) {
           return;
         }
-        let color = !!g['color'] ? g.color : 'white';
-        console.log(`initializeProjectGroups: group: ${this.getResourceId(sheetId, g.name)} ${JSON.stringify(g)}`);
-        this.visGroups.add({
-          id: this.getResourceId(sheetId, g.name),
-          name: g.name,
+        this.timeMarkers.add({
+          id: this.getResourceId(sheetId, 'timeMarker', t.name),
+          name: t.name,
           sheetId: sheetId,
+          sheetName: this.sheets[sheetId].name,
           index: i,
-          color: color,
-          isLevel0Group: true,
-          nestedGroups: [],
-          showNested: true,
+          date: moment.tz(t.date.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
         });
       });
     });
@@ -240,11 +275,11 @@ class VisTLData {
           return;
         }
         let color = !!l['color'] ? l.color : 'white';
-        console.log(`initializeLabels: label: ${this.getResourceId(sheetId, l.name)} ${JSON.stringify(l)}`);
         this.visGroupsByLabel.add({
-          id: this.getResourceId(sheetId, g.name),
+          id: this.getResourceId(sheetId, 'label', l.name),
           name: l.name,
           sheetId: sheetId,
+          sheetName: this.sheets[sheetId].name,
           index: i,
           color: color,
           isLevel0Group: true,
@@ -255,24 +290,63 @@ class VisTLData {
     });
   }
 
+  initializeProjectGroups() {
+    if(this.visGroupsByLabel.length == 0) {
+      new Error('projectGroups must initialize after label');
+    }
+    Object.entries(this.rawData).forEach(([sheetId, data])=>{
+      data['projectGroups'].forEach((g, i) =>{
+        if(!g['name']) {
+          return;
+        }
+        let color = !!g['color'] ? g.color : 'white';
+        console.log(`initializeProjectGroups: group: ${this.getResourceId(sheetId, 'projectGroup', g.name)} ${JSON.stringify(g)}`);
+        let grp = {
+          id: this.getResourceId(sheetId, 'projectGroup', g.name),
+          name: g.name,
+          sheetId: sheetId,
+          sheetName: this.sheets[sheetId].name,
+          sheetUrl: this.sheets[sheetId].url,
+          index: i,
+          color: color,
+          label: g.label,
+          isLevel0Group: true,
+          nestedGroups: [],
+          showNested: true,
+        };
+        this.visGroups.add(grp);
+
+        let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, 'label', g.label));
+        console.log(`initializeProjectGroups: label: ${this.getResourceId(sheetId, 'label', g.label)} ${JSON.stringify(l)}`);
+        if(l) {
+          grp.nestedGroups = null;
+          this.visGroupsByLabel.add(grp);
+          l.nestedGroups.push(grp.id);
+        }
+      });
+    });
+  }
+
   initializeProject() {
     if(this.visGroups.length == 0) {
       new Error('project must initialize after projectGroups');
     }
     Object.entries(this.rawData).forEach(([sheetId, data])=>{
       data['projects'].forEach((p, i) =>{
-        let g = this.visGroups.get(this.getResourceId(sheetId, p.projectGroup));
-        console.log(`initializeProject: group: ${this.getResourceId(sheetId, p.projectGroup)} ${JSON.stringify(g)}`);
+        let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', p.projectGroup));
         let prj = {
-          id: this.getResourceId(sheetId, p.name),
+          id: this.getResourceId(sheetId, 'project', p.name),
           name: p.name,
           sheetId: sheetId,
+          sheetName: this.sheets[sheetId].name,
+          sheetUrl: this.sheets[sheetId].url,
           label: p.label,
           index: i,
           color: !!p['color'] ? p.color : g ? g.color : white,
           showNested: true,
         };
         this.visGroups.add(prj);
+        this.visGroupsByLabel.add(prj);
 
         if(g) {
           prj.projectGroupName = g ? g.name : null;
@@ -280,8 +354,8 @@ class VisTLData {
           g.nestedGroups.push(prj.id)
         }
 
-        let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, p.label));
-        console.log(`initializeProject: label: ${this.getResourceId(sheetId, p.label)} ${JSON.stringify(l)}`);
+        let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, 'label', p.label));
+        console.log(`initializeProject: label: ${this.getResourceId(sheetId, 'label', p.label)} ${JSON.stringify(l)}`);
         if(l) {
           l.nestedGroups.push(prj.id);
         }
@@ -299,17 +373,17 @@ class VisTLData {
           return;
         }
 
-        let g = this.visGroups.get(this.getResourceId(sheetId, s.projectGroup));
-        console.log(`initializeSchedules: projectGroup: ${this.getResourceId(sheetId, s.projectGroup)} ${JSON.stringify(g)}`);
-        let p = this.visGroups.get(this.getResourceId(sheetId, s.project));
-        console.log(`initializeSchedules: project: ${this.getResourceId(sheetId, s.project)} ${JSON.stringify(p)}`);
+        let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', s.projectGroup));
+        let p = this.visGroups.get(this.getResourceId(sheetId, 'project', s.project));
         let parentObj = p || g;
         let color = !!s['color'] ? s.color: parentObj.color;
         let sched = {
-          id: this.getResourceId(sheetId, s.id),
+          id: this.getResourceId(sheetId, 'schedule', s.id),
           orgId: s.id,
           name: s.name,
           sheetId: sheetId,
+          sheetName: this.sheets[sheetId].name,
+          sheetUrl: this.sheets[sheetId].url,
           project: s.project,
           projectGroup: s.projectGroup,
           group: parentObj.id,
@@ -327,14 +401,8 @@ class VisTLData {
     });
   }
 
-  getResourceId(sheetId, resourceId) {
-    return `${sheetId}##${resourceId}`;
-  }
-
-  getItemContentTemplateFunc() {
-    return function() {
-      return `${p.name} <button data-group="${p.name}" class="btn btn-hide" onclick="hideGroup('${p.name}')"><i class="fa fa-eye-slash"></i></button>`;
-    }
+  getResourceId(sheetId, type, resourceId) {
+    return `${sheetId}##${type}##${resourceId}`;
   }
 }
 

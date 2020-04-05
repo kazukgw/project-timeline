@@ -32,8 +32,9 @@ export function initApp(spreadSheetId: string): App {
 
 export class App {
   readonly config: Config;
-  readonly projectGroupTable: Table;
+  readonly timeMarkerTable: Table;
   readonly labelTable: Table;
+  readonly projectGroupTable: Table;
   readonly projectTable: Table;
   readonly scheduleTable: Table;
   readonly spreadSheetId: string;
@@ -41,11 +42,12 @@ export class App {
   constructor(config: Config) {
     this.config = config;
     this.spreadSheetId = this.config.spreadSheetId;
-    this.projectGroupTable = new Table(
-      config.projectGroupSheetName,
-      config.projectGroupSheetHeaderRangeFirstRowNumber,
-      config.projectGroupSheetRecordRangeFirstRowNumber,
-      config.projectGroupPrimaryKey,
+
+    this.timeMarkerTable = new Table(
+      config.timeMarkerSheetName,
+      config.timeMarkerSheetHeaderRangeFirstRowNumber,
+      config.timeMarkerSheetRecordRangeFirstRowNumber,
+      config.timeMarkerPrimaryKey,
       this.spreadSheetId
     );
 
@@ -57,6 +59,13 @@ export class App {
       this.spreadSheetId
     );
 
+    this.projectGroupTable = new Table(
+      config.projectGroupSheetName,
+      config.projectGroupSheetHeaderRangeFirstRowNumber,
+      config.projectGroupSheetRecordRangeFirstRowNumber,
+      config.projectGroupPrimaryKey,
+      this.spreadSheetId
+    );
 
     this.projectTable = new Table(
       config.projectSheetName,

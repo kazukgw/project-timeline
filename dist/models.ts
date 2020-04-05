@@ -57,8 +57,7 @@ export class Table {
   ) {
     if(spreadSheetId != null) {
       this.spreadSheetId = spreadSheetId;
-      this.spreadSheetObj = SpreadsheetApp.openById(this.spreadSheetId);
-    } else {
+      this.spreadSheetObj = SpreadsheetApp.openById(this.spreadSheetId); } else {
       this.spreadSheetObj = SpreadsheetApp.getActive();
       this.spreadSheetId = this.spreadSheetObj.getId();
     }
@@ -174,10 +173,12 @@ export class Table {
   }
 
   private getPrimaryKeyColRange(): GoogleAppsScript.Spreadsheet.Range {
+    var rowNum = (this.sheetObj.getLastRow() - this.recordRangeFirstRowNumber) + 1;
+    rowNum = rowNum < 1 ? 1 : rowNum;
     return this.sheetObj.getRange(
       this.recordRangeFirstRowNumber,
       this.primaryKeyColumnNumber,
-      (this.sheetObj.getLastRow() - this.recordRangeFirstRowNumber) + 1,
+      rowNum,
       1
     );
   }

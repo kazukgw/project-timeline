@@ -3,15 +3,20 @@ import { TableRecord, Table } from "./models";
 export class Config {
   readonly spreadSheetId: string;
 
-  readonly projectGroupSheetName: string;
-  readonly projectGroupSheetHeaderRangeFirstRowNumber: number;
-  readonly projectGroupSheetRecordRangeFirstRowNumber: number;
-  readonly projectGroupPrimaryKey: string;
+  readonly timeMarkerSheetName: string;
+  readonly timeMarkerSheetHeaderRangeFirstRowNumber: number;
+  readonly timeMarkerSheetRecordRangeFirstRowNumber: number;
+  readonly timeMarkerPrimaryKey: string;
 
   readonly labelSheetName: string;
   readonly labelSheetHeaderRangeFirstRowNumber: number;
   readonly labelSheetRecordRangeFirstRowNumber: number;
   readonly labelPrimaryKey: string;
+
+  readonly projectGroupSheetName: string;
+  readonly projectGroupSheetHeaderRangeFirstRowNumber: number;
+  readonly projectGroupSheetRecordRangeFirstRowNumber: number;
+  readonly projectGroupPrimaryKey: string;
 
   readonly projectSheetName: string;
   readonly projectSheetHeaderRangeFirstRowNumber: number;
@@ -49,12 +54,12 @@ export class Config {
 
     Logger.log(`Config constructor: configData: ${JSON.stringify(configData)}`);
 
-    this.projectGroupSheetName = configData["projectGroupSheetName"];
-    this.projectGroupSheetHeaderRangeFirstRowNumber =
-      configData["projectGroupSheetHeaderRangeFirstRowNumber"];
-    this.projectGroupSheetRecordRangeFirstRowNumber =
-      configData["projectGroupSheetRecordRangeFirstRowNumber"];
-    this.projectGroupPrimaryKey = configData["projectGroupPrimaryKey"];
+    this.timeMarkerSheetName = configData["timeMarkerSheetName"];
+    this.timeMarkerSheetHeaderRangeFirstRowNumber =
+      configData["timeMarkerSheetHeaderRangeFirstRowNumber"];
+    this.timeMarkerSheetRecordRangeFirstRowNumber =
+      configData["timeMarkerSheetRecordRangeFirstRowNumber"];
+    this.timeMarkerPrimaryKey = configData["timeMarkerPrimaryKey"];
 
     this.labelSheetName = configData["labelSheetName"];
     this.labelSheetHeaderRangeFirstRowNumber =
@@ -62,6 +67,13 @@ export class Config {
     this.labelSheetRecordRangeFirstRowNumber =
       configData["labelSheetRecordRangeFirstRowNumber"];
     this.labelPrimaryKey = configData["labelPrimaryKey"];
+
+    this.projectGroupSheetName = configData["projectGroupSheetName"];
+    this.projectGroupSheetHeaderRangeFirstRowNumber =
+      configData["projectGroupSheetHeaderRangeFirstRowNumber"];
+    this.projectGroupSheetRecordRangeFirstRowNumber =
+      configData["projectGroupSheetRecordRangeFirstRowNumber"];
+    this.projectGroupPrimaryKey = configData["projectGroupPrimaryKey"];
 
     this.projectSheetName = configData["projectSheetName"];
     this.projectSheetHeaderRangeFirstRowNumber =

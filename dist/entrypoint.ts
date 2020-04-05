@@ -6,11 +6,19 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   Logger.log(`doGet: params: ${params}`)
   let template = HtmlService.createTemplateFromFile("index");
   let selfId = SpreadsheetApp.getActive().getId();
-  sheetIdList = params['sheet'] || [];
+  let sheetIdList = params['sheet'] || [];
   if(sheetIdList.indexOf(selfId) === -1) {
     sheetIdList.push(selfId);
   }
-  template.sheetIdList = JSON.stringify(sheetIdList);
+  let sheetList = sheetIdList.map((id)=>{
+    let sheet = SpreadsheetApp.openById(id);
+    return {
+      id: id,
+      name: sheet.getName(),
+      url: sheet.getUrl()
+    }
+  })
+  template.sheetList = JSON.stringify(sheetList);
   return template.evaluate();
 }
 
@@ -61,8 +69,9 @@ class RPCHandler {
 
   private getAllData(): Object {
     return {
-      projectGroups: this.app.projectGroupTable.getAllRecordData(),
+      timeMarkers: this.app.timeMarkerTable.getAllRecordData(),
       labels: this.app.labelTable.getAllRecordData(),
+      projectGroups: this.app.projectGroupTable.getAllRecordData(),
       projects: this.app.projectTable.getAllRecordData(),
       schedules: this.app.scheduleTable.getAllRecordData()
     };
