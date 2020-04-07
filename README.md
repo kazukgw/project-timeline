@@ -21,8 +21,10 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 - [x] range 変更時は range の style 変更 (border を dashed にするとか)
 - [ ] Enriching the tooltip display content
 - [ ] Hide records that are set to hidden on SpreadSheet regardless of the client's settings.
+  - restore したときも hidden: true のアイテムは visible false のままにする
 - [ ] Allow the setting of Hidden to be specified with a query parameter
 - [ ] Allowing config to be defined in json
   - コードがスリムになる
   - 柔軟に設定できるようになる
 - [ ] Supports parallel data acquisition from the client.
+- [ ] GAS ベースの CMS 構想考える
