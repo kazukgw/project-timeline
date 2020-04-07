@@ -19,6 +19,10 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 - [ ] record の追加機能
 - [x] ~~position: fixed → stick~~
 - [x] range 変更時は range の style 変更 (border を dashed にするとか)
-- [ ] tooltip の内容の拡充
-- [x] SpreadSheet 側で hide にしているものは最初から表示しない
-- [ ] hide の設定を get の query parameter で指定できるように
+- [ ] Enriching the tooltip display content
+- [ ] Hide records that are set to hidden on SpreadSheet regardless of the client's settings.
+- [ ] Allow the setting of Hidden to be specified with a query parameter
+- [ ] Allowing config to be defined in json
+  - コードがスリムになる
+  - 柔軟に設定できるようになる
+- [ ] Supports parallel data acquisition from the client.
