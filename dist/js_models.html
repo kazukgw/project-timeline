@@ -342,7 +342,7 @@ class VisTLData {
           sheetUrl: this.sheets[sheetId].url,
           label: p.label,
           index: i,
-          color: !!p['color'] ? p.color : g ? g.color : white,
+          color: !!p['color'] ? p.color : g ? g.color : 'black',
           showNested: true,
         };
         this.visGroups.add(prj);
@@ -376,7 +376,7 @@ class VisTLData {
         let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', s.projectGroup));
         let p = this.visGroups.get(this.getResourceId(sheetId, 'project', s.project));
         let parentObj = p || g;
-        let color = !!s['color'] ? s.color: parentObj.color;
+        let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
         let sched = {
           id: this.getResourceId(sheetId, 'schedule', s.id),
           orgId: s.id,
@@ -386,11 +386,11 @@ class VisTLData {
           sheetUrl: this.sheets[sheetId].url,
           project: s.project,
           projectGroup: s.projectGroup,
-          group: parentObj.id,
+          group: parentObj ? parentObj.id : null,
           index: i,
           link: s.link,
           color: color,
-          type: s.type,
+          type: !!s.type ? s.type : 'range',
           start: moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
           end: (!!s['end'])
             ? moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC")

@@ -1,4 +1,8 @@
 <style type="text/css">
+/* A Modern CSS Reset */
+*,*::before,*::after{box-sizing:border-box}ul[class],ol[class]{padding:0}body,h1,h2,h3,h4,p,ul[class],ol[class],figure,blockquote,dl,dd{margin:0}body{min-height:100vh;scroll-behavior:smooth;text-rendering:optimizeSpeed;line-height:1.5}ul[class],ol[class]{list-style:none}a:not([class]){text-decoration-skip-ink:auto}img{max-width:100%;display:block}article>*+*{margin-top:1em}input,button,textarea,select{font:inherit}img:not([alt]){filter:blur(10px)}@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}
+
+
 * {
   font-family: "m plus 1p", sans-serif;
 }
@@ -59,7 +63,7 @@ a:visited {
 }
 
 #header {
-  height: 60px;
+  height: 80px;
   width: 100%;
   color: white;
   background-color: rgb(225, 48, 34);
@@ -187,5 +191,14 @@ a:visited {
   position: fixed !important;
   top: 110px !important;
   z-index: 0 !important;
+}
+
+.vis-ltr .vis-label.vis-nested-group .vis-inner {
+  padding-left: 50px !important;
+}
+
+.vis-time-axis .vis-text.vis-minor.vis-saturday,
+.vis-time-axis .vis-text.vis-minor.vis-sunday {
+  background-color: #ffabb3;
 }
 </style>
