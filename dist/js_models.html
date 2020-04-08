@@ -330,6 +330,8 @@ class VisTLData {
           visible: !g.hidden
         };
 
+        this.visGroups.add(grp);
+
         let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, 'label', g.label));
         console.log(`initializeProjectGroups: label: ${this.getResourceId(sheetId, 'label', g.label)} ${JSON.stringify(l)}`);
         if(l) {
@@ -337,8 +339,6 @@ class VisTLData {
           this.visGroupsByLabel.add(grp);
           l.nestedGroups.push(grp.id);
         }
-
-        this.visGroups.add(grp);
       });
     });
   }
