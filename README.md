@@ -17,14 +17,16 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 - [x] Label 絡むの追加とグルーピング
 - [x] Template Engine or React によるレンダリング
 - [ ] record の追加機能
+  - button click → dialog → insert
 - [x] ~~position: fixed → stick~~
 - [x] range 変更時は range の style 変更 (border を dashed にするとか)
 - [ ] Enriching the tooltip display content
-- [ ] Hide records that are set to hidden on SpreadSheet regardless of the client's settings.
+- [x] Hide records that are set to hidden on SpreadSheet regardless of the client's settings.
   - restore したときも hidden: true のアイテムは visible false のままにする
 - [ ] Allow the setting of Hidden to be specified with a query parameter
-- [ ] Allowing config to be defined in json
+- [x] Allowing config to be defined in json
   - コードがスリムになる
   - 柔軟に設定できるようになる
-- [ ] Supports parallel data acquisition from the client.
+- [x] Supports parallel data acquisition from the client.
+- [] spreadsheet bounded な script とから unbounded script に変更する
 - [ ] GAS ベースの CMS 構想考える
