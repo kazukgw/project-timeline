@@ -47,15 +47,13 @@ function rpc(functionName: string, paramJson: string, spreadSheetId: string) {
 class RPCHandler {
   private functionName: string;
   private paramObject: Object;
-  private app: App;
 
-  constructor(functionName: string, paramJson: string, spreadSheetId: string) {
+  constructor(functionName: string, paramJson: string) {
     Logger.log(
       `init rpc handler: functionName: ${functionName}, paramJson: ${paramJson}`
     );
     this.functionName = functionName;
     this.paramObject = paramJson == null ? null : JSON.parse(paramJson);
-    this.app = initApp(spreadSheetId);
   }
 
   handle(): string {
@@ -67,20 +65,31 @@ class RPCHandler {
     return JSON.stringify(func.call(this, this.paramObject));
   }
 
-  private getAllData(): Object {
+  private getAllData(param: Object): Object {
+    let sheetId = param['sheetId'];
+    if(!!sheetId) {
+      new Error('sheetId is null');
+    }
+    let app = initApp(sheetId);
+
     return {
-      timeMarkers: this.app.timeMarkerTable.getAllRecordData(),
-      labels: this.app.labelTable.getAllRecordData(),
-      projectGroups: this.app.projectGroupTable.getAllRecordData(),
-      projects: this.app.projectTable.getAllRecordData(),
-      schedules: this.app.scheduleTable.getAllRecordData()
+      timeMarkers: app.timeMarkerTable.getAllRecordData(),
+      labels: app.labelTable.getAllRecordData(),
+      projectGroups: app.projectGroupTable.getAllRecordData(),
+      projects: app.projectTable.getAllRecordData(),
+      schedules: app.scheduleTable.getAllRecordData()
     };
   }
 
   private updateSchedule(schedule: Object) {
     Logger.log(`updateSchedule: schedule`);
-    let record = this.app.scheduleTable.findRecordByPrimaryKey(
-      schedule[this.app.scheduleTable.primaryKey]
+    let sheetId = schedule['sheetId'];
+    if(!!sheetId) {
+      new Error('sheetId is null');
+    }
+    let app = initApp(sheetId);
+    let record = app.scheduleTable.findRecordByPrimaryKey(
+      schedule[app.scheduleTable.primaryKey]
     );
     record.values["start"] = moment(
       schedule["start"].replace("Z", ""),

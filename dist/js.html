@@ -27,8 +27,7 @@ visTLData.initializeData(sheetList)
       });
       $(document).on('click', '.btn-hide', (e)=>{
         let id = $(e.currentTarget).data('group');
-        visTLData.visGroups.update({id: id, visible: false});
-        visTLData.visGroupsByLabel.update({id: id, visible: false});
+        visTL.hideGroup(id);
       });
 
     }, 1000);

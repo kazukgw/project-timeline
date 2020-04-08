@@ -1,92 +1,53 @@
-import { TableRecord, Table } from "./models";
+import { TableConfig } from "./models";
 
 export class Config {
+  readonly sheetName: string;
   readonly spreadSheetId: string;
+  readonly configValueCellA1Notation: string;
+  readonly rawConfig: string;
 
-  readonly timeMarkerSheetName: string;
-  readonly timeMarkerSheetHeaderRangeFirstRowNumber: number;
-  readonly timeMarkerSheetRecordRangeFirstRowNumber: number;
-  readonly timeMarkerPrimaryKey: string;
+  readonly spreadSheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
+  readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
 
-  readonly labelSheetName: string;
-  readonly labelSheetHeaderRangeFirstRowNumber: number;
-  readonly labelSheetRecordRangeFirstRowNumber: number;
-  readonly labelPrimaryKey: string;
-
-  readonly projectGroupSheetName: string;
-  readonly projectGroupSheetHeaderRangeFirstRowNumber: number;
-  readonly projectGroupSheetRecordRangeFirstRowNumber: number;
-  readonly projectGroupPrimaryKey: string;
-
-  readonly projectSheetName: string;
-  readonly projectSheetHeaderRangeFirstRowNumber: number;
-  readonly projectSheetRecordRangeFirstRowNumber: number;
-  readonly projectPrimaryKey: string;
-
-  readonly scheduleSheetName: string;
-  readonly scheduleSheetHeaderRangeFirstRowNumber: number;
-  readonly scheduleSheetRecordRangeFirstRowNumber: number;
-  readonly schedulePrimaryKey: string;
+  readonly tableConfigs: Object;
 
   constructor(
+    spreadSheetId: string,
     sheetName: string,
-    headerRangeFirstRowNumber: number,
-    recordRangeFirstRowNumber: number,
-    primaryKey: string,
-    spreadSheetId: string
+    configValueCellA1Notation: string
   ) {
     this.spreadSheetId = spreadSheetId;
-    let configTable = new Table(
-      sheetName,
-      headerRangeFirstRowNumber,
-      recordRangeFirstRowNumber,
-      primaryKey,
-      spreadSheetId
-    );
-    let records = configTable.getAllRecords();
-    var configData = {};
-    records.forEach((record: TableRecord, index: number) => {
-      Logger.log(
-        `Config record: record.values: ${JSON.stringify(record.values)}`
+    this.sheetName = sheetName;
+    this.configValueCellA1Notation = configValueCellA1Notation;
+
+    this.spreadSheet = SpreadsheetApp.openById(this.spreadSheetId);
+    this.sheet = this.spreadSheet.getSheetByName(this.sheetName);
+
+    this.rawConfig = this.sheet.getRange(this.configValueCellA1Notation).getValue();
+
+    let config = JSON.parse(this.rawConfig);
+
+    let tables: Object = config['tables'];
+    if(!!tables) {
+      new Error('config must has tables');
+    }
+
+    this.tableConfigs = {
+      timeMarkers: null,
+      labels: null,
+      projectGroups: null,
+      projects: null,
+      schedules: null
+    };
+
+    Object.keys(this.tableConfigs).forEach((k)=>{
+      let t = tables[k];
+      this.tableConfigs[k] = new TableConfig(
+        t['sheetName'],
+        t['headerRangeFirstRowNumber'],
+        t['recordRangeFirstRowNumber'],
+        t['primaryKey']
       );
-      configData[record.values["key"]] = record.values["value"];
     });
-
-    Logger.log(`Config constructor: configData: ${JSON.stringify(configData)}`);
-
-    this.timeMarkerSheetName = configData["timeMarkerSheetName"];
-    this.timeMarkerSheetHeaderRangeFirstRowNumber =
-      configData["timeMarkerSheetHeaderRangeFirstRowNumber"];
-    this.timeMarkerSheetRecordRangeFirstRowNumber =
-      configData["timeMarkerSheetRecordRangeFirstRowNumber"];
-    this.timeMarkerPrimaryKey = configData["timeMarkerPrimaryKey"];
-
-    this.labelSheetName = configData["labelSheetName"];
-    this.labelSheetHeaderRangeFirstRowNumber =
-      configData["labelSheetHeaderRangeFirstRowNumber"];
-    this.labelSheetRecordRangeFirstRowNumber =
-      configData["labelSheetRecordRangeFirstRowNumber"];
-    this.labelPrimaryKey = configData["labelPrimaryKey"];
-
-    this.projectGroupSheetName = configData["projectGroupSheetName"];
-    this.projectGroupSheetHeaderRangeFirstRowNumber =
-      configData["projectGroupSheetHeaderRangeFirstRowNumber"];
-    this.projectGroupSheetRecordRangeFirstRowNumber =
-      configData["projectGroupSheetRecordRangeFirstRowNumber"];
-    this.projectGroupPrimaryKey = configData["projectGroupPrimaryKey"];
-
-    this.projectSheetName = configData["projectSheetName"];
-    this.projectSheetHeaderRangeFirstRowNumber =
-      configData["projectSheetHeaderRangeFirstRowNumber"];
-    this.projectSheetRecordRangeFirstRowNumber =
-      configData["projectSheetRecordRangeFirstRowNumber"];
-    this.projectPrimaryKey = configData["projectPrimaryKey"];
-
-    this.scheduleSheetName = configData["scheduleSheetName"];
-    this.scheduleSheetHeaderRangeFirstRowNumber =
-      configData["scheduleSheetHeaderRangeFirstRowNumber"];
-    this.scheduleSheetRecordRangeFirstRowNumber =
-      configData["scheduleSheetRecordRangeFirstRowNumber"];
-    this.schedulePrimaryKey = configData["schedulePrimaryKey"];
   }
 }

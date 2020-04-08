@@ -18,12 +18,15 @@ function initDebugLogger() {
   };
 }
 
+const CONFIG_SHEET = 'Config';
+const CONFIG_CELL = 'A3';
+
 export function initApp(spreadSheetId: string): App {
   if (DEBUG) {
     initDebugLogger();
   }
   Logger.log(`Init App`);
-  let config = new Config(CONFIG_SHEET_NAME, 2, 3, "key", spreadSheetId);
+  let config = new Config(spreadSheetId, CONFIG_SHEET, CONFIG_CELL);
   let app = new App(config);
 
   Logger.log(`Init App successfully`);
@@ -32,55 +35,38 @@ export function initApp(spreadSheetId: string): App {
 
 export class App {
   readonly config: Config;
+  readonly spreadSheetId: string;
+  readonly spreadSheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
+
   readonly timeMarkerTable: Table;
   readonly labelTable: Table;
   readonly projectGroupTable: Table;
   readonly projectTable: Table;
   readonly scheduleTable: Table;
-  readonly spreadSheetId: string;
 
   constructor(config: Config) {
     this.config = config;
     this.spreadSheetId = this.config.spreadSheetId;
 
     this.timeMarkerTable = new Table(
-      config.timeMarkerSheetName,
-      config.timeMarkerSheetHeaderRangeFirstRowNumber,
-      config.timeMarkerSheetRecordRangeFirstRowNumber,
-      config.timeMarkerPrimaryKey,
-      this.spreadSheetId
+      this.spreadSheetId,
+      this.config.tableConfigs['timeMarkers']
     );
-
     this.labelTable = new Table(
-      config.labelSheetName,
-      config.labelSheetHeaderRangeFirstRowNumber,
-      config.labelSheetRecordRangeFirstRowNumber,
-      config.labelPrimaryKey,
-      this.spreadSheetId
+      this.spreadSheetId,
+      this.config.tableConfigs['labels']
     );
-
     this.projectGroupTable = new Table(
-      config.projectGroupSheetName,
-      config.projectGroupSheetHeaderRangeFirstRowNumber,
-      config.projectGroupSheetRecordRangeFirstRowNumber,
-      config.projectGroupPrimaryKey,
-      this.spreadSheetId
+      this.spreadSheetId,
+      this.config.tableConfigs['projectGroups']
     );
-
     this.projectTable = new Table(
-      config.projectSheetName,
-      config.projectSheetHeaderRangeFirstRowNumber,
-      config.projectSheetRecordRangeFirstRowNumber,
-      config.projectPrimaryKey,
-      this.spreadSheetId
+      this.spreadSheetId,
+      this.config.tableConfigs['projects']
     );
-
     this.scheduleTable = new Table(
-      config.scheduleSheetName,
-      config.scheduleSheetHeaderRangeFirstRowNumber,
-      config.scheduleSheetRecordRangeFirstRowNumber,
-      config.schedulePrimaryKey,
-      this.spreadSheetId
+      this.spreadSheetId,
+      this.config.tableConfigs['schedules']
     );
   }
 
@@ -98,7 +84,7 @@ export class App {
     }
 
     Logger.log(`on Edit: table: ${table.sheetName}`);
-    if (table.sheetName === this.config.scheduleSheetName) {
+    if (table.sheetName === this.scheduleTable.sheetName) {
       let editedColName = table.headers[range.getColumn() - 1];
       if (editedColName === "name") {
         let record = table.newRecordWithRowNumber(range.getRow());

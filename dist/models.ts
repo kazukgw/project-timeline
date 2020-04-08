@@ -35,6 +35,25 @@ export class TableRecord {
   }
 }
 
+export class TableConfig {
+  readonly sheetName: string;
+  readonly headerRangeFirstRowNumber: number;
+  readonly recordRangeFirstRowNumber: number;
+  readonly primaryKey: string;
+
+  constructor(
+    sheetName: string,
+    headerRangeFirstRowNumber: number,
+    recordRangeFirstRowNumber: number,
+    primaryKey: string
+  ) {
+    this.sheetName = sheetName;
+    this.headerRangeFirstRowNumber = headerRangeFirstRowNumber;
+    this.recordRangeFirstRowNumber = recordRangeFirstRowNumber;
+    this.primaryKey = primaryKey;
+  }
+}
+
 export class Table {
   readonly spreadSheetId: string;
   readonly spreadSheetObj: GoogleAppsScript.Spreadsheet.Spreadsheet;
@@ -49,37 +68,30 @@ export class Table {
   private primaryKeyColumnNumber: number;
 
   constructor(
-    sheetName: string,
-    headerRangeFirstRowNumber: number,
-    recordRangeFirstRowNumber: number,
-    primaryKey: string,
-    spreadSheetId: string
+    spreadSheetId: string,
+    tableConfig: TableConfig
   ) {
-    if(spreadSheetId != null) {
-      this.spreadSheetId = spreadSheetId;
-      this.spreadSheetObj = SpreadsheetApp.openById(this.spreadSheetId); } else {
-      this.spreadSheetObj = SpreadsheetApp.getActive();
-      this.spreadSheetId = this.spreadSheetObj.getId();
-    }
-    this.sheetName = sheetName;
-    this.sheetObj = this.spreadSheetObj.getSheetByName(sheetName);
+    this.spreadSheetId = spreadSheetId;
+    this.spreadSheetObj = SpreadsheetApp.openById(this.spreadSheetId);
+    this.sheetName = tableConfig.sheetName;
+    this.sheetObj = this.spreadSheetObj.getSheetByName(this.sheetName);
     this.sheetId = this.sheetObj.getSheetId();
-    this.headerRangeFirstRowNumber = headerRangeFirstRowNumber;
-    this.recordRangeFirstRowNumber = recordRangeFirstRowNumber;
-    this.primaryKey = primaryKey;
+    this.headerRangeFirstRowNumber = tableConfig.headerRangeFirstRowNumber;
+    this.recordRangeFirstRowNumber = tableConfig.recordRangeFirstRowNumber;
+    this.primaryKey = tableConfig.primaryKey;
 
     // header の数は最大 20
     let headers = <Array<string>>(
-      this.sheetObj.getRange(headerRangeFirstRowNumber, 1, 1, 20).getValues()[0]
+      this.sheetObj.getRange(this.headerRangeFirstRowNumber, 1, 1, 20).getValues()[0]
     );
     this.headers = [];
     headers.forEach(v => {
       if (v !== undefined && v !== "") this.headers.push(v);
     });
 
-    let index = this.headers.indexOf(primaryKey);
+    let index = this.headers.indexOf(this.primaryKey);
     if (index === -1) {
-      new Error(`${sheetName} の primaryKey:${primaryKey} が存在しません`);
+      new Error(`${this.sheetName} の primaryKey:${this.primaryKey} が存在しません`);
     }
     this.primaryKeyColumnNumber = index + 1;
   }

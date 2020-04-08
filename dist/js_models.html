@@ -39,11 +39,22 @@ class VisTL {
 
   restoreHidden() {
     this.visTLData.visGroups.forEach((g)=>{
-      this.visTLData.visGroups.update({id: g.id, visible: true});
+      let grp = this.visTLData.visGroups.get(g.id);
+      if(grp && !grp.hidden) {
+        this.visTLData.visGroups.update({id: g.id, visible: true});
+      }
     });
     this.visTLData.visGroupsByLabel.forEach((g)=>{
-      this.visTLData.visGroupsByLabel.update({id: g.id, visible: true});
+      let grp = this.visTLData.visGroupsByLabel.get(g.id);
+      if(grp && !grp.hidden) {
+        this.visTLData.visGroupsByLabel.update({id: g.id, visible: true});
+      }
     });
+  }
+
+  hideGroup(id) {
+    this.visTLData.visGroups.update({id: id, visible: false});
+    this.visTLData.visGroupsByLabel.update({id: id, visible: false});
   }
 
   groupByProjectGroup() {
@@ -237,7 +248,9 @@ class VisTLData {
     return this.rpcClient.getAllData(sheetIdList)
       .then((dataList)=>{
         dataList.forEach((d)=>{
-          this.rawData[d.sheetId] = d.data;
+          if(d) {
+            this.rawData[d.sheetId] = d.data;
+          }
         });
         this.initializeTimeMarkers();
         this.initializeLabels();
@@ -313,8 +326,9 @@ class VisTLData {
           isLevel0Group: true,
           nestedGroups: [],
           showNested: true,
+          hidden: g.hidden,
+          visible: !g.hidden
         };
-        this.visGroups.add(grp);
 
         let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, 'label', g.label));
         console.log(`initializeProjectGroups: label: ${this.getResourceId(sheetId, 'label', g.label)} ${JSON.stringify(l)}`);
@@ -323,6 +337,8 @@ class VisTLData {
           this.visGroupsByLabel.add(grp);
           l.nestedGroups.push(grp.id);
         }
+
+        this.visGroups.add(grp);
       });
     });
   }
@@ -344,13 +360,14 @@ class VisTLData {
           index: i,
           color: !!p['color'] ? p.color : g ? g.color : 'black',
           showNested: true,
+          orgHidden: p.hidden,
         };
-        this.visGroups.add(prj);
-        this.visGroupsByLabel.add(prj);
 
         if(g) {
-          prj.projectGroupName = g ? g.name : null;
-          prj.projectGroup = g ? g.id : null;
+          prj.projectGroupName = g.name;
+          prj.projectGroup = g.id;
+          prj.hidden = prj.orgHidden || g.hidden;
+          prj.visible = !prj.hidden;
           g.nestedGroups.push(prj.id)
         }
 
@@ -359,6 +376,9 @@ class VisTLData {
         if(l) {
           l.nestedGroups.push(prj.id);
         }
+
+        this.visGroups.add(prj);
+        this.visGroupsByLabel.add(prj);
       });
     });
   }
@@ -426,9 +446,9 @@ class RPCClient {
           })
           .withFailureHandler((error) => {
             alert("データ取得に失敗しました: " + error);
-            reject();
+            resolve(null);
           })
-          .rpc('getAllData', null, sheetId);
+          .rpc('getAllData', JSON.stringify({sheetId: sheetId}));
       });
     });
     return Promise.all(promises);
@@ -438,6 +458,7 @@ class RPCClient {
     let gs = this.gs;
     return new Promise((resolve, reject) => {
       var scheduleJson = JSON.stringify({
+        sheetId: schedule.sheetId,
         id: schedule.orgId,
         type: schedule.type,
         content: schedule.content,
