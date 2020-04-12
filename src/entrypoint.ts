@@ -4,12 +4,20 @@ import * as moment from 'moment';
 function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   let params = e.parameters;
   Logger.log(`doGet: params: ${params}`)
-  let template = HtmlService.createTemplateFromFile("index");
-  let selfId = SpreadsheetApp.getActive().getId();
-  let sheetIdList = params['sheet'] || [];
-  if(sheetIdList.indexOf(selfId) === -1) {
-    sheetIdList.push(selfId);
+
+  let title = params['title'] || 'Project Roadmap';
+  let sheetIdList: Array<string> = params['sheet'] || [];
+
+  if(sheetIdList.length < 1) {
+    let template = HtmlService.createTemplateFromFile("index");
+    template.url = ScriptApp.getService().getUrl();
+    template.title = title;
+    let output = template.evaluate();
+    output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return output;
   }
+
+  let template = HtmlService.createTemplateFromFile("project_timeline.html");
   let sheetList = sheetIdList.map((id)=>{
     let sheet = SpreadsheetApp.openById(id);
     return {
@@ -17,18 +25,19 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
       name: sheet.getName(),
       url: sheet.getUrl()
     }
-  })
+  });
+  template.title = title;
   template.sheetList = JSON.stringify(sheetList);
-  return template.evaluate();
+  let output = template.evaluate();
+  output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  return output;
 }
 
 function onEdit(event: any) {
   let app = initApp(null);
   app.onEdit(event);
 }
-
-function resetTriggers() {
-  let triggers = ScriptApp.getProjectTriggers();
+function resetTriggers() { let triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
@@ -40,8 +49,8 @@ function resetTriggers() {
     .create();
 }
 
-function rpc(functionName: string, paramJson: string, spreadSheetId: string) {
-  return new RPCHandler(functionName, paramJson, spreadSheetId).handle();
+function rpc(functionName: string, paramJson: string) {
+  return new RPCHandler(functionName, paramJson).handle();
 }
 
 class RPCHandler {
@@ -109,5 +118,15 @@ class RPCHandler {
 
     Logger.log(`updateSchedule: try record.save`);
     record.save();
+  }
+
+  private addSchedule(schedule: Object) {
+    Logger.log(`addSchedule: schedule`);
+    let sheetId = schedule['sheetId'];
+    if(!!sheetId) {
+      new Error('sheetId is null');
+    }
+    let app = initApp(sheetId);
+    return app.addSchedule(schedule);
   }
 }

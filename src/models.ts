@@ -96,7 +96,22 @@ export class Table {
     this.primaryKeyColumnNumber = index + 1;
   }
 
-  public newRecordWithRowNumber(rowNumber: number) {
+  public addRecord(recordData: Object): TableRecord {
+    let lck = LockService.getScriptLock();
+    if(lck.tryLock(10000)) {
+      let lastRowNumber = this.getLastRowNumber();
+      Logger.log(`addRecord: lastRowNumber: ${lastRowNumber}`);
+      this.sheetObj.insertRowAfter(lastRowNumber);
+      let range = this.sheetObj.getRange(lastRowNumber + 1, 0, 1, this.headers.length);
+      let values = this.headers.map((h)=>{ return recordData[h] });
+      Logger.log(`addRecord: values: ${JSON.stringify(values)}`);
+      range.setValues([values]);
+    } else {
+      new Error('faild to get script lock');
+    }
+  }
+
+  public findRecordWithRowNumber(rowNumber: number) {
     let range = this.sheetObj.getRange(rowNumber, 1, 1, this.headers.length);
     return new TableRecord(this, range);
   }

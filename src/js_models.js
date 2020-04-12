@@ -1,4 +1,3 @@
-<script>
 class VisTL {
   constructor(rpcClient, visTLData) {
     this.rpcClient = rpcClient;
@@ -9,8 +8,8 @@ class VisTL {
   create(container) {
     this.visTL = new vis.Timeline(
       container,
-      visTLData.visItems,
-      visTLData.visGroups,
+      this.visTLData.visItems,
+      this.visTLData.visGroups,
       this.getVisTLOption()
     );
 
@@ -71,6 +70,17 @@ class VisTL {
     this.visTL.redraw();
   }
 
+  addSchedule(schedule) {
+    console.log(`VisTL addSchedule: ${JSON.stringify(schedule)}`);
+    this.rpcClient.addSchedule(schedule).then((scheduleHasId)=>{
+        this.visTLData.visItems.add([scheduleHasId]);
+      });
+  }
+
+  editSchedule() {
+    console.log('edit schedule');
+  }
+
   getVisTLOption() {
     // https://visjs.github.io/vis-timeline/docs/timeline/#Configuration_Options
     return {
@@ -87,11 +97,8 @@ class VisTL {
       template: this.getItemTemplateFunc(),
       groupTemplate: this.getGroupTemplateFunc(),
       snap: function(date, scale, step) {
-        if (scale === "month") {
-          date.setHours(0); date.setMinutes(0); date.setSeconds(0);
-          return date;
-        }
-        return 1;
+        date.setHours(0); date.setMinutes(0); date.setSeconds(0);
+        return date;
       },
       editable: {
         add: false,
@@ -135,23 +142,23 @@ class VisTL {
   getGroupTemplateFunc() {
     let defaulTemplate = Handlebars.compile(`
       <div>
-        <p>
+        <p style="font-weight: 600">
           {{name}}
           {{#if sheetName}}
-            (<a href="{{sheetUrl}}" target="_blank">{{sheetName}}<a>)
+            <a class="badge badge-light" href="{{sheetUrl}}" target="_blank">{{sheetName}}<a>
           {{/if}}
-          <button data-group="{{id}}" class="btn btn-hide"><i class="fa fa-eye-slash"></i></button>
+          <button data-group="{{id}}" class="mybtn mybtn-hide"><i class="fa fa-eye-slash"></i></button>
         </p>
       </div>
     `);
     let nestedGroupTemplate = Handlebars.compile(`
       <div style="color: {{color}}">
-        <p>
+        <p style="font-weight: 500">
           {{name}}
           {{#if label}}
-            <span>[{{label}}]<span>
+          <span class="badge badge-secondary">{{label}}</span>
           {{/if}}
-          <button data-group="{{id}}" class="btn btn-hide"><i class="fa fa-eye-slash"></i></button>
+          <button data-group="{{id}}" class="mybtn mybtn-hide"><i class="fa fa-eye-slash"></i></button>
         </p>
       </div>
     `);
@@ -296,6 +303,7 @@ class VisTLData {
           index: i,
           color: color,
           isLevel0Group: true,
+          isLabel: true,
           nestedGroups: [],
           showNested: true,
         });
@@ -324,6 +332,7 @@ class VisTLData {
           color: color,
           label: g.label,
           isLevel0Group: true,
+          isProjectGroup: true,
           nestedGroups: [],
           showNested: true,
           hidden: g.hidden,
@@ -360,6 +369,7 @@ class VisTLData {
           index: i,
           color: !!p['color'] ? p.color : g ? g.color : 'black',
           showNested: true,
+          isProject: true,
           orgHidden: p.hidden,
         };
 
@@ -479,6 +489,27 @@ class RPCClient {
         .rpc('updateSchedule', scheduleJson);
     });
   }
-}
 
-</script>
+  addSchedule(schedule) {
+    let gs = this.gs;
+    return new Promise((resolve, reject) => {
+      var scheduleJson = JSON.stringify({
+        sheetId: schedule.sheetId,
+        type: schedule.type,
+        name: schedule.name,
+        project: schedule.project,
+        projectGroup: schedule.projectGroup
+      });
+      gs.run
+        .withSuccessHandler(() => {
+          console.log("create sucessfully");
+          resolve();
+        })
+        .withFailureHandler((error) => {
+          console.log(`failed to create: error: ${error}`);
+          reject();
+        })
+        .rpc('addSchedule', scheduleJson);
+    });
+  }
+}

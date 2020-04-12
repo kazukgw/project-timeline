@@ -1,30 +1,10 @@
 import { Config } from "./config";
 import { Table } from "./models";
 
-const _org_log = Logger.log;
-function initDebugLogger() {
-  // @ts-ignore
-  Logger.log = function(message: any) {
-    _org_log(message);
-    LOG_SHEET.appendRow([
-      new Date(),
-      Session.getActiveUser().getEmail(),
-      message
-    ]);
-    let delteNum: number = LOG_SHEET.getMaxRows() - LOG_MAX_ROWS;
-    if (delteNum > 0) {
-      LOG_SHEET.deleteRows(2, delteNum);
-    }
-  };
-}
-
 const CONFIG_SHEET = 'Config';
 const CONFIG_CELL = 'A3';
 
 export function initApp(spreadSheetId: string): App {
-  if (DEBUG) {
-    initDebugLogger();
-  }
   Logger.log(`Init App`);
   let config = new Config(spreadSheetId, CONFIG_SHEET, CONFIG_CELL);
   let app = new App(config);
@@ -87,7 +67,7 @@ export class App {
     if (table.sheetName === this.scheduleTable.sheetName) {
       let editedColName = table.headers[range.getColumn() - 1];
       if (editedColName === "name") {
-        let record = table.newRecordWithRowNumber(range.getRow());
+        let record = table.findRecordWithRowNumber(range.getRow());
         if (record.hasPrimaryKey()) {
           return;
         }
@@ -95,6 +75,14 @@ export class App {
         record.save();
       }
     }
+  }
+
+  public addSchedule(schedule: Object) {
+    schedule['id'] = Utilities.getUuid();
+    schedule['start'] = moment().format('YYYY/MM/DD');
+    schedule['end'] = moment().add(1, 'month').format('YYYY/MM/DD');
+    this.scheduleTable.addRecord(schedule);
+    return schedule;
   }
 
   private getTableFromRange(

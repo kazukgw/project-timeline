@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><?= title ?></title>
+    <?!= includeHtml('assets') ?>
+    <?!= includeHtml('css') ?>
+  </head>
+  <body>
+    <div id="main-container" class="container-fluid">
+      <nav id="header" class="navbar fixed-top">
+        <?= title ?>
+      </nav>
+      <nav id="button-bar" class="navbar fixed-top justify-content-start">
+        <button id="mybtn-restore-hidden" class="mybtn">
+          Restore Hidden Projects
+        </button>
+        <span class="mybtn-separator"> | </span>
+        <button id="mybtn-group-by-projectgroup" class="mybtn">
+          Group By ProjectGroup
+        </button>
+        <span class="mybtn-separator"> | </span>
+        <button id="mybtn-group-by-label" class="mybtn">
+          Group By Label
+        </button>
+        <span class="mybtn-separator"> | </span>
+        <button id="mybtn-add-schedule" class="mybtn">
+          Add Schedule
+        </button>
+        <span class="mybtn-separator"> | </span>
+        <button id="mybtn-edit-schedule" class="mybtn">
+          Edit Schedule
+        </button>
+      </nav>
+      <div id="vistl-container"></div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="modal-add-schedule"
+      data-backdrop="static"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Schedule</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div> <div class="modal-body"> <form id="form-add-schedule">
+              <div class="form-group">
+                <label for="form-add-schedule-project">Project</label>
+                <br />
+                <select
+                  id="form-add-schedule-project"
+                  class="form-control"
+                  name="project"
+                >
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-add-schedule-title">Title</label>
+                <input
+                  type="text"
+                  id="form-add-schedule-title"
+                  class="form-control"
+                  name="title"
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              id="form-add-schedule-button-add"
+              type="button"
+              class="btn btn-primary"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="application/json" id="data-sheet-list">
+      <?!= sheetList ?>
+    </script>
+    <?!= includeHtml('js_assets') ?>
+    <script>
+      <?!= includeHtml('js_models') ?>
+    </script>
+    <script>
+      <?!= includeHtml('js_ui') ?>
+    </script>
+    <script>
+      <?!= includeHtml('js') ?>
+    </script>
+  </body>
+</html>
