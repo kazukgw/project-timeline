@@ -358,6 +358,10 @@ class VisTLData {
     Object.entries(this.rawData).forEach(([sheetId, data])=>{
       data['projects'].forEach((p, i) =>{
         let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', p.projectGroup));
+        var color = !!p['color'] ? p.color : g ? g.color : 'black';
+        if(color === 'white') {
+          color = 'black';
+        }
         let prj = {
           id: this.getResourceId(sheetId, 'project', p.name),
           name: p.name,
@@ -366,7 +370,7 @@ class VisTLData {
           sheetUrl: this.sheets[sheetId].url,
           label: p.label,
           index: i,
-          color: !!p['color'] ? p.color : g ? g.color : 'black',
+          color: color,
           showNested: true,
           isProject: true,
           orgHidden: p.hidden,
@@ -405,7 +409,10 @@ class VisTLData {
         let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', s.projectGroup));
         let p = this.visGroups.get(this.getResourceId(sheetId, 'project', s.project));
         let parentObj = p || g;
-        let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
+        var color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
+        if(color === 'white') {
+          color = 'black';
+        }
         let sched = {
           id: this.getResourceId(sheetId, 'schedule', s.id),
           orgId: s.id,
