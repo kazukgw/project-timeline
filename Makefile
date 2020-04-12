@@ -8,6 +8,7 @@ login: ## clasp login
 push: ## clasp push
 	cp src/*.html dist/
 	cp src/*.ts dist/
+	cp src/moment.min.js dist/
 	cp src/js.js dist/js.html
 	cp src/js_models.js dist/js_models.html
 	cp src/js_ui.js dist/js_ui.html
