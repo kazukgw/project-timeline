@@ -1,6 +1,8 @@
 # Project Timeline Visualizer
 
-SpreadSheet の情報をもとに Project の Timeline を可視化するツール
+A tool to visualize project timelines based on the information defined in Google SpreadSheet.
+
+It's written in Google Apps Script.
 
 ![screen-shot](https://raw.githubusercontent.com/kazukgw/project-timeline/master/screenshot_01.png)
 
@@ -13,10 +15,10 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
 - [ ] vis-timeline の option をシートから指定できるように
 - [ ] filter
 - [x] query parameter に sheet id で 指定して読みだせるように
-- [ ] Schedule の Insert/Update 時はロックをかける
+- [x] Schedule の Insert/Update 時はロックをかける
 - [x] Label 絡むの追加とグルーピング
 - [x] Template Engine or React によるレンダリング
-- [ ] record の追加機能
+- [x] record の追加機能
   - button click → dialog → insert
 - [x] ~~position: fixed → stick~~
 - [x] range 変更時は range の style 変更 (border を dashed にするとか)
@@ -28,5 +30,5 @@ SpreadSheet の情報をもとに Project の Timeline を可視化するツー�
   - コードがスリムになる
   - 柔軟に設定できるようになる
 - [x] Supports parallel data acquisition from the client.
-- [] spreadsheet bounded な script とから unbounded script に変更する
+- [x] spreadsheet bounded な script とから unbounded script に変更する
 - [ ] GAS ベースの CMS 構想考える
