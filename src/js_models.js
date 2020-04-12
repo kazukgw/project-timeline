@@ -12,13 +12,6 @@ class VisTL {
       this.visTLData.visGroups,
       this.getVisTLOption()
     );
-
-    console.log('add custom timemarkers');
-    this.visTLData.timeMarkers.forEach((t)=>{
-      console.dir(t);
-      this.visTL.addCustomTime(t.date, t.id);
-      // this.visTL.setCustomTimeMarker(t.name, t.id, false);
-    });
   }
 
   filterGroup() {
@@ -71,14 +64,40 @@ class VisTL {
   }
 
   addSchedule(schedule) {
-    console.log(`VisTL addSchedule: ${JSON.stringify(schedule)}`);
-    this.rpcClient.addSchedule(schedule).then((scheduleHasId)=>{
-        this.visTLData.visItems.add([scheduleHasId]);
+    return this.rpcClient.addSchedule(schedule).then((scheduleHasId)=>{
+        let s = scheduleHasId;
+        let g = this.visTLData.visGroups.get(this.visTLData.getResourceId(s.sheetId, 'projectGroup', s.projectGroup));
+        let p = this.visTLData.visGroups.get(this.visTLData.getResourceId(s.sheetId, 'project', s.project));
+        let parentObj = p || g;
+        let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
+        let sched = {
+          id: this.visTLData.getResourceId(s.sheetId, 'schedule', s.id),
+          orgId: s.id,
+          name: s.name,
+          sheetId: s.sheetId,
+          sheetName: this.visTLData.sheets[s.sheetId].name,
+          sheetUrl: this.visTLData.sheets[s.sheetId].url,
+          project: s.project,
+          projectGroup: s.projectGroup,
+          group: parentObj ? parentObj.id : null,
+          index: this.visTLData.visItems.length + 1,
+          link: null,
+          color: color,
+          type: s.type,
+          start: s.start,
+          end: s.end,
+          editable: {
+            add: false,
+            updateTime: true,
+            updateGroup: false,
+            remove: false,
+            overrideItems: false
+          }
+        };
+        console.log(`visTL addSchedule: scheduleHasId: ${JSON.stringify(sched)}`);
+        this.visTLData.visItems.add(sched);
+        this.visTL.setItems(this.visTLData.visItems);
       });
-  }
-
-  editSchedule() {
-    console.log('edit schedule');
   }
 
   getVisTLOption() {
@@ -217,7 +236,6 @@ class VisTLData {
     this.rawData = {};
     this.sheets = {};
 
-    this.timeMarkers = new vis.DataSet();
     this.visItems = new vis.DataSet();
     this.visGroups = new vis.DataSet();
     this.visGroupsByLabel = new vis.DataSet();
@@ -259,7 +277,6 @@ class VisTLData {
             this.rawData[d.sheetId] = d.data;
           }
         });
-        this.initializeTimeMarkers();
         this.initializeLabels();
         this.initializeProjectGroups();
         this.initializeProject();
@@ -268,24 +285,6 @@ class VisTLData {
         console.log(`initializeData: group count: ${this.visGroups.length}`);
         return this;
       });
-  }
-
-  initializeTimeMarkers() {
-    Object.entries(this.rawData).forEach(([sheetId, data])=>{
-      data['timeMarkers'].forEach((t, i) =>{
-        if(!t['name'] || t['hidden']) {
-          return;
-        }
-        this.timeMarkers.add({
-          id: this.getResourceId(sheetId, 'timeMarker', t.name),
-          name: t.name,
-          sheetId: sheetId,
-          sheetName: this.sheets[sheetId].name,
-          index: i,
-          date: moment.tz(t.date.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
-        });
-      });
-    });
   }
 
   initializeLabels() {
@@ -498,12 +497,14 @@ class RPCClient {
         type: schedule.type,
         name: schedule.name,
         project: schedule.project,
-        projectGroup: schedule.projectGroup
+        projectGroup: schedule.projectGroup,
+        editable: true,
       });
       gs.run
-        .withSuccessHandler(() => {
-          console.log("create sucessfully");
-          resolve();
+        .withSuccessHandler((scheduleHasId) => {
+          console.log("addSchedule: create sucessfully");
+          console.log(`addSchedule: ${scheduleHasId}`);
+          resolve(JSON.parse(scheduleHasId));
         })
         .withFailureHandler((error) => {
           console.log(`failed to create: error: ${error}`);

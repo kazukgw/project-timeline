@@ -2,14 +2,99 @@
 <html>
   <head>
     <title><?= title ?></title>
+    <?!= includeHtml('assets') ?>
     <?!= includeHtml('css') ?>
   </head>
   <body>
     <div id="main-container" class="container-fluid">
-      <nav id="header" class="navbar fixed-top navbar-light">
+      <nav id="header" class="navbar fixed-top">
         <?= title ?>
       </nav>
-      <a target="_blank" href="<?!= url ?>?sheet=10-_rrYg-2ouVkHRAYoPfmugd3kh1WrU3ZroyS4NP2aI">Show Project Roadmap</a>
+      <nav id="button-bar" class="navbar fixed-top justify-content-start"></nav>
+      <div id="vistl-container">
+        <div class="row justify-content-md-center">
+          <form id="form-sheet-list">
+            <div class="form-group">
+              <label>Sheet List </label><br>
+              <a target="_blank" href="<?!= sheetListSheetURL ?>" style="color: dodgerblue"> <?= sheetListSheetName ?></a>
+            </div>
+            <div class="form-group">
+              <label for="form-pageurl">Page URL</label>
+              <input id="form-pageurl" class="form-control" type="text" value="https://script.google.com/xxx" readonly>
+            </div>
+            <div class="form-group">
+              <label for="form-title">Page Title</label>
+              <input
+                type="text"
+                id="form-title"
+                class="form-control"
+                name="pageTitle"
+              />
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <!--
+                    <input class="form-check-input" type="checkbox" value="" id="form-sheet-list-all">
+                    <label class="form-check-label" for="form-sheet-list-all"></label>
+                    -->
+                  </th>
+                  <th scope="col">Name</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">Link</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </form>
+        </div>
+      </div>
     </div>
+    <script type="application/json" id="data-sheet-list">
+      <?!= sheetList ?>
+    </script>
+    <script type="application/json" id="script-webapp-url">
+      <?!= scriptWebAppUrl ?>
+    </script>
+    <?!= includeHtml('js_assets') ?>
+    <script>
+      $(()=>{
+        let scriptWebAppUrl = JSON.parse($('#script-webapp-url').text())['url'];
+        $('#form-pageurl').val(scriptWebAppUrl);
+        let $form = $('#form-sheet-list');
+        let $tbody = $form.find('tbody');
+        let $formTitle = $('#form-title');
+        let checkboxTemplate = Handlebars.compile(`
+            <tr>
+              <th scope="row">
+                <input class="form-check-input" type="checkbox" value="{{id}}" id="form-sheet-list-{{index}}">
+              </th>
+              <td>{{name}}</td>
+              <td>{{id}}</td>
+              <td><a target="_blank" href="{{url}}">link</a></td>
+            </tr>
+        `);
+        let sheets = JSON.parse($('#data-sheet-list').text());
+        sheets.forEach((s, i)=>{
+          s.index = i;
+          $tbody.append($(checkboxTemplate(s)));
+        });
+
+        $(document).on('change', '#form-sheet-list', (ev)=>{
+          let idList = [];
+          $checked = $form.find('[type=checkbox]:checked');
+          $checked.each((i, el)=>{
+            idList.push($(el).val());
+          });
+          var url = scriptWebAppUrl + '?sheet=' + idList.join("&sheet=");
+          if(!!$formTitle.val()) {
+            url = url + '&title=' + $formTitle.val();
+          }
+          $('#form-pageurl').val(url);
+        });
+      });
+    </script>
   </body>
 </html>

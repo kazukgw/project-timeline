@@ -102,7 +102,7 @@ export class Table {
       let lastRowNumber = this.getLastRowNumber();
       Logger.log(`addRecord: lastRowNumber: ${lastRowNumber}`);
       this.sheetObj.insertRowAfter(lastRowNumber);
-      let range = this.sheetObj.getRange(lastRowNumber + 1, 0, 1, this.headers.length);
+      let range = this.sheetObj.getRange(lastRowNumber + 1, 1, 1, this.headers.length);
       let values = this.headers.map((h)=>{ return recordData[h] });
       Logger.log(`addRecord: values: ${JSON.stringify(values)}`);
       range.setValues([values]);
@@ -150,7 +150,15 @@ export class Table {
     Logger.log(
       `getLastRecordRowNumber: range.getLastRow: ${range.getLastRow()}`
     );
-    return range.getLastRow() + this.recordRangeFirstRowNumber - 1;
+    var lastRowNumber: number = this.recordRangeFirstRowNumber;
+    range.getValues().forEach((v, i)=>{
+      if(!!v[0]) {
+        lastRowNumber = (this.recordRangeFirstRowNumber * 1) + i;
+      }
+      Logger.log(`getLastRowNumber: lastRowNumber: ${lastRowNumber}`)
+    });
+    return lastRowNumber;
+    // return (range.getLastRow() * 1) + (this.recordRangeFirstRowNumber * 1) - 1;
   }
 
   private getAllRecordRange(): GoogleAppsScript.Spreadsheet.Range {

@@ -1,9 +1,6 @@
 import { Config } from "./config";
 import { Table } from "./models";
 
-const CONFIG_SHEET = 'Config';
-const CONFIG_CELL = 'A3';
-
 export function initApp(spreadSheetId: string): App {
   Logger.log(`Init App`);
   let config = new Config(spreadSheetId, CONFIG_SHEET, CONFIG_CELL);
@@ -18,7 +15,6 @@ export class App {
   readonly spreadSheetId: string;
   readonly spreadSheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
 
-  readonly timeMarkerTable: Table;
   readonly labelTable: Table;
   readonly projectGroupTable: Table;
   readonly projectTable: Table;
@@ -27,11 +23,8 @@ export class App {
   constructor(config: Config) {
     this.config = config;
     this.spreadSheetId = this.config.spreadSheetId;
+    this.spreadSheet = SpreadsheetApp.openById(this.config.spreadSheetId);
 
-    this.timeMarkerTable = new Table(
-      this.spreadSheetId,
-      this.config.tableConfigs['timeMarkers']
-    );
     this.labelTable = new Table(
       this.spreadSheetId,
       this.config.tableConfigs['labels']
@@ -100,5 +93,33 @@ export class App {
         return this.scheduleTable;
     }
     return null;
+  }
+}
+
+export function initSheetListApp(spreadSheetId: string): App {
+  Logger.log(`Init SheetListApp`);
+  let config = new Config(spreadSheetId, CONFIG_SHEET, CONFIG_CELL);
+  let app = new SheetListApp(config);
+
+  Logger.log(`Init App successfully`);
+  return app;
+}
+
+export class SheetListApp {
+  readonly config: Config;
+  readonly spreadSheetId: string;
+  readonly spreadSheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
+
+  readonly sheetTable: Table;
+
+  constructor(config: Config) {
+    this.config = config;
+    this.spreadSheetId = this.config.spreadSheetId;
+    this.spreadSheet = SpreadsheetApp.openById(this.config.spreadSheetId);
+
+    this.sheetTable = new Table(
+      this.spreadSheetId,
+      this.config.tableConfigs['sheets']
+    );
   }
 }

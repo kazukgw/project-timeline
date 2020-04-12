@@ -32,15 +32,8 @@ export class Config {
       new Error('config must has tables');
     }
 
-    this.tableConfigs = {
-      timeMarkers: null,
-      labels: null,
-      projectGroups: null,
-      projects: null,
-      schedules: null
-    };
-
-    Object.keys(this.tableConfigs).forEach((k)=>{
+    this.tableConfigs = {};
+    Object.keys(tables).forEach((k)=>{
       let t = tables[k];
       this.tableConfigs[k] = new TableConfig(
         t['sheetName'],

@@ -3,15 +3,28 @@ import * as moment from 'moment';
 
 function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   let params = e.parameters;
-  Logger.log(`doGet: params: ${params}`)
+  Logger.log(`doGet: params: ${JSON.stringify(params)}`);
 
   let title = params['title'] || 'Project Roadmap';
   let sheetIdList: Array<string> = params['sheet'] || [];
 
   if(sheetIdList.length < 1) {
     let template = HtmlService.createTemplateFromFile("index");
-    template.url = ScriptApp.getService().getUrl();
     template.title = title;
+    let app:SheetListApp = initSheetListApp(SHEET_LIST_SHEET_ID);
+    let sheetData = app.sheetTable.getAllRecordData();
+    let sheetList = sheetData.map((s)=>{
+      let sheet = SpreadsheetApp.openById(s.id);
+      return {
+        id: s.id,
+        name: sheet.getName(),
+        url: sheet.getUrl()
+      }
+    });
+    template.scriptWebAppUrl = JSON.stringify({url: ScriptApp.getService().getUrl()});
+    template.sheetList = JSON.stringify(sheetList);
+    template.sheetListSheetName = app.spreadSheet.getName();
+    template.sheetListSheetURL = app.spreadSheet.getUrl();
     let output = template.evaluate();
     output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     return output;
@@ -82,7 +95,6 @@ class RPCHandler {
     let app = initApp(sheetId);
 
     return {
-      timeMarkers: app.timeMarkerTable.getAllRecordData(),
       labels: app.labelTable.getAllRecordData(),
       projectGroups: app.projectGroupTable.getAllRecordData(),
       projects: app.projectTable.getAllRecordData(),

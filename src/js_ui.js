@@ -19,17 +19,12 @@ class UI {
     });
 
     $('#mybtn-add-schedule').on('click', ()=>{
-      this.visTL.addSchedule();
       this.uiAddScheduleModal.show();
-    });
-
-    $('#mybtn-edit-schedule').on('click', ()=>{
-      this.visTL.editSchedule();
     });
 
     $(document).on('click', '.mybtn-hide', (e)=>{
       let id = $(e.currentTarget).data('group');
-      visTL.hideGroup(id);
+      this.visTL.hideGroup(id);
     });
   }
 }
@@ -41,6 +36,7 @@ class UIAddScheduleModal {
 
     this.$form = $('#form-add-schedule');
     this.$projectSelect = this.$el.find('#form-add-schedule-project');
+    this.$typeSelect = this.$el.find('#form-add-schedule-type');
     this.$titleInput = this.$el.find('#form-add-schedule-title');
     this.$addButton = this.$el.find('#form-add-schedule-button-add');
 
@@ -48,29 +44,29 @@ class UIAddScheduleModal {
 
     this.$addButton.on('click', ()=>{
       let values = this.$form.serializeArray();
-      var scheduleData = {};
-      values.forEach((v)=>{
-        if(v['name'] === 'project') {
-          let p = this.visTL.visTLData.visGroups.get(v['value']);
-          scheduleData.group = p.id;
-          scheduleData.sheetId = p.sheetId;
-          scheduleData.sheetName = p.sheetName;
-          scheduleData.projectGroup = p.projectGroupName;
-          scheduleData.project = p.name;
-          scheduleData.type = 'range';
-        }
-        if(v['name'] === 'title') {
-          scheduleData['name'] = v['value'];
-        }
+      let p = this.visTL.visTLData.visGroups.get(this.$projectSelect.val());
+      let scheduleData = {
+        group: p.id,
+        sheetId: p.sheetId,
+        sheetName: p.sheetName,
+        projectGroup: p.projectGroupName,
+        project: p.name,
+        type: this.$typeSelect.val(),
+        name: this.$titleInput.val().trim(),
+      };
+      this.$addButton.prop('disabled', true);
+      this.$addButton.text('Please wait ... ');
+      this.visTL.addSchedule(scheduleData).then(()=>{
+        this.hide();
       });
-      console.log('-------- scheduleData --------');
-      console.dir(scheduleData);
-      this.visTL.addSchedule(scheduleData);
     });
   }
 
+  hide() {
+    this.$el.modal('hide')
+  }
+
   show() {
-    this.$el.modal('show');
     this.visTL.visTLData.visGroups.get().forEach((p)=>{
       if(!p['isProject']) {
         return;
@@ -80,6 +76,9 @@ class UIAddScheduleModal {
         text: `${p.sheetName} / ${p['projectGroupName'] || '<none>'} / ${p.name}`
       });
       this.$projectSelect.append($option);
+      this.$addButton.text('Add');
+      this.$addButton.prop('disabled', false);
     });
+    this.$el.modal('show');
   }
 }
