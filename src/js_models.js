@@ -111,8 +111,14 @@ class VisTL {
       horizontalScroll: true,
       zoomMax: 100000000000,
       zoomMin: 1000000000,
-      tooltip: { template: this.getTooltipTemplateFunc() },
-      tooltipOnItemUpdateTime: true,
+      tooltip: {
+        overflowMethod: 'cap',
+        delay: 100,
+        template: this.getTooltipTemplateFunc()
+      },
+      tooltipOnItemUpdateTime: {
+        template: this.getTooltipTemplateFunc()
+      },
       template: this.getItemTemplateFunc(),
       groupTemplate: this.getGroupTemplateFunc(),
       snap: function(date, scale, step) {
@@ -210,13 +216,30 @@ class VisTL {
   }
 
   getTooltipTemplateFunc() {
+    let pointTemplate = Handlebars.compile(`
+      <p style="font-weight: 500"> {{name}} </p>
+      <span> 開始: {{start}} </span>
+    `);
+    let rangeTemplate = Handlebars.compile(`
+      <p style="font-weight: 500"> {{name}} </p>
+      <span> 開始: {{start}} </span><br>
+      <span> 終了: {{end}} </span><br>
+      <span> 期間: {{duration}}日 </span>
+    `);
     return function (item, element, data) {
+      let d = {
+        name: item.name,
+        start: moment(item.start).format("YYYY/MM/DD"),
+        end: moment(item.end).format("YYYY/MM/DD")
+      };
+      if(item.end) {
+        d.duration = Math.floor(moment.duration(moment(item.end).diff(moment(item.start))).asDays());
+      }
       switch(item.type) {
         case "point":
-          return `<p>開始: ${moment(item.start).format("YYYY/MM/DD")} </p>`;
+          return pointTemplate(d);
         case "range":
-          return `<p> 開始: ${moment(item.start).format("YYYY/MM/DD")} </p>
-                    <p> 終了: ${moment(item.end).format("YYYY/MM/DD")} </p>`;
+          return rangeTemplate(d);
       }
     }
   }
