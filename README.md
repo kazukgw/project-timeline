@@ -28,6 +28,7 @@ It's written in Google Apps Script.
   - 柔軟に設定できるようになる
 - [x] Supports parallel data acquisition from the client.
 - [x] spreadsheet bounded な script とから unbounded script に変更する
+- [ ] Add a link to the Group's Content.
 - [ ] Allow the setting of Hidden to be specified with a query parameter
 - [ ] Enriching the tooltip display content
 - [ ] filter

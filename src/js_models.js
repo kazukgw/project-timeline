@@ -162,7 +162,12 @@ class VisTL {
     let defaulTemplate = Handlebars.compile(`
       <div>
         <p style="font-weight: 600">
-          {{name}}
+          {{#if link}}
+            <a href="{{link}}" target="_blank">{{name}}</a>
+          {{else}}
+            {{name}}
+          {{/if}}
+
           {{#if sheetName}}
             <a class="badge badge-light" href="{{sheetUrl}}" target="_blank">{{sheetName}}<a>
           {{/if}}
@@ -173,9 +178,14 @@ class VisTL {
     let nestedGroupTemplate = Handlebars.compile(`
       <div style="color: {{color}}">
         <p style="font-weight: 500">
-          {{name}}
+          {{#if link}}
+            <a href="{{link}}" target="_blank">{{name}}</a>
+          {{else}}
+            {{name}}
+          {{/if}}
+
           {{#if label}}
-          <span class="badge badge-secondary">{{label}}</span>
+            <span class="badge badge-secondary">{{label}}</span>
           {{/if}}
           <button data-group="{{id}}" class="mybtn mybtn-hide"><i class="fa fa-eye-slash"></i></button>
         </p>
@@ -189,6 +199,7 @@ class VisTL {
         label: group['label'],
         sheetName: group.sheetName,
         sheetUrl: group.sheetUrl,
+        link: group.link,
       };
       if(group['isLevel0Group']) {
         $(element).closest('.vis-label').css('background-color', group.color);
@@ -232,9 +243,7 @@ class VisTL {
 
 class VisTLData {
   constructor(rpcClient) {
-    this.rpcClient = rpcClient;
-    this.rawData = {};
-    this.sheets = {};
+    this.rpcClient = rpcClient; this.rawData = {}; this.sheets = {};
 
     this.visItems = new vis.DataSet();
     this.visGroups = new vis.DataSet();
@@ -330,6 +339,7 @@ class VisTLData {
           index: i,
           color: color,
           label: g.label,
+          link: g.link,
           isLevel0Group: true,
           isProjectGroup: true,
           nestedGroups: [],
@@ -374,6 +384,8 @@ class VisTLData {
           showNested: true,
           isProject: true,
           orgHidden: p.hidden,
+          hidden: p.hidden,
+          link: p.link,
         };
 
         if(g) {
@@ -426,13 +438,16 @@ class VisTLData {
           index: i,
           link: s.link,
           color: color,
+          hidden: s.hidden,
           type: !!s.type ? s.type : 'range',
           start: moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
           end: (!!s['end'])
             ? moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC")
             : null,
         };
-        this.visItems.add(sched);
+        if(!sched.hidden) {
+          this.visItems.add(sched);
+        }
       });
     });
   }
