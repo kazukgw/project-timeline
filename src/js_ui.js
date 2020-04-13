@@ -3,15 +3,13 @@ class UI {
     this.visTL = visTL;
 
     this.uiAddScheduleModal = new UIAddScheduleModal(visTL);
-  }
-
-  init() {
+  } init() {
     $('#mybtn-group-by-projectgroup').on('click', ()=>{
-      this.visTL.groupByProjectGroup();
+      this.visTL.resetData();
     });
 
     $('#mybtn-group-by-label').on('click', ()=>{
-      this.visTL.groupByLabel();
+      this.visTL.resetDataWithLabel();
     });
 
     $('#mybtn-restore-hidden').on('click', ()=>{
@@ -44,7 +42,7 @@ class UIAddScheduleModal {
 
     this.$addButton.on('click', ()=>{
       let values = this.$form.serializeArray();
-      let p = this.visTL.visTLData.visGroups.get(this.$projectSelect.val());
+      let p = this.visTL.visTLData.getVisibleVisData().visGroups.get(this.$projectSelect.val());
       let scheduleData = {
         group: p.id,
         sheetId: p.sheetId,
@@ -67,7 +65,8 @@ class UIAddScheduleModal {
   }
 
   show() {
-    this.visTL.visTLData.visGroups.get().forEach((p)=>{
+    let visData = this.visTL.visTLData.getVisibleVisData();
+    visData.visGroups.get().forEach((p)=>{
       if(!p['isProject']) {
         return;
       }

@@ -3,13 +3,15 @@ class VisTL {
     this.rpcClient = rpcClient;
     this.visTLData = visTLData;
     this.visTL = null;
+    this.groupByState = 'group';
   }
 
   create(container) {
+    let visData = this.visTLData.getVisibleVisData();
     this.visTL = new vis.Timeline(
       container,
-      this.visTLData.visItems,
-      this.visTLData.visGroups,
+      visData.visItems,
+      visData.visGroups,
       this.getVisTLOption()
     );
   }
@@ -29,75 +31,77 @@ class VisTL {
     });
   }
 
+  resetData() {
+    let visData = this.visTLData.getVisibleVisData();
+    this.visTL.setData({
+      groups: visData.visGroups,
+      items: visData.visItems
+    });
+    this.groupByState = 'group';
+  }
+
+  resetDataWithLabel() {
+    let visData = this.visTLData.getVisibleVisData();
+    this.visTL.setData({
+      groups: visData.visGroupsByLabel,
+      items: visData.visItems
+    });
+    this.groupByState = 'label';
+  }
+
   restoreHidden() {
-    this.visTLData.visGroups.forEach((g)=>{
-      let grp = this.visTLData.visGroups.get(g.id);
-      if(grp && !grp.hidden) {
-        this.visTLData.visGroups.update({id: g.id, visible: true});
-      }
-    });
-    this.visTLData.visGroupsByLabel.forEach((g)=>{
-      let grp = this.visTLData.visGroupsByLabel.get(g.id);
-      if(grp && !grp.hidden) {
-        this.visTLData.visGroupsByLabel.update({id: g.id, visible: true});
-      }
-    });
+    this.visTLData.setVisibleTrueAllVisGroup();
+    if(this.groupByState === 'group') {
+      this.resetData();
+    } else {
+      this.resetDataWithLabel();
+    }
   }
 
   hideGroup(id) {
-    this.visTLData.visGroups.update({id: id, visible: false});
-    this.visTLData.visGroupsByLabel.update({id: id, visible: false});
-  }
-
-  groupByProjectGroup() {
-    console.log('group by project group');
-    this.visTL.setGroups(this.visTLData.visGroups);
-    this.visTL.setItems(this.visTLData.visItems);
-    this.visTL.redraw();
-  }
-
-  groupByLabel() {
-    console.log('group by label');
-    this.visTL.setGroups(this.visTLData.visGroupsByLabel);
-    this.visTL.setItems(this.visTLData.visItems);
-    this.visTL.redraw();
+    this.visTLData.setVisibleFalseAllVisGroup(id);
+    if(this.groupByState === 'group') {
+      this.resetData();
+    } else {
+      this.resetDataWithLabel();
+    }
   }
 
   addSchedule(schedule) {
     return this.rpcClient.addSchedule(schedule).then((scheduleHasId)=>{
-        let s = scheduleHasId;
-        let g = this.visTLData.visGroups.get(this.visTLData.getResourceId(s.sheetId, 'projectGroup', s.projectGroup));
-        let p = this.visTLData.visGroups.get(this.visTLData.getResourceId(s.sheetId, 'project', s.project));
-        let parentObj = p || g;
-        let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
-        let sched = {
-          id: this.visTLData.getResourceId(s.sheetId, 'schedule', s.id),
-          orgId: s.id,
-          name: s.name,
-          sheetId: s.sheetId,
-          sheetName: this.visTLData.sheets[s.sheetId].name,
-          sheetUrl: this.visTLData.sheets[s.sheetId].url,
-          project: s.project,
-          projectGroup: s.projectGroup,
-          group: parentObj ? parentObj.id : null,
-          index: this.visTLData.visItems.length + 1,
-          link: null,
-          color: color,
-          type: s.type,
-          start: s.start,
-          end: s.end,
-          editable: {
-            add: false,
-            updateTime: true,
-            updateGroup: false,
-            remove: false,
-            overrideItems: false
-          }
-        };
-        console.log(`visTL addSchedule: scheduleHasId: ${JSON.stringify(sched)}`);
-        this.visTLData.visItems.add(sched);
-        this.visTL.setItems(this.visTLData.visItems);
-      });
+      let s = scheduleHasId;
+      let g = this.visTLData.projectGroups.get(this.visTLData.getResourceId(s.sheetId, 'projectGroup', s.projectGroup));
+      let p = this.visTLData.projects.get(this.visTLData.getResourceId(s.sheetId, 'project', s.project));
+      let parentObj = p || g;
+      let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
+      let sched = {
+        id: this.visTLData.getResourceId(s.sheetId, 'schedule', s.id),
+        orgId: s.id,
+        name: s.name,
+        sheetId: s.sheetId,
+        sheetName: this.visTLData.sheets[s.sheetId].name,
+        sheetUrl: this.visTLData.sheets[s.sheetId].url,
+        project: s.project,
+        projectGroup: s.projectGroup,
+        group: parentObj ? parentObj.id : null,
+        index: this.visTLData.schedules.length + 1,
+        link: null,
+        color: color,
+        type: s.type,
+        start: s.start,
+        end: s.end,
+        editable: {
+          add: false,
+          updateTime: true,
+          updateGroup: false,
+          remove: false,
+          overrideItems: false
+        }
+      };
+      console.log(`visTL addSchedule: scheduleHasId: ${JSON.stringify(sched)}`);
+      this.visTLData.schedules.add(sched);
+      this.resetData();
+    });
   }
 
   getVisTLOption() {
@@ -268,32 +272,115 @@ class VisTLData {
   constructor(rpcClient) {
     this.rpcClient = rpcClient; this.rawData = {}; this.sheets = {};
 
-    this.visItems = new vis.DataSet();
-    this.visGroups = new vis.DataSet();
-    this.visGroupsByLabel = new vis.DataSet();
+    this.schedules = new vis.DataSet();
+    this.projects = new vis.DataSet();
+    this.projectGroups = new vis.DataSet();
+    this.labels = new vis.DataSet();
+  }
+
+  getVisibleVisData() {
+    let projectGroupIds = {};
+    let projectGroups = [];
+    this.projectGroups.forEach((g)=>{
+      if(g.invalid) return;
+      if(!g.visible) return;
+      projectGroupIds[g.id] = true;
+      projectGroups.push(g);
+    });
+
+    let projectIds = {};
+    let projects = [];
+    this.projects.forEach((p)=>{
+      if(p.invalid) return;
+      if(!p.visible) return;
+      if(
+        (!p['projectGroup']) ||
+        (p['projectGroup'] && projectGroupIds[p['projectGroup']])
+      ) {
+        projectIds[p.id] = true;
+        projects.push(p);
+      };
+    });
+
+    projectGroups.forEach((g)=>{
+      if(g['nestedGroups']) {
+        let newNestedGroups = [];
+        g['nestedGroups'].forEach((ng)=>{
+          if(projectIds[ng]) {
+            newNestedGroups.push(ng);
+          }
+        });
+        g['nestedGroups'] = newNestedGroups;
+      }
+    });
+    let visGroups = new vis.DataSet(projectGroups.concat(projects));
+
+    let labelIds = {};
+    let labels = [];
+    this.labels.forEach((l)=>{
+      if(l.invalid) return;
+      if(!l.visible) return;
+      labelIds[l.id] = true;
+      labels.push(l);
+    });
+    labels.forEach((l)=>{
+      if(l['nestedGroups']) {
+        let newNestedGroups = [];
+        l['nestedGroups'].forEach((ng)=>{
+          if(projectGroupIds[ng] || projectIds[ng]) {
+            newNestedGroups.push(ng);
+          }
+        });
+        l['nestedGroups'] = newNestedGroups;
+      }
+    });
+    // 多段ネストになるのを防ぐためにnestedGroups は null を設定してから add 初期化する
+    projectGroups.forEach(g=>g.nestedGroups = null);
+    let visGroupsByLabel = new vis.DataSet(labels.concat(projectGroups).concat(projects));
+
+    let visItems = new vis.DataSet(this.schedules.get({
+      filter: (s)=>{
+        if(s.invalid) return false;
+        if(!s['group']) return true;
+        if(projectIds[s.group] || projectGroupIds[s.group]) {
+          return true;
+        }
+        return false
+      }
+    }));
+    return {
+      visGroups: visGroups,
+      visGroupsByLabel: visGroupsByLabel,
+      visItems: visItems
+    };
   }
 
   setVisibleTrueAllVisGroup() {
-    let visGroups = this.visGroups;
-    this.visGroups.forEach((g)=>{
-      visGroups.update({id: g.id, visible: true});
-    });
+    let setVisibleTrue = function(groups) {
+      groups.forEach((g)=>{ groups.update({id: g.id, visible: true}); });
+    };
+    setVisibleTrue(this.labels);
+    setVisibleTrue(this.projectGroups);
+    setVisibleTrue(this.projects);
   }
 
-  setVisibleFalseVisGroup(group) {
-    let visGroups = this.visGroups;
-    let nested = this.projectGroupRelation[group];
-    visGroups.update({ id: group, visible: false });
-    console.log(`nested: ${nested}`);
-    if(nested) {
-      // ちょっとまってからでないと nested が消えない
-      setTimeout(()=>{
-        nested.forEach((v)=>{
-          console.log(`hide nested: ${v}`)
-          visGroups.update({ id: v, visible: false });
+  setVisibleFalseAllVisGroup(id) {
+    let setVisibleFalse = function(id, groups) {
+      let g = groups.get(id);
+      if(!g) {
+        return;
+      }
+      groups.update({id: g.id, visible: false});
+      if(g['nestedGroups']) {
+        let grps = groups.get(g.nestedGroups);
+        grps.forEach((g)=>{
+          groups.update({id: g.id, visible: false});
         });
-      }, 100);
+      }
     }
+    setVisibleFalse(id, this.labels);
+    setVisibleFalse(id, this.projectGroups);
+    setVisibleFalse(id, this.projects);
   }
 
   initializeData(sheetList) {
@@ -313,8 +400,19 @@ class VisTLData {
         this.initializeProjectGroups();
         this.initializeProject();
         this.initializeSchedules();
-        console.log(`initializeData: item count: ${this.visItems.length}`);
-        console.log(`initializeData: group count: ${this.visGroups.length}`);
+
+        let projects = {};
+        this.schedules.forEach((s)=>{
+          if(s.invalid) {
+            return;
+          }
+          projects[s.group] = true;
+        });
+        this.projects.forEach((p)=>{
+          if(!projects[p.id]) {
+            this.projects.update({id: p.id, invalid: true, visible: false});
+          }
+        });
         return this;
       });
   }
@@ -326,7 +424,7 @@ class VisTLData {
           return;
         }
         let color = !!l['color'] ? l.color : 'white';
-        this.visGroupsByLabel.add({
+        this.labels.add({
           id: this.getResourceId(sheetId, 'label', l.name),
           name: l.name,
           sheetId: sheetId,
@@ -343,7 +441,7 @@ class VisTLData {
   }
 
   initializeProjectGroups() {
-    if(this.visGroupsByLabel.length == 0) {
+    if(this.labels.length == 0) {
       new Error('projectGroups must initialize after label');
     }
     Object.entries(this.rawData).forEach(([sheetId, data])=>{
@@ -367,17 +465,15 @@ class VisTLData {
           isProjectGroup: true,
           nestedGroups: [],
           showNested: true,
-          hidden: g.hidden,
-          visible: !g.hidden
+          invalid: g.invalid,
+          visible: !g.invalid
         };
 
-        this.visGroups.add(grp);
+        this.projectGroups.add(grp);
 
-        let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, 'label', g.label));
+        let l = this.labels.get(this.getResourceId(sheetId, 'label', g.label));
         console.log(`initializeProjectGroups: label: ${this.getResourceId(sheetId, 'label', g.label)} ${JSON.stringify(l)}`);
         if(l) {
-          grp.nestedGroups = null;
-          this.visGroupsByLabel.add(grp);
           l.nestedGroups.push(grp.id);
         }
       });
@@ -385,12 +481,15 @@ class VisTLData {
   }
 
   initializeProject() {
-    if(this.visGroups.length == 0) {
+    if(this.projectGroups.length == 0) {
       new Error('project must initialize after projectGroups');
     }
     Object.entries(this.rawData).forEach(([sheetId, data])=>{
       data['projects'].forEach((p, i) =>{
-        let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', p.projectGroup));
+        if(!p['name']) {
+          return;
+        }
+        let g = this.projectGroups.get(this.getResourceId(sheetId, 'projectGroup', p.projectGroup));
         var color = !!p['color'] ? p.color : g ? g.color : 'black';
         if(color === 'white') {
           color = 'black';
@@ -406,33 +505,32 @@ class VisTLData {
           color: color,
           showNested: true,
           isProject: true,
-          orgHidden: p.hidden,
-          hidden: p.hidden,
+          orgInvalid: p.invalid,
+          invalid: p.invalid,
           link: p.link,
         };
 
         if(g) {
           prj.projectGroupName = g.name;
           prj.projectGroup = g.id;
-          prj.hidden = prj.orgHidden || g.hidden;
-          prj.visible = !prj.hidden;
+          prj.invalid = prj.orgInvalid || g.invalid;
+          prj.visible = !prj.invalid;
           g.nestedGroups.push(prj.id)
         }
 
-        let l = this.visGroupsByLabel.get(this.getResourceId(sheetId, 'label', p.label));
+        let l = this.labels.get(this.getResourceId(sheetId, 'label', p.label));
         console.log(`initializeProject: label: ${this.getResourceId(sheetId, 'label', p.label)} ${JSON.stringify(l)}`);
         if(l) {
           l.nestedGroups.push(prj.id);
         }
 
-        this.visGroups.add(prj);
-        this.visGroupsByLabel.add(prj);
+        this.projects.add(prj);
       });
     });
   }
 
   initializeSchedules() {
-    if(this.visGroups.length == 0) {
+    if(this.projects.length == 0) {
       new Error('schedules must initialize after projects and projectGroups');
     }
     Object.entries(this.rawData).forEach(([sheetId, data])=>{
@@ -441,8 +539,8 @@ class VisTLData {
           return;
         }
 
-        let g = this.visGroups.get(this.getResourceId(sheetId, 'projectGroup', s.projectGroup));
-        let p = this.visGroups.get(this.getResourceId(sheetId, 'project', s.project));
+        let g = this.projectGroups.get(this.getResourceId(sheetId, 'projectGroup', s.projectGroup));
+        let p = this.projects.get(this.getResourceId(sheetId, 'project', s.project));
         let parentObj = p || g;
         var color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
         if(color === 'white') {
@@ -461,16 +559,14 @@ class VisTLData {
           index: i,
           link: s.link,
           color: color,
-          hidden: s.hidden,
+          invalid: s.invalid,
           type: !!s.type ? s.type : 'range',
           start: moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
           end: (!!s['end'])
             ? moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC")
             : null,
         };
-        if(!sched.hidden) {
-          this.visItems.add(sched);
-        }
+        this.schedules.add(sched);
       });
     });
   }
