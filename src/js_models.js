@@ -143,9 +143,15 @@ class VisTL {
   getItemTemplateFunc() {
     let defaulTemplate = Handlebars.compile(`
         {{#if link}}
-        <a href="{{link}}" target="_blank">{{name}}</a>
+        <a href="{{link}}" target="_blank">
+          {{#if assignee}} <span class="badge badge-secondary">{{assignee}}</span> {{/if}}
+          {{name}}
+        </a>
         {{else}}
-        <p>{{name}}</p>
+        <p>
+          {{#if assignee}} <span class="badge badge-secondary">{{assignee}}</span> {{/if}}
+          {{name}}
+        </p>
         {{/if}}
     `)
     return function(schedule, element, data) {
@@ -153,8 +159,11 @@ class VisTL {
         link: schedule.link,
         name: schedule.name,
         color: schedule.color,
+        assignee: schedule.assignee,
       };
-      if(schedule.type === 'range') {
+      console.log('--------------');
+      console.log(`${schedule.assignee}`);
+      console.log(`${d.assignee}`); if(schedule.type === 'range') {
         // $(element).closest('.vis-item') では取得できなかった ...
         let $targ = $(element).parent().parent();
         $targ.css('border-color', d.color);
@@ -194,6 +203,8 @@ class VisTL {
             {{name}}
           {{/if}}
 
+          {{#if assignee}} <span class="badge badge-info">{{assignee}}</span> {{/if}}
+
           {{#if label}}
             <span class="badge badge-secondary">{{label}}</span>
           {{/if}}
@@ -206,6 +217,7 @@ class VisTL {
         id: group.id,
         name: group.name,
         color: group.color,
+        assignee: group['assignee'],
         label: group['label'],
         sheetName: group.sheetName,
         sheetUrl: group.sheetUrl,
@@ -503,6 +515,7 @@ class VisTLData {
           label: p.label,
           index: i,
           color: color,
+          assignee: p.assignee,
           showNested: true,
           isProject: true,
           orgInvalid: p.invalid,
@@ -559,6 +572,7 @@ class VisTLData {
           index: i,
           link: s.link,
           color: color,
+          assignee: s.assignee,
           invalid: s.invalid,
           type: !!s.type ? s.type : 'range',
           start: moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
