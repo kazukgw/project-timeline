@@ -330,6 +330,8 @@ class VisTL {
       if(newItem['orgId']) {
         newItem.id = newItem.orgId;
       }
+      newItem.start = moment(newItem.start).format('YYYY/MM/DD');
+      newItem.end = moment(newItem.end).format('YYYY/MM/DD');
       rpcClient.updateSchedule(newItem)
         .then(()=>{
           console.log("updated sucessfully");
