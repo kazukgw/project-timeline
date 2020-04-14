@@ -30,9 +30,9 @@ It's written in Google Apps Script.
 - [x] spreadsheet bounded な script とから unbounded script に変更する
 - [x] Add a link to the Group's Content.
 - [x] Enriching the tooltip display content
-- [ ] Edit Schedule
+- [x] Edit Schedule
   - Title, Assignee
-- [ ] Refactoring
+- [ ] Refactoring !!!!!!
   - Add comment
   - Error handling
 - [ ] Allow the setting of Hidden to be specified with a query parameter
