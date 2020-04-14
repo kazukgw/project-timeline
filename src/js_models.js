@@ -256,7 +256,7 @@ class VisTL {
       <div style="color: {{color}}">
         <p style="font-weight: 500">
           {{#if link}}
-            <a href="{{link}}" target="_blank">{{name}}</a>
+            <a style="color: {{color}}" href="{{link}}" target="_blank">{{name}}</a>
           {{else}}
             {{name}}
           {{/if}}
