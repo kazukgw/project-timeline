@@ -76,8 +76,7 @@ class RPCHandler {
 
   constructor(functionName: string, paramJson: string) {
     Logger.log(
-      `init rpc handler: functionName: ${functionName}, paramJson: ${paramJson}`
-    );
+      `init rpc handler: functionName: ${functionName}, paramJson: ${paramJson}`);
     this.functionName = functionName;
     this.paramObject = paramJson == null ? null : JSON.parse(paramJson);
   }
@@ -144,5 +143,15 @@ class RPCHandler {
     }
     let app = initApp(sheetId);
     return app.addSchedule(schedule);
+  }
+
+  private updateSchedule(schedule: Object) {
+    Logger.log(`updateSchedule: schedule`);
+    let sheetId = schedule['sheetId'];
+    if(!!sheetId) {
+      new Error('sheetId is null');
+    }
+    let app = initApp(sheetId);
+    return app.updateSchedule(schedule);
   }
 }

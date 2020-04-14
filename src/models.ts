@@ -20,6 +20,12 @@ export class TableRecord {
     return !!primaryKey;
   }
 
+  public getPrimaryKey(): boolean {
+    let primaryKey = this.values[this.table.primaryKey];
+    Logger.log(`getPrimaryKey: ${primaryKey}`);
+    return primaryKey;
+  }
+
   public save() {
     this.range.setValues([this.valueArray()]);
   }
@@ -96,7 +102,7 @@ export class Table {
     this.primaryKeyColumnNumber = index + 1;
   }
 
-  public addRecord(recordData: Object): TableRecord {
+  public addRecord(recordData: Object) {
     let lck = LockService.getScriptLock();
     if(lck.tryLock(10000)) {
       let lastRowNumber = this.getLastRowNumber();
@@ -106,9 +112,25 @@ export class Table {
       let values = this.headers.map((h)=>{ return recordData[h] });
       Logger.log(`addRecord: values: ${JSON.stringify(values)}`);
       range.setValues([values]);
+      lck.releaseLock()
     } else {
       new Error('faild to get script lock');
     }
+  }
+
+  public saveRecord(record: TableRecord): TableRecord {
+    let lck = LockService.getScriptLock();
+    var rec: TableRecord;
+    if(lck.tryLock(10000)) {
+      let rec = this.findRecordByPrimaryKey(record.getPrimaryKey());
+      if(!rec) {
+        new Error(`record not found: ${record.getPrimaryKey()}`);
+      }
+      rec.values = record.values;
+      rec.save();
+      lck.releaseLock();
+    }
+    return rec;
   }
 
   public findRecordWithRowNumber(rowNumber: number) {

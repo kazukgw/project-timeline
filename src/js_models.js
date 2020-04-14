@@ -10,8 +10,6 @@ class VisTL {
     let hidden = (new URL(this.requestUrl)).searchParams.get('hidden');
     if(hidden) {
       this.hiddenGroups = JSON.parse(pako.inflate(atob(hidden), { to: 'string' }));
-      console.log('--------')
-      console.dir(this.hiddenGroups);
     }
   }
 
@@ -25,14 +23,23 @@ class VisTL {
     );
   }
 
-  getHiddenSettingsAsUrl() {
-    if(this.hiddenGroups.length === 0) {
-      return this.requestUrl;
+  getSelectedSchedule() {
+    let ids = this.visTL.getSelection();
+    if(ids.length > 0) {
+      return this.visTLData.schedules.get(ids[0]);
     }
-    let settings = btoa(pako.deflate(JSON.stringify(this.hiddenGroups), {to: 'string'}));
+  }
+
+  getHiddenSettingsAsUrl() {
     let url = new URL(this.requestUrl);
-    url.searchParams.set('hidden', settings);
+    if(this.hiddenGroups.length > 0) {
+      let settings = btoa(pako.deflate(JSON.stringify(this.hiddenGroups), {to: 'string'}));
+      url.searchParams.set('hidden', settings);
+      return url.href;
+    }
+    url.searchParams.delete('hidden');
     return url.href;
+
   }
 
   filterGroup() {
@@ -108,6 +115,7 @@ class VisTL {
         index: this.visTLData.schedules.length + 1,
         link: null,
         color: color,
+        assignee: s.assignee,
         type: s.type,
         start: s.start,
         end: s.end,
@@ -121,6 +129,32 @@ class VisTL {
       };
       console.log(`visTL addSchedule: scheduleHasId: ${JSON.stringify(sched)}`);
       this.visTLData.schedules.add(sched);
+      this.resetData();
+    });
+  }
+
+  updateSchedule(schedule) {
+    if(schedule['orgId']) {
+      schedule.id = schedule.orgId;
+    }
+    return this.rpcClient.updateSchedule(schedule).then((schedule)=>{
+      let s = schedule;
+      let g = this.visTLData.projectGroups.get(this.visTLData.getResourceId(s.sheetId, 'projectGroup', s.projectGroup));
+      let p = this.visTLData.projects.get(this.visTLData.getResourceId(s.sheetId, 'project', s.project));
+      let parentObj = p || g;
+      let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
+      let sched = {
+        id: this.visTLData.getResourceId(s.sheetId, 'schedule', s.id),
+        orgId: s.id,
+        name: s.name,
+        project: s.project,
+        projectGroup: s.projectGroup,
+        group: parentObj ? parentObj.id : null,
+        assignee: s.assignee,
+        type: s.type,
+      };
+      console.log(`visTL updateSchedule: schedule: ${JSON.stringify(sched)}`);
+      this.visTLData.schedules.update(sched);
       this.resetData();
     });
   }
@@ -289,8 +323,14 @@ class VisTL {
     // サーバ側にデータの変更をリクエストする
     // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
     let rpcClient = this.rpcClient;
+    let visTLData = this.visTLData;
     return function (item, callback) {
-      rpcClient.updateSchedule(item)
+      visTLData.schedules.update(item);
+      var newItem = Object.assign({}, item);
+      if(newItem['orgId']) {
+        newItem.id = newItem.orgId;
+      }
+      rpcClient.updateSchedule(newItem)
         .then(()=>{
           console.log("updated sucessfully");
           callback(item);
@@ -600,7 +640,7 @@ class VisTLData {
           start: moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC"),
           end: (!!s['end'])
             ? moment.tz(s.end.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC")
-            : null,
+            : moment.tz(s.start.replace("Z", ""), moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC").add(1, 'month'),
         };
         this.schedules.add(sched);
       });
@@ -640,31 +680,31 @@ class RPCClient {
     return Promise.all(promises);
   }
 
-  updateSchedule(schedule) {
-    let gs = this.gs;
-    return new Promise((resolve, reject) => {
-      var scheduleJson = JSON.stringify({
-        sheetId: schedule.sheetId,
-        id: schedule.orgId,
-        type: schedule.type,
-        content: schedule.content,
-        start: schedule.start,
-        end: schedule.end
-      });
-      gs.run
-        .withSuccessHandler(() => {
-          console.log("updated sucessfully");
-          resolve();
-        })
-        .withFailureHandler((error) => {
-          console.log(`failed to update: error: ${error}`);
-          // callback に null を渡すと 変更がキャンセルされる
-          // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
-          reject();
-        })
-        .rpc('updateSchedule', scheduleJson);
-    });
-  }
+  // updateSchedule(schedule) {
+  //   let gs = this.gs;
+  //   return new Promise((resolve, reject) => {
+  //     var scheduleJson = JSON.stringify({
+  //       sheetId: schedule.sheetId,
+  //       id: schedule.orgId,
+  //       type: schedule.type,
+  //       content: schedule.content,
+  //       start: schedule.start,
+  //       end: schedule.end
+  //     });
+  //     gs.run
+  //       .withSuccessHandler(() => {
+  //         console.log("updated sucessfully");
+  //         resolve();
+  //       })
+  //       .withFailureHandler((error) => {
+  //         console.log(`failed to update: error: ${error}`);
+  //         // callback に null を渡すと 変更がキャンセルされる
+  //         // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
+  //         reject();
+  //       })
+  //       .rpc('updateSchedule', scheduleJson);
+  //   });
+  // }
 
   addSchedule(schedule) {
     let gs = this.gs;
@@ -673,6 +713,7 @@ class RPCClient {
         sheetId: schedule.sheetId,
         type: schedule.type,
         name: schedule.name,
+        assignee: schedule.assignee,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
         editable: true,
@@ -688,6 +729,34 @@ class RPCClient {
           reject();
         })
         .rpc('addSchedule', scheduleJson);
+    });
+  }
+
+  updateSchedule(schedule) {
+    let gs = this.gs;
+    return new Promise((resolve, reject) => {
+      var scheduleJson = JSON.stringify({
+        sheetId: schedule.sheetId,
+        id: schedule.id,
+        type: schedule.type,
+        name: schedule.name,
+        assignee: schedule.assignee,
+        project: schedule.project,
+        projectGroup: schedule.projectGroup,
+        start: schedule.start,
+        end: schedule.end,
+        editable: true,
+      });
+      gs.run
+        .withSuccessHandler((schedule) => {
+          console.log("updateSchedule: update sucessfully");
+          resolve(JSON.parse(schedule));
+        })
+        .withFailureHandler((error) => {
+          console.log(`failed to create: error: ${error}`);
+          reject();
+        })
+        .rpc('updateSchedule', scheduleJson);
     });
   }
 }

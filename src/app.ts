@@ -78,6 +78,19 @@ export class App {
     return schedule;
   }
 
+  public updateSchedule(schedule: Object) {
+    let record = this.scheduleTable.findRecordByPrimaryKey(schedule['id']);
+    if(!record) {
+      new Error(`record not found: ${schedule['id']}`);
+    }
+    Object.keys(schedule).forEach((k)=>{
+      record.values[k] = schedule[k];
+    });
+    Logger.log(`app updateSchedule: record.values: ${JSON.stringify(record.values)}`);
+    this.scheduleTable.saveRecord(record);
+    return schedule;
+  }
+
   private getTableFromRange(
     range: GoogleAppsScript.Spreadsheet.Range
   ): Table | null {
