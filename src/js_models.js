@@ -161,19 +161,22 @@ class VisTL {
         color: schedule.color,
         assignee: schedule.assignee,
       };
-      console.log('--------------');
-      console.log(`${schedule.assignee}`);
-      console.log(`${d.assignee}`); if(schedule.type === 'range') {
+      switch(schedule.type) {
+      case 'range':
         // $(element).closest('.vis-item') では取得できなかった ...
-        let $targ = $(element).parent().parent();
+        var $targ = $(element).parent().parent();
         $targ.css('border-color', d.color);
-      }
-      if(schedule.type === 'point') {
-        let $targ = $(element).next('div');
-        // console.dir($targ);
+        return defaulTemplate(d);
+      case 'point':
+        var $targ = $(element).next('div');
         $targ.css('border-color', d.color);
+        return defaulTemplate(d);
+      case 'background':
+        var $targ = $(element).parent();
+        $targ.css('background-color', d.color);
+        $targ.css('opacity', '0.1');
+        return d.name;
       }
-      return defaulTemplate(d);
     }
   }
 

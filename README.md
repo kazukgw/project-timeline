@@ -36,5 +36,6 @@ It's written in Google Apps Script.
   - Add comment
   - Error handling
 - [ ] Allow the setting of Hidden to be specified with a query parameter
+- [ ] Toggle Folding
 - [ ] filter
 - [ ] Adding a Hide Schedule Button
