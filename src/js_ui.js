@@ -20,6 +20,13 @@ class UI {
       this.uiAddScheduleModal.show();
     });
 
+    $('#mybtn-get-settings-as-url').on('click', (e)=>{
+      let url = this.visTL.getHiddenSettingsAsUrl();
+      let $targ = $(e.currentTarget);
+      $targ.popover({'content': url})
+      $targ.popover('show');
+    });
+
     $(document).on('click', '.mybtn-hide', (e)=>{
       let id = $(e.currentTarget).data('group');
       this.visTL.hideGroup(id);

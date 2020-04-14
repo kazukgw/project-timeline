@@ -1,19 +1,38 @@
 class VisTL {
-  constructor(rpcClient, visTLData) {
+  constructor(requestUrl, rpcClient, visTLData) {
+    this.requestUrl = requestUrl;
     this.rpcClient = rpcClient;
     this.visTLData = visTLData;
     this.visTL = null;
     this.groupByState = 'group';
+    this.hiddenGroups = [];
+
+    let hidden = (new URL(this.requestUrl)).searchParams.get('hidden');
+    if(hidden) {
+      this.hiddenGroups = JSON.parse(pako.inflate(atob(hidden), { to: 'string' }));
+      console.log('--------')
+      console.dir(this.hiddenGroups);
+    }
   }
 
   create(container) {
-    let visData = this.visTLData.getVisibleVisData();
+    let visData = this.visTLData.getVisibleVisData(this.hiddenGroups);
     this.visTL = new vis.Timeline(
       container,
       visData.visItems,
       visData.visGroups,
       this.getVisTLOption()
     );
+  }
+
+  getHiddenSettingsAsUrl() {
+    if(this.hiddenGroups.length === 0) {
+      return this.requestUrl;
+    }
+    let settings = btoa(pako.deflate(JSON.stringify(this.hiddenGroups), {to: 'string'}));
+    let url = new URL(this.requestUrl);
+    url.searchParams.set('hidden', settings);
+    return url.href;
   }
 
   filterGroup() {
@@ -32,7 +51,7 @@ class VisTL {
   }
 
   resetData() {
-    let visData = this.visTLData.getVisibleVisData();
+    let visData = this.visTLData.getVisibleVisData(this.hiddenGroups);
     this.visTL.setData({
       groups: visData.visGroups,
       items: visData.visItems
@@ -41,7 +60,7 @@ class VisTL {
   }
 
   resetDataWithLabel() {
-    let visData = this.visTLData.getVisibleVisData();
+    let visData = this.visTLData.getVisibleVisData(this.hiddenGroups);
     this.visTL.setData({
       groups: visData.visGroupsByLabel,
       items: visData.visItems
@@ -50,6 +69,7 @@ class VisTL {
   }
 
   restoreHidden() {
+    this.hiddenGroups = [];
     this.visTLData.setVisibleTrueAllVisGroup();
     if(this.groupByState === 'group') {
       this.resetData();
@@ -60,6 +80,7 @@ class VisTL {
 
   hideGroup(id) {
     this.visTLData.setVisibleFalseAllVisGroup(id);
+    this.hiddenGroups.push(id);
     if(this.groupByState === 'group') {
       this.resetData();
     } else {
@@ -293,12 +314,14 @@ class VisTLData {
     this.labels = new vis.DataSet();
   }
 
-  getVisibleVisData() {
+  getVisibleVisData(hiddenGroupIds) {
+    hiddenGroupIds = hiddenGroupIds || [];
     let projectGroupIds = {};
     let projectGroups = [];
     this.projectGroups.forEach((g)=>{
       if(g.invalid) return;
       if(!g.visible) return;
+      if(hiddenGroupIds.indexOf(g.id) > -1) return;
       projectGroupIds[g.id] = true;
       projectGroups.push(g);
     });
@@ -308,6 +331,7 @@ class VisTLData {
     this.projects.forEach((p)=>{
       if(p.invalid) return;
       if(!p.visible) return;
+      if(hiddenGroupIds.indexOf(p.id) > -1) return;
       if(
         (!p['projectGroup']) ||
         (p['projectGroup'] && projectGroupIds[p['projectGroup']])
@@ -335,6 +359,7 @@ class VisTLData {
     this.labels.forEach((l)=>{
       if(l.invalid) return;
       if(!l.visible) return;
+      if(hiddenGroupIds.indexOf(l.id) > -1) return;
       labelIds[l.id] = true;
       labels.push(l);
     });
@@ -386,12 +411,6 @@ class VisTLData {
         return;
       }
       groups.update({id: g.id, visible: false});
-      if(g['nestedGroups']) {
-        let grps = groups.get(g.nestedGroups);
-        grps.forEach((g)=>{
-          groups.update({id: g.id, visible: false});
-        });
-      }
     }
     setVisibleFalse(id, this.labels);
     setVisibleFalse(id, this.projectGroups);

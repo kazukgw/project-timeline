@@ -7,6 +7,7 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
 
   let title = params['title'] || 'Project Roadmap';
   let sheetIdList: Array<string> = params['sheet'] || [];
+  let requestUrl = ScriptApp.getService().getUrl() + '?' + e.queryString;
 
   if(sheetIdList.length < 1) {
     let template = HtmlService.createTemplateFromFile("index");
@@ -27,6 +28,7 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
     template.sheetListSheetURL = app.spreadSheet.getUrl();
     let output = template.evaluate();
     output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    output.setSandboxMode(HtmlService.SandboxMode.IFRAME);
     return output;
   }
 
@@ -41,8 +43,10 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   });
   template.title = title;
   template.sheetList = JSON.stringify(sheetList);
+  template.requestUrl = JSON.stringify({ requestUrl: requestUrl});
   let output = template.evaluate();
   output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  output.setSandboxMode(HtmlService.SandboxMode.IFRAME);
   return output;
 }
 

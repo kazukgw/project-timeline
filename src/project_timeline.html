@@ -21,10 +21,13 @@
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-group-by-label" class="mybtn">
           Group By Label
-        </button>
-        <span class="mybtn-separator"> | </span>
+        </button> <span class="mybtn-separator"> | </span>
         <button id="mybtn-add-schedule" class="mybtn">
           Add Schedule
+        </button>
+        </button> <span class="mybtn-separator"> | </span>
+        <button id="mybtn-get-settings-as-url" class="mybtn" role="button" data-toggle="popover" title="Copy This URL">
+          Get Settings As URL
         </button>
       </nav>
       <div id="vistl-container"></div>
@@ -110,6 +113,9 @@
 
     <script type="application/json" id="data-sheet-list">
       <?!= sheetList ?>
+    </script>
+    <script type="application/json" id="data-requestUrl">
+      <?!= requestUrl ?>
     </script>
     <?!= includeHtml('js_assets') ?>
     <script>
