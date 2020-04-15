@@ -36,6 +36,7 @@ It's written in Google Apps Script.
 - [x] ~~Adding a Hide Schedule Button~~
 - [x] ~~vis-timeline の option をシートから指定できるように~~
 - [ ] Refactoring #1 (Add comment, Error handling)
+- [ ] フロントエンドのコードの TypeScript化
 - [ ] filter by assignee
 - [ ] Create a color palette
 - [ ] Create a serializable model
