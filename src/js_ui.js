@@ -8,6 +8,10 @@ class UI {
   }
 
   init() {
+    $('#mybtn-toggle-foldings').on('click', ()=>{
+      this.visTL.toggleFoldings();
+    });
+
     $('#mybtn-group-by-projectgroup').on('click', ()=>{
       this.visTL.resetData();
     });
@@ -53,6 +57,7 @@ class UIAddScheduleModal {
     this.$typeSelect = this.$el.find('#form-add-schedule-type');
     this.$titleInput = this.$el.find('#form-add-schedule-title');
     this.$assigneeInput = this.$el.find('#form-add-schedule-assignee');
+    this.$linkInput = this.$el.find('#form-add-schedule-link');
     this.$addButton = this.$el.find('#form-add-schedule-button-add');
 
     this.$projectSelect.select2({width: '100%'});
@@ -69,6 +74,7 @@ class UIAddScheduleModal {
         type: this.$typeSelect.val(),
         name: this.$titleInput.val().trim(),
         assignee: this.$assigneeInput.val().trim(),
+        link: this.$linkInput.val().trim(),
       };
       this.$addButton.prop('disabled', true);
       this.$addButton.text('Please wait ... ');
@@ -121,6 +127,7 @@ class UIEditScheduleModal {
     this.$typeSelect = this.$el.find('#form-edit-schedule-type');
     this.$titleInput = this.$el.find('#form-edit-schedule-title');
     this.$assigneeInput = this.$el.find('#form-edit-schedule-assignee');
+    this.$linkInput = this.$el.find('#form-edit-schedule-link');
     this.$updateButton = this.$el.find('#form-edit-schedule-button-update');
 
     this.$projectSelect.select2({width: '100%'});
@@ -137,6 +144,7 @@ class UIEditScheduleModal {
       this.schedule.type = this.$typeSelect.val(),
       this.schedule.name = this.$titleInput.val().trim(),
       this.schedule.assignee = this.$assigneeInput.val().trim(),
+      this.schedule.link = this.$linkInput.val().trim(),
 
       this.visTL.updateSchedule(this.schedule).then(()=>{
         this.schedule = null;
@@ -178,6 +186,7 @@ class UIEditScheduleModal {
     this.$typeSelect.val(schedule.type);
     this.$titleInput.val(schedule.name);
     this.$assigneeInput.val(schedule.assignee);
+    this.$linkInput.val(schedule.link);
 
     this.$updateButton.text('Update');
     this.$updateButton.prop('disabled', false);

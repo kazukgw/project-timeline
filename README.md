@@ -9,8 +9,7 @@ It's written in Google Apps Script.
 
 # TODO
 
-- [x] 指定した色でのカラーリング
-- [x] group hide
+- [x] 指定した色でのカラーリング [x] group hide
 - [x] point も update できるように
 - [x] ~~vis-timeline の option をシートから指定できるように~~
 - [x] query parameter に sheet id で 指定して読みだせるように
@@ -32,10 +31,11 @@ It's written in Google Apps Script.
 - [x] Enriching the tooltip display content
 - [x] Edit Schedule
   - Title, Assignee
+- [x] Enables link to be set when schedule is created
+- [x] Toggle Folding
+- [x] Allow the setting of Hidden to be specified with a query parameter
 - [ ] Refactoring !!!!!!
   - Add comment
   - Error handling
-- [ ] Allow the setting of Hidden to be specified with a query parameter
-- [ ] Toggle Folding
 - [ ] filter
 - [ ] Adding a Hide Schedule Button

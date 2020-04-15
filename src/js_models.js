@@ -5,6 +5,7 @@ class VisTL {
     this.visTLData = visTLData;
     this.visTL = null;
     this.groupByState = 'group';
+    this.foldingsState = 'open';
     this.hiddenGroups = [];
 
     let hidden = (new URL(this.requestUrl)).searchParams.get('hidden');
@@ -39,7 +40,30 @@ class VisTL {
     }
     url.searchParams.delete('hidden');
     return url.href;
+  }
 
+  toggleFoldings() {
+    var showNested;
+    if(this.foldingsState === 'open') {
+      this.foldingsState = 'close';
+      showNested = false;
+    } else {
+      this.foldingsState = 'open';
+      showNested = true;
+    }
+
+    this.visTLData.projectGroups.forEach((g)=>{
+      this.visTLData.projectGroups.update({id: g.id, showNested: showNested})});
+    this.visTLData.projects.forEach((g)=>{
+      this.visTLData.projects.update({id: g.id, showNested: showNested})});
+    this.visTLData.labels.forEach((g)=>{
+      this.visTLData.labels.update({id: g.id, showNested: showNested})});
+
+    if(this.groupByState === 'group') {
+      this.resetData();
+    } else {
+      this.resetDataWithLabel();
+    }
   }
 
   filterGroup() {
@@ -113,7 +137,7 @@ class VisTL {
         projectGroup: s.projectGroup,
         group: parentObj ? parentObj.id : null,
         index: this.visTLData.schedules.length + 1,
-        link: null,
+        link: schedule.link,
         color: color,
         assignee: s.assignee,
         type: s.type,
@@ -151,6 +175,7 @@ class VisTL {
         projectGroup: s.projectGroup,
         group: parentObj ? parentObj.id : null,
         assignee: s.assignee,
+        link: s.link,
         type: s.type,
       };
       console.log(`visTL updateSchedule: schedule: ${JSON.stringify(sched)}`);
@@ -715,6 +740,7 @@ class RPCClient {
         sheetId: schedule.sheetId,
         type: schedule.type,
         name: schedule.name,
+        link: schedule.link,
         assignee: schedule.assignee,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
@@ -737,6 +763,8 @@ class RPCClient {
   updateSchedule(schedule) {
     let gs = this.gs;
     return new Promise((resolve, reject) => {
+      let start = moment(schedule.start).format('YYYY/MM/DD');
+      let end = moment(schedule.end).format('YYYY/MM/DD');
       var scheduleJson = JSON.stringify({
         sheetId: schedule.sheetId,
         id: schedule.id,
@@ -745,8 +773,9 @@ class RPCClient {
         assignee: schedule.assignee,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
-        start: schedule.start,
-        end: schedule.end,
+        link: schedule.link,
+        start: start,
+        end: end,
         editable: true,
       });
       gs.run
