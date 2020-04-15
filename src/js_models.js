@@ -228,7 +228,7 @@ class VisTL {
           {{name}}
         </a>
         {{else}}
-        <p>
+        <p style="margin: 0">
           {{#if assignee}} <span class="badge badge-secondary">{{assignee}}</span> {{/if}}
           {{name}}
         </p>
