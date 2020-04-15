@@ -3,13 +3,19 @@ class VisTL {
     this.requestUrl = requestUrl;
     this.rpcClient = rpcClient;
     this.visTLData = visTLData;
+
     this.visTL = null;
+
+    // TODO: enum object を定義する
+    // TODO: 名前の変更 (groupByState て意味わからん)
     this.groupByState = 'group';
+    // TODO: enum object を定義する
     this.foldingsState = 'open';
     this.hiddenGroups = [];
 
     let hidden = (new URL(this.requestUrl)).searchParams.get('hidden');
     if(hidden) {
+      // TODO: JSON.parse(xxx) は メソッドにまとめる
       this.hiddenGroups = JSON.parse(pako.inflate(atob(hidden), { to: 'string' }));
     }
   }
@@ -34,6 +40,7 @@ class VisTL {
   getHiddenSettingsAsUrl() {
     let url = new URL(this.requestUrl);
     if(this.hiddenGroups.length > 0) {
+      // TODO: btoa(xxx) は メソッドにまとめる
       let settings = btoa(pako.deflate(JSON.stringify(this.hiddenGroups), {to: 'string'}));
       url.searchParams.set('hidden', settings);
       return url.href;
@@ -44,6 +51,7 @@ class VisTL {
 
   toggleFoldings() {
     var showNested;
+    // TODO: state は enum を使う
     if(this.foldingsState === 'open') {
       this.foldingsState = 'close';
       showNested = false;
@@ -66,20 +74,20 @@ class VisTL {
     }
   }
 
-  filterGroup() {
-    console.log('filter group');
-    let filtered = this.visTLData.visGroups.get({
-      filter: (g) => {
-        if(g['isLevel0Group']) {
-          return false;
-        }
-        return g.label !== 'Label 1';
-      }
-    });
-    filtered.forEach((g)=>{
-      this.visTLData.visGroups.update({id: g.id, visible: false});
-    });
-  }
+  // filterGroup() {
+  //   console.log('filter group');
+  //   let filtered = this.visTLData.visGroups.get({
+  //     filter: (g) => {
+  //       if(g['isLevel0Group']) {
+  //         return false;
+  //       }
+  //       return g.label !== 'Label 1';
+  //     }
+  //   });
+  //   filtered.forEach((g)=>{
+  //     this.visTLData.visGroups.update({id: g.id, visible: false});
+  //   });
+  // }
 
   resetData() {
     let visData = this.visTLData.getVisibleVisData(this.hiddenGroups);
@@ -89,7 +97,7 @@ class VisTL {
     });
     this.groupByState = 'group';
   }
-
+  // TODO: メソッド名の変更
   resetDataWithLabel() {
     let visData = this.visTLData.getVisibleVisData(this.hiddenGroups);
     this.visTL.setData({
@@ -119,12 +127,15 @@ class VisTL {
     }
   }
 
+  // TODO: data 変換用のオブジェクトを作成してそちらを利用する
   addSchedule(schedule) {
     return this.rpcClient.addSchedule(schedule).then((scheduleHasId)=>{
       let s = scheduleHasId;
+      // TODO: parentObj 取得 は メソッドかする
       let g = this.visTLData.projectGroups.get(this.visTLData.getResourceId(s.sheetId, 'projectGroup', s.projectGroup));
       let p = this.visTLData.projects.get(this.visTLData.getResourceId(s.sheetId, 'project', s.project));
       let parentObj = p || g;
+      // TODO: 親となるオブジェクトのプロパティを継承するようなものはオブジェクトに切り出してロジックをカプセル化する
       let color = !!s['color'] ? s.color: parentObj ? parentObj.color : 'black';
       let sched = {
         id: this.visTLData.getResourceId(s.sheetId, 'schedule', s.id),
@@ -156,7 +167,7 @@ class VisTL {
       this.resetData();
     });
   }
-
+  // TODO: data 変換用のオブジェクトを作成してそちらを利用する
   updateSchedule(schedule) {
     if(schedule['orgId']) {
       schedule.id = schedule.orgId;
@@ -580,7 +591,7 @@ class VisTLData {
       });
     });
   }
-
+  // TODO: Project Class を作成して責務を分割しておく
   initializeProject() {
     if(this.projectGroups.length == 0) {
       new Error('project must initialize after projectGroups');
@@ -678,6 +689,11 @@ class VisTLData {
     return `${sheetId}##${type}##${resourceId}`;
   }
 }
+
+// class Label {}
+// class ProjectGroups {}
+// class Project {}
+// class Schedule {}
 
 class RPCClient {
   constructor(gs) {
