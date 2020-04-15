@@ -11,7 +11,6 @@ It's written in Google Apps Script.
 
 - [x] 指定した色でのカラーリング [x] group hide
 - [x] point も update できるように
-- [x] ~~vis-timeline の option をシートから指定できるように~~
 - [x] query parameter に sheet id で 指定して読みだせるように
 - [x] Schedule の Insert/Update 時はロックをかける
 - [x] Label 絡むの追加とグルーピング
@@ -34,8 +33,11 @@ It's written in Google Apps Script.
 - [x] Enables link to be set when schedule is created
 - [x] Toggle Folding
 - [x] Allow the setting of Hidden to be specified with a query parameter
-- [ ] Refactoring !!!!!!
-  - Add comment
-  - Error handling
-- [ ] filter
-- [ ] Adding a Hide Schedule Button
+- [x] ~~Adding a Hide Schedule Button~~
+- [x] ~~vis-timeline の option をシートから指定できるように~~
+- [ ] Refactoring #1 (Add comment, Error handling)
+- [ ] filter by assignee
+- [ ] Create a color palette
+- [ ] Create a serializable model
+- [ ] Enhance the development environment
+- [ ] Auto test
