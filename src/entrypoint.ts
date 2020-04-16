@@ -1,6 +1,7 @@
 import { App, initApp } from "./app";
 import * as moment from 'moment';
 
+// TODO: doGet のハンドラはクラスを用意する
 function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   let params = e.parameters;
   Logger.log(`doGet: params: ${JSON.stringify(params)}`);
@@ -9,6 +10,7 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   let sheetIdList: Array<string> = params['sheet'] || [];
   let requestUrl = ScriptApp.getService().getUrl() + '?' + e.queryString;
 
+  // TODO: template 経由 で client に json で渡すデータは単一のオブジェクトにまとめる
   if(sheetIdList.length < 1) {
     let template = HtmlService.createTemplateFromFile("index");
     template.title = title;
@@ -50,26 +52,11 @@ function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   return output;
 }
 
-function onEdit(event: any) {
-  let app = initApp(null);
-  app.onEdit(event);
-}
-function resetTriggers() { let triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    ScriptApp.deleteTrigger(triggers[i]);
-  }
-
-  var sheet = SpreadsheetApp.getActive();
-  ScriptApp.newTrigger("onEdit")
-    .forSpreadsheet(sheet)
-    .onEdit()
-    .create();
-}
-
 function rpc(functionName: string, paramJson: string) {
   return new RPCHandler(functionName, paramJson).handle();
 }
 
+// TODO: rpc handler は別ファイルに移行する
 class RPCHandler {
   private functionName: string;
   private paramObject: Object;
@@ -105,36 +92,6 @@ class RPCHandler {
     };
   }
 
-  private updateSchedule(schedule: Object) {
-    Logger.log(`updateSchedule: schedule`);
-    let sheetId = schedule['sheetId'];
-    if(!!sheetId) {
-      new Error('sheetId is null');
-    }
-    let app = initApp(sheetId);
-    let record = app.scheduleTable.findRecordByPrimaryKey(
-      schedule[app.scheduleTable.primaryKey]
-    );
-    record.values["start"] = moment(
-      schedule["start"].replace("Z", ""),
-      moment.HTML5_FMT.DATETIME_LOCAL_MS
-    )
-      .add(9, "hours")
-      .format("YYYY/MM/DD");
-
-    if (schedule["type"] != "point") {
-      record.values["end"] = moment(
-        schedule["end"].replace("Z", ""),
-        moment.HTML5_FMT.DATETIME_LOCAL_MS
-      )
-        .add(9, "hours")
-        .format("YYYY/MM/DD");
-    }
-
-    Logger.log(`updateSchedule: try record.save`);
-    record.save();
-  }
-
   private addSchedule(schedule: Object) {
     Logger.log(`addSchedule: schedule`);
     let sheetId = schedule['sheetId'];
@@ -145,6 +102,7 @@ class RPCHandler {
     return app.addSchedule(schedule);
   }
 
+  // TODO: serializable な データ用クラスを利用するように変更する
   private updateSchedule(schedule: Object) {
     Logger.log(`updateSchedule: schedule`);
     let sheetId = schedule['sheetId'];

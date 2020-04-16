@@ -43,33 +43,7 @@ export class App {
     );
   }
 
-  public onEdit(event: any) {
-    Logger.log(`on Edit: event value: ${event.value}`);
-    if (!!event.value) {
-      return;
-    }
-    let range: GoogleAppsScript.Spreadsheet.Range = event["range"];
-
-    let table = this.getTableFromRange(range);
-    if (table == null) {
-      Logger.log(`on Edit: table is null`);
-      return;
-    }
-
-    Logger.log(`on Edit: table: ${table.sheetName}`);
-    if (table.sheetName === this.scheduleTable.sheetName) {
-      let editedColName = table.headers[range.getColumn() - 1];
-      if (editedColName === "name") {
-        let record = table.findRecordWithRowNumber(range.getRow());
-        if (record.hasPrimaryKey()) {
-          return;
-        }
-        record.values[table.primaryKey] = Utilities.getUuid();
-        record.save();
-      }
-    }
-  }
-
+  // TODO: serializable なデータ用のクラスを利用する,変なデータ変換の処理はここにはかかない
   public addSchedule(schedule: Object) {
     schedule['id'] = Utilities.getUuid();
     schedule['start'] = moment().format('YYYY/MM/DD');
@@ -78,6 +52,7 @@ export class App {
     return schedule;
   }
 
+  // TODO: serializable なデータ用のクラスを利用する,変なデータ変換の処理はここにはかかない
   public updateSchedule(schedule: Object) {
     let record = this.scheduleTable.findRecordByPrimaryKey(schedule['id']);
     if(!record) {
