@@ -1,203 +1,201 @@
 <style type="text/css">
-/* A Modern CSS Reset */
+  * {
+    font-family: "m plus 1p", sans-serif;
+  }
 
-* {
-  font-family: "m plus 1p", sans-serif;
-}
+  a,
+  a:visited {
+    color: #404040;
+  }
 
-a,
-a:visited {
-  color: #404040;
-}
+  body {
+    background-size: auto auto;
+    background-color: rgba(238, 238, 238, 1);
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 1) 10px,
+      rgba(255, 255, 255, 1) 20px
+    );
+  }
 
-body {
-  background-size: auto auto;
-  background-color: rgba(238, 238, 238, 1);
-  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 1) 10px, rgba(255, 255, 255, 1) 20px );
-}
+  #main-container {
+    padding: 0;
+  }
 
-#main-container {
-  padding: 0;
-}
+  .mybtn {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    color: gray;
+    padding: 0;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0 10px;
+    vertical-align: middle;
+  }
 
-.mybtn {
-  background-color: rgba(0, 0, 0, 0);
-  border: none;
-  color: gray;
-  padding: 0;
-  font-size: 14px;
-  cursor: pointer;
-  margin: 0 10px;
-  vertical-align: middle;
-}
+  .mybtn-hidden {
+    margin-left: 10px;
+  }
 
-.mybtn-hidden {
-  margin-left: 10px;
-}
+  /* darker background on mouse-over */
+  .mybtn:hover {
+    color: black;
+  }
 
-/* darker background on mouse-over */
-.mybtn:hover {
-  color: black;
-}
+  .mybtn-separator {
+    color: gray;
+  }
 
-.mybtn-separator {
-  color: gray;
-}
+  .myvistl-item-content-innerbox a,
+  .myvistl-item-content-innerbox p {
+    color: black;
+    font-weight: bold;
+    font-size: 14px;
+  }
 
-/*
-.myvistl-item-content-background {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0.2;
-}
-*/
+  #header {
+    height: 80px;
+    color: white;
+    background-color: rgb(225, 48, 34);
+    font-size: 28px;
+    font-weight: 600;
+    z-index: 1000;
+    font-family: "M PLUS 1p", sans-serif;
+  }
 
-.myvistl-item-content-innerbox a,
-.myvistl-item-content-innerbox p {
-  color: black;
-  font-weight: bold;
-  font-size: 14px;
-}
+  #button-bar {
+    height: 30px;
+    line-height: 30px;
+    background: white;
+    border-bottom: lightgray 1px solid;
+    padding: 0 0 0 10px;
+    vertical-align: middle;
+    top: 80px;
+  }
 
-#header {
-  height: 80px;
-  color: white;
-  background-color: rgb(225, 48, 34);
-  font-size: 28px;
-  font-weight: 600;
-  z-index: 1000;
-  font-family: 'M PLUS 1p', sans-serif;
-}
+  #vistl-container {
+    width: 100%;
+    height: 100%;
+    border: none;
+    overflow: scroll;
+    position: fixed;
+    top: 110px; /* header と button-bar 分だけ top を設定*/
+    padding: 0 0 0 0;
+    border-bottom: 1px solid gray;
+    background-color: white;
+    padding-bottom: 5px;
+  }
 
-#button-bar {
-  height: 30px;
-  line-height: 30px;
-  background: white;
-  border-bottom: lightgray 1px solid;
-  padding: 0 0 0 10px;
-  vertical-align: middle;
-  top: 80px;
-}
+  /***************************************
+   vis tlimeline の リセットと上書き
+  ****************************************/
 
-#vistl-container {
-  width: 100%;
-  height: 100%;
-  border: none;
-  overflow: scroll;
-  position: fixed;
-  top: 110px; /* header と button-bar 分だけ top を設定*/
-  padding: 0 0 0 0;
-  border-bottom: 1px solid gray;
-  background-color: white;
-  padding-bottom: 5px;
-}
+  /* timeaxis(top) の固定 と位置調整 */
+  .vis-panel.vis-top {
+    margin: 110px 0 0 0; /* header と button-bar 分だけ margin-top を設定*/
+    padding: 0;
+    position: fixed;
+    background-color: rgba(255, 255, 255, 1);
+  }
 
-/***************************************
-  vis tlimeline の リセットと上書き
-****************************************/
+  /* border はいろいろ消す (見栄え目的) */
+  .vis-timeline,
+  .vis-panel,
+  .vis-label {
+    border: none !important;
+  }
 
-/* timeaxis(top) の固定 と位置調整 */
-.vis-panel.vis-top {
-  /* top: 110px; */ /* top の値は js で修正されるっぽいので margin ↓ で修正 */
-  margin: 110px 0 0 0; /* header と button-bar 分だけ margin-top を設定*/
-  padding: 0;
-  position: fixed;
-  background-color: rgba(255, 255, 255, 1);
-}
+  /* group の パネルの border */
+  .vis-panel.vis-left .vis-content {
+    border-right: 5px lightgray double;
+  }
 
-/* border はいろいろ消す (見栄え目的) */
-.vis-timeline,
-.vis-panel,
-.vis-label {
-  border: none !important;
-}
+  /* timeaxis(top) の border 調整 */
+  .vis-time-axis.vis-foreground {
+    border-bottom: 1px solid lightgray;
+    border-left: 5px double lightgray;
+    padding: 0 0 0 5px;
+    margin-left: -5px;
+  }
 
-/* group の パネルの border */
-.vis-panel.vis-left .vis-content {
-  border-right: 5px lightgray double;
-}
+  /* プロジェクトごとの境いの border の style 指定 */
+  .vis-itemset .vis-foreground .vis-group {
+    border-bottom: 2px lightgray dashed;
+  }
 
-/* timeaxis(top) の border 調整 */
-.vis-time-axis.vis-foreground {
-  border-bottom: 1px solid lightgray;
-  border-left: 5px double lightgray;
-  padding: 0 0 0 5px;
-  margin-left: -5px;
-}
+  /* 月の奇数番目の列は色を指定 */
+  .vis-odd.vis-minor {
+    background: rgba(238, 238, 238, 1);
+  }
 
-/* プロジェクトごとの境いの border の style 指定 */
-.vis-itemset .vis-foreground .vis-group {
-  border-bottom: 2px lightgray dashed;
-}
+  /* 月の表示行の微妙な位置修正 */
+  .vis-time-axis.vis-foreground .vis-text {
+    left: 0;
+  }
 
-/* 月の奇数番目の列は色を指定 */
-.vis-odd.vis-minor {
-  background: rgba(238, 238, 238, 1);
-}
+  /* type: point の dot の色のデフォルト */
+  .vis-item.vis-dot {
+    border-color: gray;
+    border-width: 5px;
+    border-radius: 3px;
+  }
 
-/* 月の表示行の微妙な位置修正 */
-.vis-time-axis.vis-foreground .vis-text {
-  left: 0;
-}
+  /* type background の デザイン調整 */
+  .vis-background .vis-item-content {
+    top: 0px;
+    font-size: 10px;
+    color: gray;
+  }
 
-/* type: point の dot の色のデフォルト */
-.vis-item.vis-dot {
-  border-color: gray;
-  border-width: 5px;
-  border-radius: 3px;
-}
+  /* 一番使う range の style */
+  .vis-item.vis-range {
+    overflow: hidden;
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 1px;
+    background-color: white;
+  }
 
-/* type background の デザイン調整 */
-.vis-background .vis-item-content {
-  top: 0px;
-  font-size: 10px;
-  color: gray;
-}
+  /* range が選択されているとき */
+  /* 色は js で指定しているので注意 */
+  .vis-item.vis-range.vis-selected {
+    border-style: dashed;
+    border-width: 2px;
+  }
 
-/* 一番使う range の style */
-.vis-item.vis-range {
-  overflow: hidden;
-  border-radius: 3px;
-  border-style: solid;
-  border-width: 1px;
-  background-color: white;
-}
+  .vis-custom-time {
+    background-size: auto auto !important;
+    background-color: rgba(140, 140, 140, 1) !important;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.75) 10px,
+      rgba(255, 255, 255, 0.75) 20px
+    );
+    width: 2px;
+    position: relative;
+  }
 
-/* range が選択されているとき */
-/* 色は js で指定しているので注意 */
-.vis-item.vis-range.vis-selected {
-  border-style: dashed;
-  border-width: 2px;
-}
+  .vis-custom-time > .vis-custom-time-marker {
+    position: fixed !important;
+    top: 110px !important;
+    z-index: 0 !important;
+  }
 
-.vis-custom-time {
-  background-size: auto auto !important;
-  background-color: rgba(140, 140, 140, 1) !important;
-  background-image: repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255, 255, 255, 0.75) 10px, rgba(255, 255, 255, 0.75) 20px );
-  width: 2px;
-  position: relative;
-}
+  .vis-ltr .vis-label.vis-nested-group .vis-inner {
+    padding-left: 50px !important;
+  }
 
-.vis-custom-time>.vis-custom-time-marker {
-  position: fixed !important;
-  top: 110px !important;
-  z-index: 0 !important;
-}
+  .vis-time-axis .vis-text.vis-minor.vis-saturday,
+  .vis-time-axis .vis-text.vis-minor.vis-sunday {
+    background-color: #ffabb3;
+  }
 
-.vis-ltr .vis-label.vis-nested-group .vis-inner {
-  padding-left: 50px !important;
-}
-
-.vis-time-axis .vis-text.vis-minor.vis-saturday,
-.vis-time-axis .vis-text.vis-minor.vis-sunday {
-  background-color: #ffabb3;
-}
-
-.vis-tooltip {
-  background-color: #fefff5 !important;
-  border: 1px solid gray !important;
-}
+  .vis-tooltip {
+    background-color: #fefff5 !important;
+    border: 1px solid gray !important;
+  }
 </style>
