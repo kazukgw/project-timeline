@@ -169,15 +169,13 @@ export class Table {
 
   private getLastRowNumber(): number {
     let range = this.getPrimaryKeyColRange();
-    Logger.log(
-      `getLastRecordRowNumber: range.getLastRow: ${range.getLastRow()}`
-    );
+    Logger.log(`getLastRecordRowNumber: range.getLastRow: ${range.getLastRow()}`);
     var lastRowNumber: number = this.recordRangeFirstRowNumber;
     range.getValues().forEach((v, i)=>{
       if(!!v[0]) {
         lastRowNumber = (this.recordRangeFirstRowNumber * 1) + i;
       }
-      Logger.log(`getLastRowNumber: lastRowNumber: ${lastRowNumber}`)
+      // Logger.log(`getLastRowNumber: lastRowNumber: ${lastRowNumber}`)
     });
     return lastRowNumber;
     // return (range.getLastRow() * 1) + (this.recordRangeFirstRowNumber * 1) - 1;

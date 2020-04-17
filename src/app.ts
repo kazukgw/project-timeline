@@ -27,41 +27,45 @@ export class App {
 
     this.labelTable = new Table(
       this.spreadSheetId,
-      this.config.tableConfigs['labels']
+      this.config.tableConfigs["labels"]
     );
     this.projectGroupTable = new Table(
       this.spreadSheetId,
-      this.config.tableConfigs['projectGroups']
+      this.config.tableConfigs["projectGroups"]
     );
     this.projectTable = new Table(
       this.spreadSheetId,
-      this.config.tableConfigs['projects']
+      this.config.tableConfigs["projects"]
     );
     this.scheduleTable = new Table(
       this.spreadSheetId,
-      this.config.tableConfigs['schedules']
+      this.config.tableConfigs["schedules"]
     );
   }
 
-  // TODO: serializable なデータ用のクラスを利用する,変なデータ変換の処理はここにはかかない
   public addSchedule(schedule: Object) {
-    schedule['id'] = Utilities.getUuid();
-    schedule['start'] = moment(schedule['start']).format('YYYY/MM/DD');
-    schedule['end'] = schedule['end'] ? moment(schedule['end']).format('YYYY/MM/DD') : moment().add(1, 'month').format('YYYY/MM/DD');
+    schedule["id"] = Utilities.getUuid();
+    schedule["start"] = moment(schedule["start"]).format("YYYY/MM/DD");
+    schedule["end"] = schedule["end"]
+      ? moment(schedule["end"]).format("YYYY/MM/DD")
+      : moment()
+          .add(1, "month")
+          .format("YYYY/MM/DD");
     this.scheduleTable.addRecord(schedule);
     return schedule;
   }
 
-  // TODO: serializable なデータ用のクラスを利用する,変なデータ変換の処理はここにはかかない
   public updateSchedule(schedule: Object) {
-    let record = this.scheduleTable.findRecordByPrimaryKey(schedule['id']);
-    if(!record) {
-      new Error(`record not found: ${schedule['id']}`);
+    let record = this.scheduleTable.findRecordByPrimaryKey(schedule["id"]);
+    if (!record) {
+      new Error(`record not found: ${schedule["id"]}`);
     }
-    Object.keys(schedule).forEach((k)=>{
+    Object.keys(schedule).forEach(k => {
       record.values[k] = schedule[k];
     });
-    Logger.log(`app updateSchedule: record.values: ${JSON.stringify(record.values)}`);
+    Logger.log(
+      `app updateSchedule: record.values: ${JSON.stringify(record.values)}`
+    );
     this.scheduleTable.saveRecord(record);
     return schedule;
   }
@@ -107,7 +111,7 @@ export class SheetListApp {
 
     this.sheetTable = new Table(
       this.spreadSheetId,
-      this.config.tableConfigs['sheets']
+      this.config.tableConfigs["sheets"]
     );
   }
 }

@@ -13,7 +13,7 @@ class RPCClient {
               sheetId: sheetId,
               data: JSON.parse(dataFromGAS)
             };
-            console.log(`getAllData: ${sheetId}: data: ${dataFromGAS}`);
+            // console.log(`getAllData: ${sheetId}: data: ${dataFromGAS}`);
             resolve(d);
           })
           .withFailureHandler(error => {
@@ -60,12 +60,14 @@ class RPCClient {
   updateSchedule(schedule) {
     let gs = this.gs;
     return new Promise((resolve, reject) => {
-      let start = schedule.start ?
-        moment(schedule.start).format("YYYY/MM/DD")
+      let start = schedule.start
+        ? moment(schedule.start).format("YYYY/MM/DD")
         : moment().format("YYYY/MM/DD");
-      let end = schedule.end ?
-        moment(schedule.end).format("YYYY/MM/DD")
-        : moment().add(1, 'month').format("YYYY/MM/DD");
+      let end = schedule.end
+        ? moment(schedule.end).format("YYYY/MM/DD")
+        : moment()
+            .add(1, "month")
+            .format("YYYY/MM/DD");
       var scheduleJson = JSON.stringify({
         sheetId: schedule.sheetId,
         id: schedule.id,
