@@ -330,21 +330,6 @@ class VisTL {
       );
     };
   }
-
-  // filterGroup() {
-  //   console.log('filter group');
-  //   let filtered = this.visTLData.visGroups.get({
-  //     filter: (g) => {
-  //       if(g['isLevel0Group']) {
-  //         return false;
-  //       }
-  //       return g.label !== 'Label 1';
-  //     }
-  //   });
-  //   filtered.forEach((g)=>{
-  //     this.visTLData.visGroups.update({id: g.id, visible: false});
-  //   });
-  // }
 }
 
 class VisTLData {
