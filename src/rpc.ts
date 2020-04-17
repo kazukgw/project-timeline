@@ -4,7 +4,8 @@ class RPCHandler {
 
   constructor(functionName: string, paramJson: string) {
     Logger.log(
-      `init rpc handler: functionName: ${functionName}, paramJson: ${paramJson}`);
+      `init rpc handler: functionName: ${functionName}, paramJson: ${paramJson}`
+    );
     this.functionName = functionName;
     this.paramObject = paramJson == null ? null : JSON.parse(paramJson);
   }
@@ -19,9 +20,9 @@ class RPCHandler {
   }
 
   private getAllData(param: Object): Object {
-    let sheetId = param['sheetId'];
-    if(!!sheetId) {
-      new Error('sheetId is null');
+    let sheetId = param["sheetId"];
+    if (!!sheetId) {
+      new Error("sheetId is null");
     }
     let app = initApp(sheetId);
 
@@ -35,9 +36,9 @@ class RPCHandler {
 
   private addSchedule(schedule: Object) {
     Logger.log(`addSchedule: schedule`);
-    let sheetId = schedule['sheetId'];
-    if(!!sheetId) {
-      new Error('sheetId is null');
+    let sheetId = schedule["sheetId"];
+    if (!!sheetId) {
+      new Error("sheetId is null");
     }
     let app = initApp(sheetId);
     return app.addSchedule(schedule);
@@ -45,9 +46,9 @@ class RPCHandler {
 
   private updateSchedule(schedule: Object) {
     Logger.log(`updateSchedule: schedule`);
-    let sheetId = schedule['sheetId'];
-    if(!!sheetId) {
-      new Error('sheetId is null');
+    let sheetId = schedule["sheetId"];
+    if (!!sheetId) {
+      new Error("sheetId is null");
     }
     let app = initApp(sheetId);
     return app.updateSchedule(schedule);
