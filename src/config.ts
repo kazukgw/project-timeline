@@ -23,23 +23,25 @@ export class Config {
     this.spreadSheet = SpreadsheetApp.openById(this.spreadSheetId);
     this.sheet = this.spreadSheet.getSheetByName(this.sheetName);
 
-    this.rawConfig = this.sheet.getRange(this.configValueCellA1Notation).getValue();
+    this.rawConfig = this.sheet
+      .getRange(this.configValueCellA1Notation)
+      .getValue();
 
     let config = JSON.parse(this.rawConfig);
 
-    let tables: Object = config['tables'];
-    if(!!tables) {
-      new Error('config must has tables');
+    let tables: Object = config["tables"];
+    if (!!tables) {
+      new Error("config must has tables");
     }
 
     this.tableConfigs = {};
-    Object.keys(tables).forEach((k)=>{
+    Object.keys(tables).forEach(k => {
       let t = tables[k];
       this.tableConfigs[k] = new TableConfig(
-        t['sheetName'],
-        t['headerRangeFirstRowNumber'],
-        t['recordRangeFirstRowNumber'],
-        t['primaryKey']
+        t["sheetName"],
+        t["headerRangeFirstRowNumber"],
+        t["recordRangeFirstRowNumber"],
+        t["primaryKey"]
       );
     });
   }
