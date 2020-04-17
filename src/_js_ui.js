@@ -58,30 +58,41 @@ class UIAddScheduleModal {
     this.$titleInput = this.$el.find('#form-add-schedule-title');
     this.$assigneeInput = this.$el.find('#form-add-schedule-assignee');
     this.$linkInput = this.$el.find('#form-add-schedule-link');
+    this.$startInput = this.$el.find('#form-add-schedule-start');
+    this.$endInput = this.$el.find('#form-add-schedule-end');
+
     this.$addButton = this.$el.find('#form-add-schedule-button-add');
 
     this.$projectSelect.select2({width: '100%'});
 
-    this.$addButton.on('click', ()=>{
-      let values = this.$form.serializeArray();
-      let p = this.visTL.visTLData.getVisibleVisData().visGroups.get(this.$projectSelect.val());
-      let scheduleData = {
-        group: p.id,
-        sheetId: p.sheetId,
-        sheetName: p.sheetName,
-        projectGroup: p['isProjectGroup'] ? p.name : p.projectGroupName,
-        project: p['isProjectGroup'] ? '' : p.name,
-        type: this.$typeSelect.val(),
-        name: this.$titleInput.val().trim(),
-        assignee: this.$assigneeInput.val().trim(),
-        link: this.$linkInput.val().trim(),
-      };
-      this.$addButton.prop('disabled', true);
-      this.$addButton.text('Please wait ... ');
+    this.$addButton.on('click', ()=>{ this.onClick() });
+  }
 
-      this.visTL.addSchedule(scheduleData).then(()=>{
-        this.hide();
-      });
+  onClick() {
+    let parentId = this.$projectSelect.val();
+    let g = this.visTL.visTLData.projectGroups.get(parentId);
+    let p = this.visTL.visTLData.projects.get(parentId);
+    let parentObj = p || g;
+    let start = this.$startInput.val();
+    let end = this.$endInput.val();
+    let scheduleData = {
+      group: parentObj._id,
+      sheetId: parentObj.sheetId,
+      sheetName: parentObj.sheetName,
+      sheetUrl: parentObj.sheetName,
+      projectGroup: parentObj['isProjectGroup'] ? parentObj.name : p.projectGroupName,
+      project: parentObj['isProjectGroup'] ? '' : parentObj.name,
+      type: this.$typeSelect.val(),
+      name: this.$titleInput.val().trim(),
+      assignee: this.$assigneeInput.val().trim(),
+      start: start ? moment(start) : moment(),
+      end: end ? moment(end) : moment().add(1, 'month'),
+    };
+    this.$addButton.prop('disabled', true);
+    this.$addButton.text('Please wait ... ');
+
+    this.visTL.addSchedule(scheduleData).then(()=>{
+      this.hide();
     });
   }
 
@@ -91,18 +102,17 @@ class UIAddScheduleModal {
 
   show() {
     this.$projectSelect.empty();
-    let visData = this.visTL.visTLData.getVisibleVisData();
-    visData.visGroups.get().forEach((p)=>{
+    this.visTL.visTLData.currentVisData.visGroups.get().forEach((p)=>{
       var $option;
       if(p['isProject']) {
         $option = $('<option>', {
-          value: p.id,
-          text: `${p.sheetName} / ${p['projectGroupName'] || '<none>'} / ${p.name}`
+          value: p._id,
+          text: `${p.sheetName} / ${p['projectGroup'] || '<none>'} / ${p.name}`
         });
       }
       if(p['isProjectGroup']) {
         $option = $('<option>', {
-          value: p.id,
+          value: p._id,
           text: `${p.sheetName} / ${p.name}`
         });
       }
@@ -132,28 +142,32 @@ class UIEditScheduleModal {
 
     this.$projectSelect.select2({width: '100%'});
 
-    this.$updateButton.on('click', ()=>{
-      let values = this.$form.serializeArray();
-      let visData = this.visTL.visTLData.getVisibleVisData();
-      let p = visData.visGroups.get(this.$projectSelect.val());
-      this.schedule.group = p.id,
-      this.schedule.sheetId = p.sheetId,
-      this.schedule.sheetName = p.sheetName,
-      this.schedule.projectGroup = p['isProjectGroup'] ? p.name : p.projectGroupName,
-      this.schedule.project = p['isProjectGroup'] ? '' : p.name,
-      this.schedule.type = this.$typeSelect.val(),
-      this.schedule.name = this.$titleInput.val().trim(),
-      this.schedule.assignee = this.$assigneeInput.val().trim(),
-      this.schedule.link = this.$linkInput.val().trim(),
+    this.$updateButton.on('click', ()=>{ this.onClick() });
+  }
 
-      this.visTL.updateSchedule(this.schedule).then(()=>{
-        this.schedule = null;
-        this.hide();
-      });
+  onClick() {
+    let parentId = this.$projectSelect.val();
+    let g = this.visTL.visTLData.projectGroups.get(parentId);
+    let p = this.visTL.visTLData.projects.get(parentId);
+    let parentObj = p || g;
+    this.schedule.group = parentObj._id,
+    this.schedule.sheetId = parentObj.sheetId,
+    this.schedule.sheetName = parentObj.sheetName,
+    this.schedule.sheetUrl = parentObj.sheetUrl,
+    this.schedule.projectGroup = parentObj['isProjectGroup'] ? parentObj.name : parentObj.projectGroupName,
+    this.schedule.project = parentObj['isProjectGroup'] ? '' : parentObj.name,
+    this.schedule.type = this.$typeSelect.val(),
+    this.schedule.name = this.$titleInput.val().trim(),
+    this.schedule.assignee = this.$assigneeInput.val().trim(),
+    this.schedule.link = this.$linkInput.val().trim(),
 
-      this.$updateButton.prop('disabled', true);
-      this.$updateButton.text('Please wait ... ');
+    this.visTL.updateSchedule(this.schedule).then(()=>{
+      this.schedule = null;
+      this.hide();
     });
+
+    this.$updateButton.prop('disabled', true);
+    this.$updateButton.text('Please wait ... ');
   }
 
   hide() {
@@ -163,26 +177,38 @@ class UIEditScheduleModal {
   show(schedule) {
     this.schedule = schedule;
     this.$projectSelect.empty();
-    let visData = this.visTL.visTLData.getVisibleVisData();
-    visData.visGroups.get().forEach((p)=>{
+    this.visTL.visTLData.currentVisData.visGroups.get().forEach((p)=>{
+      // sheet またぎのプロジェクトの変更はできないので 選択肢に列挙しない
+      if(this.schedule.sheetId !== p.sheetId) {
+        return;
+      }
       var $option;
       if(p['isProject']) {
         $option = $('<option>', {
-          value: p.id,
-          text: `${p.sheetName} / ${p['projectGroupName'] || '<none>'} / ${p.name}`
+          value: p._id,
+          text: `${p.sheetName} / ${p['projectGroup'] || '<none>'} / ${p.name}`
         });
       }
       if(p['isProjectGroup']) {
         $option = $('<option>', {
-          value: p.id,
+          value: p._id,
           text: `${p.sheetName} / ${p.name}`
         });
       }
       this.$projectSelect.append($option);
     });
-    this.$idInput.val(schedule.orgId);
-    this.$projectSelect.val(schedule.group);
+
+    this.$idInput.val(schedule.id);
+
+    let gId = schedule.projectGroup ?
+      this.visTL.visTLData.converter.getProjectGroupId(schedule.sheetId, schedule.projectGroup)
+      : null;
+    let pId = schedule.project ?
+      this.visTL.visTLData.converter.getProjectId(schedule.sheetId, schedule.project)
+      : null;
+    this.$projectSelect.val(pId || gId);
     this.$projectSelect.trigger('change');
+
     this.$typeSelect.val(schedule.type);
     this.$titleInput.val(schedule.name);
     this.$assigneeInput.val(schedule.assignee);

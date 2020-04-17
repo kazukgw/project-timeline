@@ -46,8 +46,8 @@ export class App {
   // TODO: serializable なデータ用のクラスを利用する,変なデータ変換の処理はここにはかかない
   public addSchedule(schedule: Object) {
     schedule['id'] = Utilities.getUuid();
-    schedule['start'] = moment().format('YYYY/MM/DD');
-    schedule['end'] = moment().add(1, 'month').format('YYYY/MM/DD');
+    schedule['start'] = moment(schedule['start']).format('YYYY/MM/DD');
+    schedule['end'] = schedule['end'] ? moment(schedule['end']).format('YYYY/MM/DD') : moment().add(1, 'month').format('YYYY/MM/DD');
     this.scheduleTable.addRecord(schedule);
     return schedule;
   }

@@ -2,8 +2,8 @@
 <html>
   <head>
     <title><?= title ?></title>
-    <?!= includeHtml('assets') ?>
-    <?!= includeHtml('css') ?>
+    <?!= includeHtml('_assets') ?>
+    <?!= includeHtml('_css') ?>
   </head>
   <body>
     <div id="main-container" class="container-fluid">
@@ -15,16 +15,31 @@
         <div class="row justify-content-md-center">
           <form id="form-sheet-list">
             <div class="form-group">
-              <label>Sheet List </label><br>
-              <a target="_blank" href="<?!= sheetListSheetURL ?>" style="color: dodgerblue"> <?= sheetListSheetName ?></a>
+              <label>Sheet List </label><br />
+              <a
+                target="_blank"
+                href="<?!= sheetListSheetURL ?>"
+                style="color: dodgerblue"
+              >
+                <?= sheetListSheetName ?>
+              </a>
             </div>
             <div class="form-group">
-              <label for="form-pageurl">Page URL
-                <a id="form-open-url" class="btn btn-primary btn-sm" href="" target="_blank" style="color: white"> Open </a>
+              <label for="form-pageurl"
+                >Page URL
+                <a
+                  id="form-open-url"
+                  class="btn btn-primary btn-sm"
+                  href=""
+                  target="_blank"
+                  style="color: white"
+                >
+                  Open
+                </a>
               </label>
               <textarea id="form-pageurl" class="form-control" readonly>
               </textarea>
-              <br>
+              <br />
             </div>
             <div class="form-group">
               <label for="form-title">Page Title</label>
@@ -38,21 +53,15 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th scope="col">
-                    <!--
-                    <input class="form-check-input" type="checkbox" value="" id="form-sheet-list-all">
-                    <label class="form-check-label" for="form-sheet-list-all"></label>
-                    -->
-                  </th>
+                  <th scope="col"></th>
                   <th scope="col">Name</th>
                   <th scope="col">ID</th>
                   <th scope="col">Link</th>
                 </tr>
               </thead>
               <label>Sheets</label>
-              <br>
-              <tbody>
-              </tbody>
+              <br />
+              <tbody></tbody>
             </table>
           </form>
         </div>
@@ -64,15 +73,17 @@
     <script type="application/json" id="script-webapp-url">
       <?!= scriptWebAppUrl ?>
     </script>
-    <?!= includeHtml('js_assets') ?>
+    <?!= includeHtml('_js_assets') ?>
     <script>
-      $(()=>{
-        let scriptWebAppUrl = encodeURI(JSON.parse($('#script-webapp-url').text())['url']);
-        $('#form-pageurl').val(scriptWebAppUrl);
-        $('#form-open-url').attr('href', scriptWebAppUrl);
-        let $form = $('#form-sheet-list');
-        let $tbody = $form.find('tbody');
-        let $formTitle = $('#form-title');
+      $(() => {
+        let scriptWebAppUrl = encodeURI(
+          JSON.parse($("#script-webapp-url").text())["url"]
+        );
+        $("#form-pageurl").val(scriptWebAppUrl);
+        $("#form-open-url").attr("href", scriptWebAppUrl);
+        let $form = $("#form-sheet-list");
+        let $tbody = $form.find("tbody");
+        let $formTitle = $("#form-title");
         let checkboxTemplate = Handlebars.compile(`
             <tr>
               <th scope="row">
@@ -86,25 +97,25 @@
               <td><a target="_blank" href="{{url}}">link</a></td>
             </tr>
         `);
-        let sheets = JSON.parse($('#data-sheet-list').text());
-        sheets.forEach((s, i)=>{
+        let sheets = JSON.parse($("#data-sheet-list").text());
+        sheets.forEach((s, i) => {
           s.index = i;
           $tbody.append($(checkboxTemplate(s)));
         });
 
-        $(document).on('change', '#form-sheet-list', (ev)=>{
+        $(document).on("change", "#form-sheet-list", ev => {
           let idList = [];
-          $checked = $form.find('[type=checkbox]:checked');
-          $checked.each((i, el)=>{
+          $checked = $form.find("[type=checkbox]:checked");
+          $checked.each((i, el) => {
             idList.push($(el).val());
           });
-          var url = scriptWebAppUrl + '?sheet=' + idList.join("&sheet=");
-          if(!!$formTitle.val()) {
-            url = url + '&title=' + $formTitle.val();
+          var url = scriptWebAppUrl + "?sheet=" + idList.join("&sheet=");
+          if (!!$formTitle.val()) {
+            url = url + "&title=" + $formTitle.val();
           }
           url = encodeURI(url);
-          $('#form-pageurl').val(url);
-          $('#form-open-url').attr('href', url);
+          $("#form-pageurl").val(url);
+          $("#form-open-url").attr("href", url);
         });
       });
     </script>

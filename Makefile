@@ -9,7 +9,8 @@ push: ## clasp push
 	cp src/*.html dist/
 	cp src/*.ts dist/
 	cp src/moment.min.js dist/
-	cp src/js.js dist/js.html
-	cp src/js_models.js dist/js_models.html
-	cp src/js_ui.js dist/js_ui.html
+	cp src/_js_entrypoint.js dist/_js_entrypoint.html
+	cp src/_js_models.js dist/_js_models.html
+	cp src/_js_rpc.js dist/_js_rpc.html
+	cp src/_js_ui.js dist/_js_ui.html
 	npx clasp push

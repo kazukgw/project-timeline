@@ -43,7 +43,6 @@ class RPCHandler {
     return app.addSchedule(schedule);
   }
 
-  // TODO: serializable な データ用クラスを利用するように変更する
   private updateSchedule(schedule: Object) {
     Logger.log(`updateSchedule: schedule`);
     let sheetId = schedule['sheetId'];

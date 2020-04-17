@@ -2,8 +2,8 @@
 <html>
   <head>
     <title><?= title ?></title>
-    <?!= includeHtml('assets') ?>
-    <?!= includeHtml('css') ?>
+    <?!= includeHtml('_assets') ?>
+    <?!= includeHtml('_css') ?>
   </head>
   <body>
     <div id="main-container" class="container-fluid">
@@ -50,7 +50,8 @@
       tabindex="-1"
       role="dialog"
       aria-hidden="true"
-    > <div class="modal-dialog modal-lg" role="document">
+    >
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Add Schedule</h5>
@@ -62,7 +63,9 @@
             >
               <span aria-hidden="true">&times;</span>
             </button>
-          </div> <div class="modal-body"> <form id="form-add-schedule">
+          </div>
+          <div class="modal-body">
+            <form id="form-add-schedule">
               <div class="form-group">
                 <label for="form-add-schedule-project">Project</label>
                 <br />
@@ -82,8 +85,8 @@
                   class="form-control"
                   name="type"
                 >
-                <option value="range"> Range (Default)</option>
-                <option value="point"> Point </option>
+                  <option value="range"> Range (Default)</option>
+                  <option value="point"> Point </option>
                 </select>
               </div>
 
@@ -108,12 +111,32 @@
               </div>
 
               <div class="form-group">
-                <label for="form-add-schedule-Link">Link</label>
+                <label for="form-add-schedule-link">Link</label>
                 <input
                   type="text"
                   id="form-add-schedule-link"
                   class="form-control"
                   name="title"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-add-schedule-start">Start</label>
+                <input
+                  type="date"
+                  id="form-add-schedule-start"
+                  class="form-control"
+                  name="start"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-add-schedule-end">End</label>
+                <input
+                  type="date"
+                  id="form-add-schedule-end"
+                  class="form-control"
+                  name="end"
                 />
               </div>
             </form>
@@ -171,7 +194,6 @@
                   name="id"
                   readonly
                 />
-                </select>
               </div>
 
               <div class="form-group">
@@ -193,11 +215,10 @@
                   class="form-control"
                   name="type"
                 >
-                <option value="range"> Range (Default)</option>
-                <option value="point"> Point </option>
+                  <option value="range"> Range (Default)</option>
+                  <option value="point"> Point </option>
                 </select>
               </div>
-
 
               <div class="form-group">
                 <label for="form-edit-schedule-title">Title</label>
@@ -275,7 +296,12 @@
           <div class="modal-body">
             <form>
               <div class="form-group">
-                <textarea id="modal-get-settings-as-url-url" class="form-control" rows="10" readonly>
+                <textarea
+                  id="modal-get-settings-as-url-url"
+                  class="form-control"
+                  rows="10"
+                  readonly
+                >
                 </textarea>
               </div>
             </form>
@@ -293,22 +319,23 @@
       </div>
     </div>
 
-
     <script type="application/json" id="data-sheet-list">
       <?!= sheetList ?>
     </script>
     <script type="application/json" id="data-requestUrl">
       <?!= requestUrl ?>
     </script>
-    <?!= includeHtml('js_assets') ?>
+
+    <?!= includeHtml('_js_assets') ?>
+
     <script>
-      <?!= includeHtml('js_models') ?>
-    </script>
-    <script>
-      <?!= includeHtml('js_ui') ?>
-    </script>
-    <script>
-      <?!= includeHtml('js') ?>
+      <?!= includeHtml('_js_models') ?>
+
+      <?!= includeHtml('_js_rpc') ?>
+
+      <?!= includeHtml('_js_ui') ?>
+
+      <?!= includeHtml('_js_entrypoint') ?>
     </script>
   </body>
 </html>
