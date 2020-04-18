@@ -239,6 +239,7 @@ class UIGetSettingsAsURLModal {
     this.visTL = visTL;
     this.$el = $("#modal-get-settings-as-url");
     this.$urlInput = $("#modal-get-settings-as-url-url");
+    this.$urlWithRangeInput = $("#modal-get-settings-as-url-url-withrange");
   }
 
   hide() {
@@ -246,7 +247,9 @@ class UIGetSettingsAsURLModal {
   }
 
   show(schedule) {
-    this.$urlInput.val(this.visTL.getHiddenSettingsAsUrl());
+    let url = this.visTL.getSettingsAsUrl();
+    this.$urlInput.val(url.url);
+    this.$urlWithRangeInput.val(url.withRange);
     this.$el.modal("show");
   }
 }

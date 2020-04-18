@@ -14,10 +14,21 @@ class VisTL {
 
     this.hiddenGroups = [];
 
-    let hidden = new URL(this.requestUrl).searchParams.get("hidden");
+    let url = new URL(this.requestUrl)
+
+    let hidden = url.searchParams.get("hidden");;
+    this.hiddenGroups = [];
     if (hidden) {
       this.hiddenGroups = inflateJson(hidden);
     }
+
+    let range = url.searchParams.get("range");;
+    this.defaultRange = null;
+    if (range) {
+      this.defaultRange = inflateJson(range);
+    }
+
+    this.defaultDuration = url.searchParams.get("duration");
   }
 
   create(container) {
@@ -37,15 +48,23 @@ class VisTL {
     }
   }
 
-  getHiddenSettingsAsUrl() {
+  getSettingsAsUrl() {
     let url = new URL(this.requestUrl);
-    if (this.hiddenGroups.length > 0) {
-      let settings = deflateJson(this.hiddenGroups);
-      url.searchParams.set("hidden", settings);
-      return url.href;
-    }
+    url.searchParams.delete("range");
     url.searchParams.delete("hidden");
-    return url.href;
+    if (this.hiddenGroups.length > 0) {
+      url.searchParams.set("hidden", deflateJson(this.hiddenGroups));
+    }
+    let withoutRange = url.href;
+
+    url.searchParams.set("range", deflateJson({
+      start: this.visTL.range.start,
+      end: this.visTL.range.end
+    }));
+    return {
+      url: withoutRange,
+      withRange: url.href,
+    };
   }
 
   toggleFoldings() {
@@ -157,6 +176,7 @@ class VisTL {
         template: this.getTooltipTemplateFunc()
       },
       template: this.getItemTemplateFunc(),
+      visibleFrameTemplate: this.getVisibleFrameTempate(),
       groupTemplate: this.getGroupTemplateFunc(),
       snap: function(date, scale, step) {
         date.setHours(0);
@@ -194,7 +214,7 @@ class VisTL {
         link: schedule.link,
         name: schedule.name,
         color: schedule.color,
-        assignee: schedule.assignee
+        assignee: schedule.assignee,
       };
       switch (schedule.type) {
         case "range":
@@ -215,6 +235,25 @@ class VisTL {
           return d.name;
       }
     };
+  }
+
+  getVisibleFrameTempate() {
+      let defaulTemplate = Handlebars.compile(`
+        {{#if progress}}
+        <div class="progress" style="border-radius: 0px">
+          <div class="progress-bar bg-secondary" role="progressbar" style="width: {{progress}}%;" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100">{{progress}}%</div>
+        </div>
+        {{/if}}
+    `);
+    return function(schedule, element, data) {
+      let progress = parseInt(schedule.progress);
+      var d = { progress:  progress };
+      switch (schedule.type) {
+        case "range":
+          return defaulTemplate(d);
+      }
+      return "";
+    }
   }
 
   getGroupTemplateFunc() {
