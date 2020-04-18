@@ -142,6 +142,7 @@ class UIEditScheduleModal {
     this.$typeSelect = this.$el.find("#form-edit-schedule-type");
     this.$titleInput = this.$el.find("#form-edit-schedule-title");
     this.$assigneeInput = this.$el.find("#form-edit-schedule-assignee");
+    this.$progressInput = this.$el.find("#form-edit-schedule-progress");
     this.$linkInput = this.$el.find("#form-edit-schedule-link");
     this.$updateButton = this.$el.find("#form-edit-schedule-button-update");
 
@@ -168,6 +169,7 @@ class UIEditScheduleModal {
     this.schedule.type = this.$typeSelect.val();
     this.schedule.name = this.$titleInput.val().trim();
     this.schedule.assignee = this.$assigneeInput.val().trim();
+    this.schedule.progress = this.$progressInput.val().trim();
     this.schedule.link = this.$linkInput.val().trim();
     this.visTL.updateSchedule(this.schedule).then(() => {
       this.schedule = null;
@@ -226,6 +228,7 @@ class UIEditScheduleModal {
     this.$typeSelect.val(schedule.type);
     this.$titleInput.val(schedule.name);
     this.$assigneeInput.val(schedule.assignee);
+    this.$progressInput.val(schedule.progress);
     this.$linkInput.val(schedule.link);
 
     this.$updateButton.text("Update");

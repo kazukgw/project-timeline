@@ -421,6 +421,7 @@ class VisTLData {
     s.type = schedule.type;
     s.name = schedule.name;
     s.assignee = schedule.assignee;
+    s.progress = schedule.progress;
     s.link = schedule.link;
     s.start = moment(schedule.start);
     s.end = moment(schedule.end);

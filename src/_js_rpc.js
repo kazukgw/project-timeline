@@ -74,6 +74,7 @@ class RPCClient {
         type: schedule.type,
         name: schedule.name,
         assignee: schedule.assignee,
+        progress: schedule.progress,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
         link: schedule.link,
