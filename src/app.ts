@@ -44,7 +44,7 @@ export class App {
   }
 
   public addSchedule(schedule: Object) {
-    schedule["id"] = Utilities.getUuid();
+    schedule["_id"] = Utilities.getUuid();
     schedule["start"] = moment(schedule["start"]).format("YYYY/MM/DD");
     schedule["end"] = schedule["end"]
       ? moment(schedule["end"]).format("YYYY/MM/DD")
@@ -56,9 +56,12 @@ export class App {
   }
 
   public updateSchedule(schedule: Object) {
-    let record = this.scheduleTable.findRecordByPrimaryKey(schedule["id"]);
+    if(!schedule["_id"]) {
+      new Error(`record has no primary key: ${schedule["_id"]}`);
+    }
+    let record = this.scheduleTable.findRecordByPrimaryKey(schedule["_id"]);
     if (!record) {
-      new Error(`record not found: ${schedule["id"]}`);
+      new Error(`record not found: ${schedule["_id"]}`);
     }
     Object.keys(schedule).forEach(k => {
       record.values[k] = schedule[k];

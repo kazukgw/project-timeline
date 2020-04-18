@@ -29,5 +29,5 @@ function inflateJson(data) {
 }
 
 function deflateJson(data) {
-  return pako.deflate(JSON.stringify(data), { to: "string" });
+  return btoa(pako.deflate(JSON.stringify(data), { to: "string" }));
 }

@@ -216,7 +216,7 @@ export class Table {
   private findRangeByPrimaryKey(
     key: string
   ): GoogleAppsScript.Spreadsheet.Range {
-    Logger.log(`findRangeByPrimaryKey: ${this.sheetName} key: ${key}`)
+    Logger.log(`findRangeByPrimaryKey: ${this.sheetName} key: ${key}`);
     let pkColRange = this.getPrimaryKeyColRange();
     Logger.log(`findRangeByPrimaryKey: pkColRange: ${pkColRange.getA1Notation()}`);
     let textFinder = pkColRange.createTextFinder(key);

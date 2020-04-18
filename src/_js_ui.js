@@ -78,7 +78,7 @@ class UIAddScheduleModal {
     let start = this.$startInput.val();
     let end = this.$endInput.val();
     let scheduleData = {
-      group: parentObj._id,
+      group: parentObj.id,
       sheetId: parentObj.sheetId,
       sheetName: parentObj.sheetName,
       sheetUrl: parentObj.sheetName,
@@ -110,13 +110,13 @@ class UIAddScheduleModal {
       var $option;
       if (p["isProject"]) {
         $option = $("<option>", {
-          value: p._id,
+          value: p.id,
           text: `${p.sheetName} / ${p["projectGroup"] || "<none>"} / ${p.name}`
         });
       }
       if (p["isProjectGroup"]) {
         $option = $("<option>", {
-          value: p._id,
+          value: p.id,
           text: `${p.sheetName} / ${p.name}`
         });
       }
@@ -156,7 +156,7 @@ class UIEditScheduleModal {
     let g = this.visTL.visTLData.projectGroups.get(parentId);
     let p = this.visTL.visTLData.projects.get(parentId);
     let parentObj = p || g;
-    this.schedule.group = parentObj._id;
+    this.schedule.group = parentObj.id;
     this.schedule.sheetId = parentObj.sheetId;
     this.schedule.sheetName = parentObj.sheetName;
     this.schedule.sheetUrl = parentObj.sheetUrl;
@@ -192,20 +192,20 @@ class UIEditScheduleModal {
       var $option;
       if (p["isProject"]) {
         $option = $("<option>", {
-          value: p._id,
+          value: p.id,
           text: `${p.sheetName} / ${p["projectGroup"] || "<none>"} / ${p.name}`
         });
       }
       if (p["isProjectGroup"]) {
         $option = $("<option>", {
-          value: p._id,
+          value: p.id,
           text: `${p.sheetName} / ${p.name}`
         });
       }
       this.$projectSelect.append($option);
     });
 
-    this.$idInput.val(schedule.id);
+    this.$idInput.val(schedule._id);
 
     let gId = schedule.projectGroup
       ? this.visTL.visTLData.converter.getProjectGroupId(

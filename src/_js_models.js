@@ -50,7 +50,6 @@ class VisTL {
 
   toggleFoldings() {
     var showNested;
-    // TODO: state は enum を使う
     if (this.currentFoldings === this.foldingsState.OPEN) {
       this.currentFoldings = this.foldingsState.CLOSE;
       showNested = false;
@@ -65,11 +64,9 @@ class VisTL {
         showNested: showNested
       });
     });
-    // this.visTLData.projects.forEach(g => {
-    //   this.visTLData.projects.update({ _id: g._id, showNested: showNested });
-    // });
-    this.visTLData.labels.forEach(g => {
-      this.visTLData.labels.update({ _id: g._id, showNested: showNested });
+
+    this.visTLData.labels.forEach(l => {
+      this.visTLData.labels.update({ id: l.id, showNested: showNested });
     });
 
     if (this.currrentGrouping === this.groupingState.GROUP) {
@@ -257,7 +254,6 @@ class VisTL {
     `);
     return function(group, element, data) {
       let d = {
-        // id: group._id,
         id: group.id,
         name: group.name,
         color: group.color,
@@ -483,7 +479,6 @@ class VisTLData {
         filter: g => {
           if (g.invalid) return false;
           if (!g.visible) return false;
-          // if (hiddenGroupIds.indexOf(g._id) > -1) return false;
           if (hiddenGroupIds.indexOf(g.id) > -1) return false;
           return true;
         }
@@ -495,7 +490,6 @@ class VisTLData {
         filter: p => {
           if (p.invalid) return false;
           if (!p.visible) return false;
-          // if (hiddenGroupIds.indexOf(p._id) > -1) return false;
           if (hiddenGroupIds.indexOf(p.id) > -1) return false;
 
           if (!p.projectGroup) return true;
@@ -524,7 +518,6 @@ class VisTLData {
         filter: l => {
           if (l.invalid) return false;
           if (!l.visible) return false;
-          // if (hiddenGroupIds.indexOf(l._id) > -1) return false;
           if (hiddenGroupIds.indexOf(l.id) > -1) return false;
           return true;
         }
@@ -574,7 +567,6 @@ class VisTLData {
     data.projectGroups.forEach(g => {
       let l = data.labels.get(this.converter.getLabelId(g.sheetId, g.label));
       if (l) {
-        // l.nestedGroups.push(g._id);
         l.nestedGroups.push(g.id);
       }
       g.nestedGroups = [];
@@ -585,7 +577,6 @@ class VisTLData {
     data.projects.forEach(p => {
       let l = data.labels.get(this.converter.getLabelId(p.sheetId, p.label));
       if (l) {
-        // l.nestedGroups.push(p._id);
         l.nestedGroups.push(p.id);
         data.labels.update(l);
       }
@@ -594,13 +585,10 @@ class VisTLData {
         this.converter.getProjectGroupId(p.sheetId, p.projectGroup)
       );
       if (g) {
-        // g.nestedGroups.push(p._id);
         g.nestedGroups.push(p.id);
         data.projectGroups.update(g);
 
         p.color = p.color || g.color || "black";
-        // p.group = g._id;
-        // p.projectGroupId = g._id;
         p.group = g.id;
         p.projectGroupId = g.id;
         p.invalid = p.orgInvalid || g.invalid;
@@ -616,12 +604,9 @@ class VisTLData {
       let p = data.projects.get(
         this.converter.getProjectId(s.sheetId, s.project)
       );
-      // s.projectGroupId = g ? g._id : null;
-      // s.projectGroupId = g ? g._id : null;
       s.projectId = p ? p.id : null;
       s.projectId = p ? p.id : null;
       let parentObj = p || g;
-      // s.group = parentObj ? parentObj.id : null;
       s.group = parentObj ? parentObj.id : null;
       var color = s.color || (parentObj && parentObj.color) || "black";
       if (color === "white") {
@@ -635,7 +620,6 @@ class VisTLData {
   }
 
   _newDataSet(data) {
-    // return new vis.DataSet(data, { fieldId: "_id" });
     return new vis.DataSet(data);
   }
 }
@@ -648,7 +632,6 @@ class VisDataConverter {
   convertLabel(sheet, label, index) {
     return Object.assign(
       {
-        // _id: this.getLabelId(sheet.id, label.name),
         id: this.getLabelId(sheet.id, label.name),
         nestedGroups: null,
         showNested: true,
@@ -671,7 +654,6 @@ class VisDataConverter {
   convertProjectGroup(sheet, projectGroup, index) {
     return Object.assign(
       {
-        // _id: this.getProjectGroupId(sheet.id, projectGroup.name),
         id: this.getProjectGroupId(sheet.id, projectGroup.name),
         nestedGroups: null,
         visible: !projectGroup.invalid,
@@ -695,7 +677,6 @@ class VisDataConverter {
   convertProject(sheet, project, index) {
     return Object.assign(
       {
-        // _id: this.getProjectId(sheet.id, project.name),
         id: this.getProjectId(sheet.id, project.name),
         group: null,
         visible: !project.invalid,
@@ -725,19 +706,11 @@ class VisDataConverter {
           "UTC"
         )
       : start.add(1, "month");
-    return Object.assign(
+    let o = Object.assign(
       {
-        // _id: this.getScheduleId(sheet.id, schedule.id),
         id: this.getScheduleId(sheet.id, schedule._id),
         group: null,
         type: schedule.type || "range",
-        editable: {
-          add: false,
-          updateTime: true,
-          updateGroup: false,
-          remove: false,
-          overrideItems: false
-        },
 
         start: start,
         end: end,
@@ -751,5 +724,13 @@ class VisDataConverter {
       },
       schedule
     );
+    o.editable = {
+      add: false,
+      updateTime: true,
+      updateGroup: false,
+      remove: false,
+      overrideItems: false
+    };
+    return o;
   }
 }

@@ -70,7 +70,7 @@ class RPCClient {
             .format("YYYY/MM/DD");
       var scheduleJson = JSON.stringify({
         sheetId: schedule.sheetId,
-        id: schedule.id,
+        _id: schedule._id,
         type: schedule.type,
         name: schedule.name,
         assignee: schedule.assignee,
