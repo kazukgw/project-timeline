@@ -84,10 +84,11 @@ class UIAddScheduleModal {
       sheetUrl: parentObj.sheetName,
       projectGroup: parentObj["isProjectGroup"]
         ? parentObj.name
-        : p.projectGroupName,
+        : p.projectGroup,
       project: parentObj["isProjectGroup"] ? "" : parentObj.name,
       type: this.$typeSelect.val(),
       name: this.$titleInput.val().trim(),
+      link: this.$linkInput.val().trim(),
       assignee: this.$assigneeInput.val().trim(),
       start: start ? moment(start) : moment(),
       end: end ? moment(end) : moment().add(1, "month")

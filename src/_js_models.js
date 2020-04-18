@@ -587,8 +587,10 @@ class VisTLData {
       if (g) {
         g.nestedGroups.push(p.id);
         data.projectGroups.update(g);
-
         p.color = p.color || g.color || "black";
+        if (p.color === "white") {
+          p.color = "black";
+        }
         p.group = g.id;
         p.projectGroupId = g.id;
         p.invalid = p.orgInvalid || g.invalid;
