@@ -633,7 +633,6 @@ class VisTLData {
         }
         p.group = g.id;
         p.projectGroupId = g.id;
-        p.invalid = p.orgInvalid || g.invalid;
         p.visible = !p.invalid;
       }
       data.projects.update(p);
