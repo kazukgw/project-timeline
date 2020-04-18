@@ -52,10 +52,10 @@ class VisTL {
     var showNested;
     // TODO: state は enum を使う
     if (this.currentFoldings === this.foldingsState.OPEN) {
-      this.currentFoldings = this.this.foldingsState.CLOSE;
+      this.currentFoldings = this.foldingsState.CLOSE;
       showNested = false;
     } else {
-      this.currentFoldings = this.this.foldingsState.OPEN;
+      this.currentFoldings = this.foldingsState.OPEN;
       showNested = true;
     }
 
