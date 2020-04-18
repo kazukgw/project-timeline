@@ -35,12 +35,11 @@ It's written in Google Apps Script.
 - [x] Allow the setting of Hidden to be specified with a query parameter
 - [x] ~~Adding a Hide Schedule Button~~
 - [x] ~~vis-timeline の option をシートから指定できるように~~
-- [ ] Add 時に Start/End も指定できるようにする
-- [ ] Query Parameter で Zoom Level を指定できるようにする
-- [ ] Refactoring #1 (Add comment, Error handling)
+- [x] Add 時に Start/End も指定できるようにする
+- [x] Query Parameter で Zoom Level を指定できるようにする
+- [x] Refactoring #1 (Add comment, Error handling)
 - [ ] フロントエンドのコードの TypeScript化
 - [ ] filter by assignee
 - [ ] Create a color palette
-- [ ] Create a serializable model
 - [ ] Enhance the development environment
 - [ ] Auto test
