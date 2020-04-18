@@ -156,24 +156,22 @@ class UIEditScheduleModal {
     let g = this.visTL.visTLData.projectGroups.get(parentId);
     let p = this.visTL.visTLData.projects.get(parentId);
     let parentObj = p || g;
-    (this.schedule.group = parentObj._id),
-      (this.schedule.sheetId = parentObj.sheetId),
-      (this.schedule.sheetName = parentObj.sheetName),
-      (this.schedule.sheetUrl = parentObj.sheetUrl),
-      (this.schedule.projectGroup = parentObj["isProjectGroup"]
-        ? parentObj.name
-        : parentObj.projectGroupName),
-      (this.schedule.project = parentObj["isProjectGroup"]
-        ? ""
-        : parentObj.name),
-      (this.schedule.type = this.$typeSelect.val()),
-      (this.schedule.name = this.$titleInput.val().trim()),
-      (this.schedule.assignee = this.$assigneeInput.val().trim()),
-      (this.schedule.link = this.$linkInput.val().trim()),
-      this.visTL.updateSchedule(this.schedule).then(() => {
-        this.schedule = null;
-        this.hide();
-      });
+    this.schedule.group = parentObj._id;
+    this.schedule.sheetId = parentObj.sheetId;
+    this.schedule.sheetName = parentObj.sheetName;
+    this.schedule.sheetUrl = parentObj.sheetUrl;
+    this.schedule.projectGroup = parentObj["isProjectGroup"]
+      ? parentObj.name
+      : parentObj.projectGroupName;
+    this.schedule.project = parentObj["isProjectGroup"] ? "" : parentObj.name;
+    this.schedule.type = this.$typeSelect.val();
+    this.schedule.name = this.$titleInput.val().trim();
+    this.schedule.assignee = this.$assigneeInput.val().trim();
+    this.schedule.link = this.$linkInput.val().trim();
+    this.visTL.updateSchedule(this.schedule).then(() => {
+      this.schedule = null;
+      this.hide();
+    });
 
     this.$updateButton.prop("disabled", true);
     this.$updateButton.text("Please wait ... ");
