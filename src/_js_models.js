@@ -6,19 +6,17 @@ class VisTL {
 
     this.visTL = null;
 
-    // TODO: enum object を定義する
-    // TODO: 名前の変更 (groupByState て意味わからん)
-    this.groupByState = "group";
-    // TODO: enum object を定義する
-    this.foldingsState = "open";
+    this.groupingState = { GROUP: "group", LABEL: "label" };
+    this.currrentGrouping = this.groupingState.GROUP;
+
+    this.foldingsState = { OPEN: "open", CLOSE: "close" };
+    this.currentFoldings = this.foldingsState.OPEN;
+
     this.hiddenGroups = [];
 
     let hidden = new URL(this.requestUrl).searchParams.get("hidden");
     if (hidden) {
-      // TODO: JSON.parse(xxx) は メソッドにまとめる
-      this.hiddenGroups = JSON.parse(
-        pako.inflate(atob(hidden), { to: "string" })
-      );
+      this.hiddenGroups = inflateJson(hidden);
     }
   }
 
@@ -42,10 +40,7 @@ class VisTL {
   getHiddenSettingsAsUrl() {
     let url = new URL(this.requestUrl);
     if (this.hiddenGroups.length > 0) {
-      // TODO: btoa(xxx) は メソッドにまとめる
-      let settings = btoa(
-        pako.deflate(JSON.stringify(this.hiddenGroups), { to: "string" })
-      );
+      let settings = deflateJson(this.hiddenGroups);
       url.searchParams.set("hidden", settings);
       return url.href;
     }
@@ -56,11 +51,11 @@ class VisTL {
   toggleFoldings() {
     var showNested;
     // TODO: state は enum を使う
-    if (this.foldingsState === "open") {
-      this.foldingsState = "close";
+    if (this.currentFoldings === this.foldingsState.OPEN) {
+      this.currentFoldings = this.this.foldingsState.CLOSE;
       showNested = false;
     } else {
-      this.foldingsState = "open";
+      this.currentFoldings = this.this.foldingsState.OPEN;
       showNested = true;
     }
 
@@ -77,7 +72,7 @@ class VisTL {
       this.visTLData.labels.update({ _id: g._id, showNested: showNested });
     });
 
-    if (this.groupByState === "group") {
+    if (this.currrentGrouping === this.groupingState.GROUP) {
       this.resetData();
     } else {
       this.resetDataWithLabel();
@@ -90,7 +85,7 @@ class VisTL {
       groups: visData.visGroups,
       items: visData.visItems
     });
-    this.groupByState = "group";
+    this.currrentGrouping = this.groupingState.GROUP;
   }
 
   resetDataWithLabel() {
@@ -99,13 +94,13 @@ class VisTL {
       groups: visData.visGroupsByLabel,
       items: visData.visItems
     });
-    this.groupByState = "label";
+    this.currrentGrouping = this.groupingState.LABEL;
   }
 
   restoreHidden() {
     this.hiddenGroups = [];
     this.visTLData.setVisibleTrueAllVisGroup();
-    if (this.groupByState === "group") {
+    if (this.currrentGrouping === this.groupingState.GROUP) {
       this.resetData();
     } else {
       this.resetDataWithLabel();
@@ -115,7 +110,7 @@ class VisTL {
   hideGroup(id) {
     this.visTLData.setVisibleFalseAllVisGroup(id);
     this.hiddenGroups.push(id);
-    if (this.groupByState === "group") {
+    if (this.currrentGrouping === this.groupingState.GROUP) {
       this.resetData();
     } else {
       this.resetDataWithLabel();
