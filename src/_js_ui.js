@@ -4,6 +4,7 @@ class UI {
 
     this.uiAddScheduleModal = new UIAddScheduleModal(visTL);
     this.uiEditScheduleModal = new UIEditScheduleModal(visTL);
+    this.uiFilter = new UIFilter(visTL);
     this.uiGetSettingsAsUrl = new UIGetSettingsAsURLModal(visTL);
   }
 
@@ -34,6 +35,10 @@ class UI {
         return;
       }
       this.uiEditScheduleModal.show(schedule);
+    });
+
+    $("#mybtn-filter").on("click", e => {
+      this.uiFilter.show();
     });
 
     $("#mybtn-get-settings-as-url").on("click", e => {
@@ -149,11 +154,11 @@ class UIEditScheduleModal {
     this.$projectSelect.select2({ width: "100%" });
 
     this.$updateButton.on("click", () => {
-      this.onClick();
+      this.update();
     });
   }
 
-  onClick() {
+  update() {
     let parentId = this.$projectSelect.val();
     let g = this.visTL.visTLData.projectGroups.get(parentId);
     let p = this.visTL.visTLData.projects.get(parentId);
@@ -234,6 +239,73 @@ class UIEditScheduleModal {
     this.$updateButton.text("Update");
     this.$updateButton.prop("disabled", false);
     this.$el.modal("show");
+  }
+}
+
+class UIFilter {
+  constructor(visTL) {
+    this.visTL = visTL;
+    this.$el = $("#modal-filter");
+    this.$projectName = $("#form-filter-project-name");
+    this.$projectAssignee = $("#form-filter-project-assignee");
+    this.$scheduleName = $("#form-filter-schedule-name");
+    this.$scheduleAssignee = $("#form-filter-schedule-assignee");
+
+    this.$clearButton = $("#form-filter-clear");
+    this.$clearButton.on("click", () => {
+      this.clear();
+    });
+
+    this.$applyButton = $("#form-filter-apply");
+    this.$applyButton.on("click", () => {
+      this.apply();
+    });
+  }
+
+  clear() {
+    this.$projectName.val(null);
+    this.$projectAssignee.val(null);
+    this.$scheduleName.val(null);
+    this.$scheduleAssignee.val(null);
+
+    let filterSettings = {
+      project: { name: null, assignee: null },
+      schedule: { name: null, assignee: null }
+    };
+
+    this.visTL.applyFilter(filterSettings);
+    this.hide();
+  }
+
+  apply() {
+    let scheduleName = this.$scheduleName.val();
+    let scheduleAssignee = this.$scheduleAssignee.val();
+
+    let filterSettings = {
+      project: {
+        name: this.$projectName.val(),
+        assignee: this.$projectAssignee.val()
+      },
+      schedule: {
+        name: this.$scheduleName.val(),
+        assignee: this.$scheduleAssignee.val()
+      }
+    };
+
+    this.visTL.applyFilter(filterSettings);
+    this.hide();
+  }
+
+  hide() {
+    this.$el.modal("hide");
+  }
+
+  show() {
+    this.$el.modal("show");
+    this.$projectName.val(this.visTL.filterSettings.project.name);
+    this.$projectAssignee.val(this.visTL.filterSettings.project.assignee);
+    this.$scheduleName.val(this.visTL.filterSettings.schedule.name);
+    this.$scheduleAssignee.val(this.visTL.filterSettings.schedule.assignee);
   }
 }
 

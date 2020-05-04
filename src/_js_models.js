@@ -22,6 +22,12 @@ class VisTL {
       this.hiddenGroups = inflateJson(hidden);
     }
 
+    let filterSettings = url.searchParams.get("filter");;
+    this.filterSettings = {project: {}, schedule: {}};
+    if(filterSettings) {
+      this.filterSettings = inflateJson(filterSettings);
+    }
+
     let range = url.searchParams.get("range");;
     this.defaultRange = null;
     if (range) {
@@ -32,7 +38,7 @@ class VisTL {
   }
 
   create(container) {
-    let visData = this.visTLData.getVisData(this.hiddenGroups);
+    let visData = this.visTLData.getVisData(this.hiddenGroups, this.filterSettings);
     this.visTL = new vis.Timeline(
       container,
       visData.visItems,
@@ -50,8 +56,13 @@ class VisTL {
 
   getSettingsAsUrl() {
     let url = new URL(this.requestUrl);
+
     url.searchParams.delete("range");
     url.searchParams.delete("hidden");
+    url.searchParams.delete("filter");
+
+    url.searchParams.set("filter", deflateJson(this.filterSettings));
+
     if (this.hiddenGroups.length > 0) {
       url.searchParams.set("hidden", deflateJson(this.hiddenGroups));
     }
@@ -65,6 +76,15 @@ class VisTL {
       url: withoutRange,
       withRange: url.href,
     };
+  }
+
+  applyFilter(filterSettings) {
+    this.filterSettings = filterSettings;
+    if (this.currrentGrouping === this.groupingState.GROUP) {
+      this.resetData();
+    } else {
+      this.resetDataWithLabel();
+    }
   }
 
   toggleFoldings() {
@@ -96,7 +116,7 @@ class VisTL {
   }
 
   resetData() {
-    let visData = this.visTLData.getVisData(this.hiddenGroups);
+    let visData = this.visTLData.getVisData(this.hiddenGroups, this.filterSettings);
     this.visTL.setData({
       groups: visData.visGroups,
       items: visData.visItems
@@ -105,7 +125,7 @@ class VisTL {
   }
 
   resetDataWithLabel() {
-    let visData = this.visTLData.getVisData(this.hiddenGroups);
+    let visData = this.visTLData.getVisData(this.hiddenGroups, this.filterSettings);
     this.visTL.setData({
       groups: visData.visGroupsByLabel,
       items: visData.visItems
@@ -116,15 +136,12 @@ class VisTL {
   restoreHidden() {
     this.hiddenGroups = [];
     this.visTLData.setVisibleTrueAllVisGroup();
-    if (this.currrentGrouping === this.groupingState.GROUP) {
-      this.resetData();
-    } else {
+    if (this.currrentGrouping === this.groupingState.GROUP) { this.resetData(); } else {
       this.resetDataWithLabel();
     }
   }
 
-  hideGroup(id) {
-    this.visTLData.setVisibleFalseAllVisGroup(id);
+  hideGroup(id) { this.visTLData.setVisibleFalseAllVisGroup(id);
     this.hiddenGroups.push(id);
     if (this.currrentGrouping === this.groupingState.GROUP) {
       this.resetData();
@@ -436,7 +453,7 @@ class VisTLData {
     });
   }
 
-  getVisData(hiddenGroupIds) {
+  getVisData(hiddenGroupIds, filterSettings) {
     var d = {
       labels: this._newDataSet(this.labels.get()),
       projectGroups: this._newDataSet(this.projectGroups.get()),
@@ -444,7 +461,7 @@ class VisTLData {
       schedules: this._newDataSet(this.schedules.get())
     };
     d = this._setRelatedAndInheritedProps(d);
-    d = this._filterVisible(d, hiddenGroupIds);
+    d = this._filterVisible(d, hiddenGroupIds, filterSettings);
 
     let visGroups = this._newDataSet(
       d.projectGroups.get().concat(d.projects.get())
@@ -528,7 +545,18 @@ class VisTLData {
     });
   }
 
-  _filterVisible(data, hiddenGroupIds) {
+  _filterVisible(data, hiddenGroupIds, filterSettings) {
+    filterSettings = filterSettings || {project: {}, schedule: {}};
+    var regexFilter = {project: {}, schedule: {}};
+    for (var k in filterSettings.project) {
+      regexFilter.project[k] = !!filterSettings.project[k]
+        ? new RegExp(filterSettings.project[k]) : null
+    }
+    for (var k in filterSettings.schedule) {
+      regexFilter.schedule[k] = !!filterSettings.schedule[k]
+        ? new RegExp(filterSettings.schedule[k]) : null
+    }
+
     hiddenGroupIds = hiddenGroupIds || [];
     let projectGroups = this._newDataSet(
       data.projectGroups.get({
@@ -547,6 +575,15 @@ class VisTLData {
           if (p.invalid) return false;
           if (!p.visible) return false;
           if (hiddenGroupIds.indexOf(p.id) > -1) return false;
+
+          for (var k in regexFilter.project) {
+            if(regexFilter.project[k] == null) {
+              continue;
+            }
+            if(p[k].match(regexFilter.project[k]) == null) {
+              return false;
+            }
+          }
 
           if (!p.projectGroup) return true;
           if (projectGroups.get(p.projectGroupId)) return true;
@@ -597,6 +634,16 @@ class VisTLData {
       data.schedules.get({
         filter: s => {
           if (s.invalid) return false;
+
+          for (var k in regexFilter.schedule) {
+            if(regexFilter.schedule[k] == null) {
+              continue;
+            }
+            if(s[k].match(regexFilter.schedule[k]) == null) {
+              return false;
+            }
+          }
+
           if (!s.group) return true;
           if (projects.get(s.group)) return true;
           if (projectGroups.get(s.group)) return true;
