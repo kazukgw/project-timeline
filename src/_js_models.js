@@ -223,6 +223,12 @@ class VisTL {
             .parent()
             .parent();
           $targ.css("border-color", d.color);
+          if(schedule.status === "pending") {
+            $targ.css("background-size", "auto auto");
+            $targ.css("background-color", "rgba(255, 255, 255, 1)");
+            $targ.css("background-image", "repeating-linear-gradient(135deg, transparent, transparent 5px, rgba(230, 230, 230, 1) 5px, rgba(230, 230, 230, 1) 10px )");
+          }
+
           return defaulTemplate(d);
         case "point":
           var $targ = $(element).next("div");
@@ -686,6 +692,7 @@ class VisDataConverter {
         id: this.getLabelId(sheet.id, label.name),
         nestedGroups: null,
         showNested: true,
+        visible: true,
 
         index: index,
         sheetId: sheet.id,
