@@ -483,30 +483,40 @@ class VisTLData {
           if (!l["name"]) {
             return;
           }
-          this.labels.add(this.converter.convertLabel(sheet, l, i));
+          var l_ = this.converter.convertLabel(sheet, l, i);
+          if(!this.labels.get(l_.id)) {
+            this.labels.add(l_);
+          }
         });
 
         data["projectGroups"].forEach((g, i) => {
           if (!g["name"]) {
             return;
           }
-          this.projectGroups.add(
-            this.converter.convertProjectGroup(sheet, g, i)
-          );
+          let pg_ = this.converter.convertProjectGroup(sheet, g, i);
+          if(!this.projectGroups.get(pg_.id)) {
+            this.projectGroups.add(pg_);
+          }
         });
 
         data["projects"].forEach((p, i) => {
           if (!p["name"]) {
             return;
           }
-          this.projects.add(this.converter.convertProject(sheet, p, i));
+          let p_ = this.converter.convertProject(sheet, p, i);
+          if(!this.projects.get(p_.id)) {
+            this.projects.add(p_);
+          }
         });
 
         data["schedules"].forEach((s, i) => {
           if (!s["_id"] || !s["start"]) {
             return;
           }
-          this.schedules.add(this.converter.convertSchedule(sheet, s, i));
+          let s_ = this.converter.convertSchedule(sheet, s, i);
+          if(!this.schedules.get(s_.id)) {
+            this.schedules.add(s_);
+          }
         });
       });
     });

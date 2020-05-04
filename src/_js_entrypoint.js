@@ -7,13 +7,15 @@ $(() => {
 
   let rpcClient = new RPCClient(gs);
   let visTLData = new VisTLData(rpcClient);
+  let $visTLContainer = $("#vistl-container");
 
   let sheetList = JSON.parse($("#data-sheet-list").text());
   visTLData.initializeData(sheetList).then(() => {
     visTL = new VisTL(REQUEST_URL, rpcClient, visTLData);
-    visTL.create(document.getElementById("vistl-container"));
+    visTL.create($visTLContainer.get(0));
 
     setTimeout(() => {
+      $visTLContainer.find("#spinner-wrapper").remove();
       if(visTL.defaultRange) {
         if(visTL.defaultRange['start']) {
           visTL.visTL.setWindow(
