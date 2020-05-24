@@ -61,6 +61,7 @@ class UIAddScheduleModal {
     this.$projectSelect = this.$el.find("#form-add-schedule-project");
     this.$typeSelect = this.$el.find("#form-add-schedule-type");
     this.$titleInput = this.$el.find("#form-add-schedule-title");
+    this.$descriptionInput = this.$el.find("#form-add-schedule-description");
     this.$assigneeInput = this.$el.find("#form-add-schedule-assignee");
     this.$linkInput = this.$el.find("#form-add-schedule-link");
     this.$startInput = this.$el.find("#form-add-schedule-start");
@@ -93,6 +94,7 @@ class UIAddScheduleModal {
       project: parentObj["isProjectGroup"] ? "" : parentObj.name,
       type: this.$typeSelect.val(),
       name: this.$titleInput.val().trim(),
+      description: this.$descriptionInput.val().trim(),
       link: this.$linkInput.val().trim(),
       assignee: this.$assigneeInput.val().trim(),
       start: start ? moment(start) : moment(),
@@ -146,6 +148,7 @@ class UIEditScheduleModal {
     this.$projectSelect = this.$el.find("#form-edit-schedule-project");
     this.$typeSelect = this.$el.find("#form-edit-schedule-type");
     this.$titleInput = this.$el.find("#form-edit-schedule-title");
+    this.$descriptionInput = this.$el.find("#form-edit-schedule-description");
     this.$assigneeInput = this.$el.find("#form-edit-schedule-assignee");
     this.$progressInput = this.$el.find("#form-edit-schedule-progress");
     this.$linkInput = this.$el.find("#form-edit-schedule-link");
@@ -173,6 +176,7 @@ class UIEditScheduleModal {
     this.schedule.project = parentObj["isProjectGroup"] ? "" : parentObj.name;
     this.schedule.type = this.$typeSelect.val();
     this.schedule.name = this.$titleInput.val().trim();
+    this.schedule.description = this.$descriptionInput.val().trim();
     this.schedule.assignee = this.$assigneeInput.val().trim();
     this.schedule.progress = this.$progressInput.val().trim();
     this.schedule.link = this.$linkInput.val().trim();
@@ -232,6 +236,7 @@ class UIEditScheduleModal {
 
     this.$typeSelect.val(schedule.type);
     this.$titleInput.val(schedule.name);
+    this.$descriptionInput.val(schedule.description);
     this.$assigneeInput.val(schedule.assignee);
     this.$progressInput.val(schedule.progress);
     this.$linkInput.val(schedule.link);

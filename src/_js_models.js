@@ -337,18 +337,23 @@ class VisTL {
 
   getTooltipTemplateFunc() {
     let pointTemplate = Handlebars.compile(`
-      <p style="font-weight: 500"> {{name}} </p>
-      <span> 開始: {{start}} </span>
+      <p style="font-weight: 700"> {{name}} </p>
+      <span> 開始: {{start}} </span><br>
+      <br>
+      <pre>{{description}}</pre>
     `);
     let rangeTemplate = Handlebars.compile(`
-      <p style="font-weight: 500"> {{name}} </p>
+      <p style="font-weight: 700"> {{name}} </p>
       <span> 開始: {{start}} </span><br>
       <span> 終了: {{end}} </span><br>
-      <span> 期間: {{duration}}日 </span>
+      <span> 期間: {{duration}}日 </span><br>
+      <br>
+      <pre>{{description}}</pre>
     `);
     return function(item, element, data) {
       let d = {
         name: item.name,
+        description: item.description,
         start: moment(item.start).format("YYYY/MM/DD"),
         end: moment(item.end).format("YYYY/MM/DD")
       };
@@ -443,6 +448,7 @@ class VisTLData {
     s.project = schedule.project;
     s.type = schedule.type;
     s.name = schedule.name;
+    s.description = schedule.description;
     s.assignee = schedule.assignee;
     s.progress = schedule.progress;
     s.link = schedule.link;
@@ -819,6 +825,7 @@ class VisDataConverter {
 
         start: start,
         end: end,
+        description: schedule["description"],
 
         index: index,
         sheetId: sheet.id,

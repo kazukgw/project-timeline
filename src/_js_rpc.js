@@ -40,9 +40,12 @@ class RPCClient {
         project: schedule.project,
         projectGroup: schedule.projectGroup,
         start: start,
+        description: schedule.description,
         end: end,
         editable: true
       });
+      console.log('-----------------');
+      console.log(scheduleJson);
       gs.run
         .withSuccessHandler(scheduleHasId => {
           console.log("addSchedule: create sucessfully");
@@ -73,6 +76,7 @@ class RPCClient {
         _id: schedule._id,
         type: schedule.type,
         name: schedule.name,
+        description: schedule.description,
         assignee: schedule.assignee,
         progress: schedule.progress,
         project: schedule.project,
@@ -82,6 +86,8 @@ class RPCClient {
         end: end,
         editable: true
       });
+      console.log('-----------------');
+      console.log(scheduleJson);
       gs.run
         .withSuccessHandler(schedule => {
           console.log("updateSchedule: update sucessfully");
