@@ -47,6 +47,17 @@ class VisTL {
     );
   }
 
+  reload() {
+    let sheetList = JSON.parse($("#data-sheet-list").text());
+    return this.visTLData.reload(sheetList).then(()=>{
+      if (this.currrentGrouping === this.groupingState.GROUP) {
+        this.resetData();
+      } else {
+        this.resetDataWithLabel();
+      }
+    });
+  }
+
   getSelectedSchedule() {
     let ids = this.visTL.getSelection();
     if (ids.length > 0) {
@@ -409,6 +420,19 @@ class VisTLData {
     this.currentVisData = null;
   }
 
+  reload(sheetList) {
+    this._rawData = null;
+
+    this.labels = this._newDataSet();
+    this.projectGroups = this._newDataSet();
+    this.projects = this._newDataSet();
+    this.schedules = this._newDataSet();
+
+    this.currentVisData = null;
+
+    return this.initializeData(sheetList);
+  }
+
   setVisibleTrueAllVisGroup() {
     let setVisibleTrue = function(groups) {
       groups.forEach(g => {
@@ -552,8 +576,12 @@ class VisTLData {
   }
 
   _filterVisible(data, hiddenGroupIds, filterSettings) {
-    filterSettings = filterSettings || {project: {}, schedule: {}};
-    var regexFilter = {project: {}, schedule: {}};
+    filterSettings = filterSettings || {projectGroup: {}, project: {}, schedule: {}};
+    var regexFilter = {projectGroup: {}, project: {}, schedule: {}};
+    for (var k in filterSettings.projectGroup) {
+      regexFilter.projectGroup[k] = !!filterSettings.projectGroup[k]
+        ? new RegExp(filterSettings.projectGroup[k]) : null
+    }
     for (var k in filterSettings.project) {
       regexFilter.project[k] = !!filterSettings.project[k]
         ? new RegExp(filterSettings.project[k]) : null
@@ -570,6 +598,14 @@ class VisTLData {
           if (g.invalid) return false;
           if (!g.visible) return false;
           if (hiddenGroupIds.indexOf(g.id) > -1) return false;
+          for (var k in regexFilter.projectGroup) {
+            if(regexFilter.projectGroup[k] == null) {
+              continue;
+            }
+            if(g[k].match(regexFilter.projectGroup[k]) == null) {
+              return false;
+            }
+          }
           return true;
         }
       })

@@ -11,12 +11,16 @@
         <?= title ?>
       </nav>
       <nav id="button-bar" class="navbar fixed-top justify-content-start">
+        <button id="mybtn-reload" class="mybtn">
+          <i class="fa fa-repeat"></i>
+        </button>
+        <span class="mybtn-separator"> | </span>
         <button id="mybtn-toggle-foldings" class="mybtn">
           Toggle Foldings
         </button>
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-restore-hidden" class="mybtn">
-          Restore Hidden Projects
+          Restore Hiddens
         </button>
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-group-by-projectgroup" class="mybtn">
@@ -332,6 +336,15 @@
           </div>
           <div class="modal-body">
             <form>
+              <h5> ProjectGroup </h5>
+              <div class="form-group">
+                <label for="form-filter-project-group-name">Name</label>
+                <input
+                  type="text"
+                  id="form-filter-project-group-name"
+                  class="form-control"
+                />
+              </div>
               <h5> Project </h5>
               <div class="form-group">
                 <label for="form-filter-project-name">Name</label>

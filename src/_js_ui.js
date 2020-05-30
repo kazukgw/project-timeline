@@ -9,6 +9,19 @@ class UI {
   }
 
   init() {
+    $("#mybtn-reload").on("click", e => {
+      $(e.currentTarget)
+        .find("i")
+        .removeClass("fa-repeat")
+        .addClass("fa-ellipsis-h");
+      this.visTL.reload().then(() => {
+        $(e.currentTarget)
+          .find("i")
+          .removeClass("fa-ellipsis-h")
+          .addClass("fa-repeat");
+      });
+    });
+
     $("#mybtn-toggle-foldings").on("click", () => {
       this.visTL.toggleFoldings();
     });
@@ -251,6 +264,7 @@ class UIFilter {
   constructor(visTL) {
     this.visTL = visTL;
     this.$el = $("#modal-filter");
+    this.$projectGroupName = $("#form-filter-project-group-name");
     this.$projectName = $("#form-filter-project-name");
     this.$projectAssignee = $("#form-filter-project-assignee");
     this.$scheduleName = $("#form-filter-schedule-name");
@@ -268,12 +282,14 @@ class UIFilter {
   }
 
   clear() {
+    this.$projectGroupName.val(null);
     this.$projectName.val(null);
     this.$projectAssignee.val(null);
     this.$scheduleName.val(null);
     this.$scheduleAssignee.val(null);
 
     let filterSettings = {
+      projectGroup: { name: null },
       project: { name: null, assignee: null },
       schedule: { name: null, assignee: null }
     };
@@ -287,6 +303,9 @@ class UIFilter {
     let scheduleAssignee = this.$scheduleAssignee.val();
 
     let filterSettings = {
+      projectGroup: {
+        name: this.$projectGroupName.val()
+      },
       project: {
         name: this.$projectName.val(),
         assignee: this.$projectAssignee.val()
@@ -307,6 +326,7 @@ class UIFilter {
 
   show() {
     this.$el.modal("show");
+    this.$projectGroupName.val(this.visTL.filterSettings.projectGroup.name);
     this.$projectName.val(this.visTL.filterSettings.project.name);
     this.$projectAssignee.val(this.visTL.filterSettings.project.assignee);
     this.$scheduleName.val(this.visTL.filterSettings.schedule.name);

@@ -38,8 +38,9 @@ It's written in Google Apps Script.
 - [x] Add 時に Start/End も指定できるようにする
 - [x] Query Parameter で Zoom Level を指定できるようにする
 - [x] Refactoring #1 (Add comment, Error handling)
+- [x] filter by assignee
+- [ ] Reload Button
 - [ ] フロントエンドのコードの TypeScript化
-- [ ] filter by assignee
 - [ ] Create a color palette
 - [ ] Enhance the development environment
 - [ ] Auto test
