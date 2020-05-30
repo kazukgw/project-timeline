@@ -40,6 +40,12 @@ $(() => {
         );
       }
 
+      var start = visTL.visTL.getWindow().start;
+      var end = visTL.visTL.getWindow().end;
+      var dur = moment.duration(moment(end).diff(moment(start)));
+      visTL.visTL.addCustomTime(moment(start).add(dur.asSeconds()/4 * 3, 'seconds'), 1);
+      visTL.visTL.setCustomTimeMarker("", 1);
+
       new UI(visTL).init();
     }, 1000);
   });
