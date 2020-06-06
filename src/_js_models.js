@@ -50,7 +50,7 @@ class VisTL {
       let t = moment(props.time);
       var pointSum = 0;
       this.visTLData.currentVisData.visItems.forEach((s)=>{
-        if(s.start.isBefore(t) && s.end.isAfter(t)) {
+        if(s.type === "range" && s.start.isBefore(t) && s.end.isAfter(t)) {
           pointSum += (s["point"] || 1) * 1;
         }
       });
