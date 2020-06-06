@@ -45,6 +45,21 @@ class VisTL {
       visData.visGroups,
       this.getVisTLOption()
     );
+
+    this.visTL.on('timechanged', (props)=>{
+      let t = moment(props.time);
+      var pointSum = 0;
+      this.visTLData.currentVisData.visItems.forEach((s)=>{
+        if(s.start.isBefore(t) && s.end.isAfter(t)) {
+          pointSum += (s["point"] || 1) * 1;
+        }
+      });
+      // 既存の Marker の タイトル変更だと 描画がなぜかバグるので
+      // 再描画したいときは毎回 remove → add するようにした
+      this.visTL.removeCustomTime(props.id);
+      this.visTL.addCustomTime(props.time, props.id);
+      this.visTL.setCustomTimeMarker(`Point Sum: ${pointSum}`, props.id);
+    });
   }
 
   reload() {
@@ -207,19 +222,18 @@ class VisTL {
       visibleFrameTemplate: this.getVisibleFrameTempate(),
       groupTemplate: this.getGroupTemplateFunc(),
       snap: function(date, scale, step) {
-        date.setHours(0);
-        date.setMinutes(0);
-        date.setSeconds(0);
         return date;
       },
       editable: {
         add: false,
-        updateTime: true,
-        updateGroup: false,
+        updateTime: true, updateGroup: false,
         remove: false,
         overrideItems: false
       },
-      onMove: this.getOnMoveHandler().bind(this)
+      onMove: this.getOnMoveHandler().bind(this),
+      moment: function(date) {
+        return vis.moment(date).utcOffset('+09:00');
+      }
     };
   }
 
@@ -370,11 +384,7 @@ class VisTL {
       };
       if (item.end) {
         d.duration = Math.floor(
-          moment.duration(moment(item.end).diff(moment(item.start))).asDays()
-        );
-      }
-      switch (item.type) {
-        case "point":
+          moment.duration(moment(item.end).diff(moment(item.start))).asDays()); } switch (item.type) { case "point":
           return pointTemplate(d);
         case "range":
           return rangeTemplate(d);
@@ -777,6 +787,7 @@ class VisDataConverter {
 
   convertLabel(sheet, label, index) {
     return Object.assign(
+      label,
       {
         id: this.getLabelId(sheet.id, label.name),
         nestedGroups: null,
@@ -789,8 +800,7 @@ class VisDataConverter {
         sheetUrl: sheet.url,
         isLevel0Group: true,
         isLabel: true
-      },
-      label
+      }
     );
   }
 
@@ -800,6 +810,7 @@ class VisDataConverter {
 
   convertProjectGroup(sheet, projectGroup, index) {
     return Object.assign(
+      projectGroup,
       {
         id: this.getProjectGroupId(sheet.id, projectGroup.name),
         nestedGroups: null,
@@ -812,8 +823,7 @@ class VisDataConverter {
         sheetUrl: sheet.url,
         isLevel0Group: true,
         isProjectGroup: true
-      },
-      projectGroup
+      }
     );
   }
 
@@ -823,6 +833,7 @@ class VisDataConverter {
 
   convertProject(sheet, project, index) {
     return Object.assign(
+      project,
       {
         id: this.getProjectId(sheet.id, project.name),
         group: null,
@@ -834,8 +845,7 @@ class VisDataConverter {
         sheetName: sheet.name,
         sheetUrl: sheet.url,
         projectGroupId: null
-      },
-      project
+      }
     );
   }
 
@@ -845,15 +855,20 @@ class VisDataConverter {
 
   convertSchedule(sheet, schedule, index) {
     var start = schedule.start.replace("Z", "");
-    start = moment.tz(start, moment.HTML5_FMT.DATETIME_LOCAL_MS, "UTC");
+    start = moment.tz(start, moment.HTML5_FMT.DATETIME_LOCAL_MS, "Asia/Tokyo");
     var end = schedule["end"]
       ? moment.tz(
           schedule.end.replace("Z", ""),
           moment.HTML5_FMT.DATETIME_LOCAL_MS,
-          "UTC"
+          "Asia/Tokyo"
         )
       : start.add(1, "month");
+
+    // 終了日の 23:59:59 を設定
+    end.add(1, 'day').hours(23).minutes(59).seconds(59);
+
     let o = Object.assign(
+      schedule,
       {
         id: this.getScheduleId(sheet.id, schedule._id),
         group: null,
@@ -869,8 +884,7 @@ class VisDataConverter {
         sheetUrl: sheet.url,
         projectId: null,
         projectGroupId: null
-      },
-      schedule
+      }
     );
     o.editable = {
       add: false,
