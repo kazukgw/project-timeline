@@ -862,7 +862,7 @@ class VisDataConverter {
           moment.HTML5_FMT.DATETIME_LOCAL_MS,
           "Asia/Tokyo"
         )
-      : start.add(1, "month");
+      : moment(start).add(1, "month");
 
     // 終了日の 23:59:59 を設定
     end.add(1, 'day').hours(23).minutes(59).seconds(59);
