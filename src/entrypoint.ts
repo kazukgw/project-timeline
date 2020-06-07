@@ -38,7 +38,12 @@ class DoGetHandler {
     let app: SheetListApp = initSheetListApp(SHEET_LIST_SHEET_ID);
     let sheetData = app.sheetTable.getAllRecordData();
     let sheetList = sheetData.map(s => {
-      let sheet = SpreadsheetApp.openById(s.id);
+      var sheet;
+      try {
+        sheet = SpreadsheetApp.openById(s.id);
+      } catch(e) {
+        return { id: s.id, name: "error", url: "error" };
+      }
       return { id: s.id, name: sheet.getName(), url: sheet.getUrl() };
     });
 
@@ -56,9 +61,14 @@ class DoGetHandler {
   private showProjectTimelinePage() {
     let template = HtmlService.createTemplateFromFile("_project_timeline");
     let sheetList = this.sheetIdList.map(id => {
-      let sheet = SpreadsheetApp.openById(id);
+      var sheet;
+      try {
+        sheet = SpreadsheetApp.openById(id);
+      } catch(e) {
+        return null;
+      }
       return { id: id, name: sheet.getName(), url: sheet.getUrl() };
-    });
+    }).filter((d)=>{ return d != null });
 
     template.title = this.title;
     template.sheetList = JSON.stringify(sheetList);

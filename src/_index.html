@@ -109,7 +109,10 @@
           $checked.each((i, el) => {
             idList.push($(el).val());
           });
-          var url = scriptWebAppUrl + "?sheet=" + idList.join("&sheet=");
+          var url = scriptWebAppUrl;
+          if(idList.length > 0) {
+            var url =  url + "?sheet=" + idList.join("&sheet=");
+          }
           if (!!$formTitle.val()) {
             url = url + "&title=" + $formTitle.val();
           }
