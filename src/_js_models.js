@@ -208,6 +208,8 @@ class VisTL {
       preferZoom: false,
       verticalScroll: true,
       multiselect: true,
+      multiselectPerGroup: true,
+      longSelectPressTime: 600,
       groupOrder: "id",
       // groupOrder: "index",
       start: moment().subtract(3, "months"),
