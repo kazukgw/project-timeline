@@ -852,8 +852,8 @@ class VisDataConverter {
 
         // NOTE: index (group の並び順 の値を無理やり変更)
         // TODO: もうちょっときれいなやり方にする
-        // index: index,
-        index: this.getProjectId(sheet.id, project.name),
+        index: index,
+        // index: this.getProjectId(sheet.id, project.name),
         isProject: true,
         sheetId: sheet.id,
         sheetName: sheet.name,
