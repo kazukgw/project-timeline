@@ -44,8 +44,6 @@ class RPCClient {
         end: end,
         editable: true
       });
-      console.log('-----------------');
-      console.log(scheduleJson);
       gs.run
         .withSuccessHandler(scheduleHasId => {
           console.log("addSchedule: create sucessfully");
@@ -86,8 +84,6 @@ class RPCClient {
         end: end,
         editable: true
       });
-      console.log('-----------------');
-      console.log(scheduleJson);
       gs.run
         .withSuccessHandler(schedule => {
           console.log("updateSchedule: update sucessfully");

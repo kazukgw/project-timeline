@@ -50,7 +50,8 @@ class VisTL {
       let t = moment(props.time);
       var pointSum = 0;
       this.visTLData.currentVisData.visItems.forEach((s)=>{
-        if(s.type === "range" && s.start.isBefore(t) && s.end.isAfter(t)) {
+        // TODO: start , end が なぜか moment オブジェクトでない場合があるので moment で wrap しているが治す必要あり
+        if(s.type === "range" && moment(s.start).isBefore(t) && moment(s.end).isAfter(t)) {
           pointSum += (s["point"] || 1) * 1;
         }
       });
@@ -178,8 +179,9 @@ class VisTL {
 
   addSchedule(schedule) {
     return this.visTLData.addSchedule(schedule).then(
-      () => {
+      (shed) => {
         this.resetData();
+        return shed;
       },
       e => {
         console.log(new Error(e));
@@ -189,8 +191,9 @@ class VisTL {
 
   updateSchedule(schedule) {
     return this.visTLData.updateSchedule(schedule).then(
-      () => {
+      (shed) => {
         this.resetData();
+        return shed;
       },
       e => {
         console.log(new Error(e));
@@ -204,6 +207,7 @@ class VisTL {
       orientation: "top",
       preferZoom: false,
       verticalScroll: true,
+      multiselect: true,
       groupOrder: "id",
       // groupOrder: "index",
       start: moment().subtract(3, "months"),
@@ -469,10 +473,13 @@ class VisTLData {
 
   addSchedule(schedule) {
     return this.rpcClient.addSchedule(schedule).then(scheduleHasId => {
-      let sheet = this.sheets[schedule.sheetId];
-      let index = this.schedules.length + 1;
-      let sched = this.converter.convertSchedule(sheet, scheduleHasId, index);
-      this.schedules.add(sched);
+      return new Promise((resolve, reject)=>{
+        let sheet = this.sheets[schedule.sheetId];
+        let index = this.schedules.length + 1;
+        let sched = this.converter.convertSchedule(sheet, scheduleHasId, index);
+        this.schedules.add(sched);
+        resolve(sched);
+      });
     });
   }
 
@@ -490,6 +497,7 @@ class VisTLData {
     s.end = moment(schedule.end);
     return this.rpcClient.updateSchedule(s).then(() => {
       this.schedules.update(s);
+      return s;
     });
   }
 
