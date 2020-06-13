@@ -210,8 +210,8 @@ class VisTL {
       multiselect: true,
       multiselectPerGroup: true,
       longSelectPressTime: 600,
-      groupOrder: "id",
-      // groupOrder: "index",
+      // groupOrder: "id",
+      groupOrder: "index",
       start: moment().subtract(3, "months"),
       horizontalScroll: true,
       zoomMax: 100000000000,
@@ -542,7 +542,7 @@ class VisTLData {
 
   initializeData(sheetList) {
     let sheetIdList = [];
-    sheetList.forEach(s => {
+    sheetList.forEach((s, i) => {
       sheetIdList.push(s.id);
       this.sheets[s.id] = s;
     });
@@ -566,7 +566,8 @@ class VisTLData {
           if (!g["name"]) {
             return;
           }
-          let pg_ = this.converter.convertProjectGroup(sheet, g, i);
+          let index = sheet.order * 1000 + i;
+          let pg_ = this.converter.convertProjectGroup(sheet, g, index);
           if(!this.projectGroups.get(pg_.id)) {
             this.projectGroups.add(pg_);
           }
@@ -849,7 +850,10 @@ class VisDataConverter {
         group: null,
         visible: !project.invalid,
 
-        index: index,
+        // NOTE: index (group の並び順 の値を無理やり変更)
+        // TODO: もうちょっときれいなやり方にする
+        // index: index,
+        index: this.getProjectId(sheet.id, project.name),
         isProject: true,
         sheetId: sheet.id,
         sheetName: sheet.name,
