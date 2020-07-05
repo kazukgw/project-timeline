@@ -116,9 +116,11 @@ class UIAddScheduleModal {
     this.$addButton.prop("disabled", true);
     this.$addButton.text("Please wait ... ");
 
-    this.visTL.addSchedule(scheduleData).then((shed) => {
+    let scrollTop = $(window).scrollTop();
+    this.visTL.addSchedule(scheduleData).then(shed => {
       this.visTL.visTL.setSelection(shed.id);
       this.hide();
+      setTimeout(()=>{ $(window).scrollTop(scrollTop); }, 300);
     });
   }
 
@@ -194,10 +196,13 @@ class UIEditScheduleModal {
     this.schedule.assignee = this.$assigneeInput.val().trim();
     this.schedule.progress = this.$progressInput.val().trim();
     this.schedule.link = this.$linkInput.val().trim();
-    this.visTL.updateSchedule(this.schedule).then((shed) => {
+
+    let scrollTop = $(window).scrollTop();
+    this.visTL.updateSchedule(this.schedule).then(shed => {
       this.schedule = null;
       this.visTL.visTL.setSelection(shed.id);
       this.hide();
+      setTimeout(()=>{ $(window).scrollTop(scrollTop); }, 300);
     });
 
     this.$updateButton.prop("disabled", true);
