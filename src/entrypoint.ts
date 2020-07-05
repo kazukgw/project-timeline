@@ -38,13 +38,7 @@ class DoGetHandler {
     let app: SheetListApp = initSheetListApp(SHEET_LIST_SHEET_ID);
     let sheetData = app.sheetTable.getAllRecordData();
     let sheetList = sheetData.map(s => {
-      var sheet;
-      try {
-        sheet = SpreadsheetApp.openById(s.id);
-      } catch(e) {
-        return { id: s.id, name: "error", url: "error" };
-      }
-      return { id: s.id, name: sheet.getName(), url: sheet.getUrl() };
+      return { id: s.id, name: s.name, url: s.url};
     });
 
     template.title = this.title;
