@@ -285,7 +285,7 @@ class VisTL {
         case "background":
           var $targ = $(element).parent();
           $targ.css("background-color", d.color);
-          $targ.css("opacity", "0.1");
+          $targ.css("opacity", "0.15");
           return d.name;
       }
     };
