@@ -25,7 +25,7 @@
     "define-property": "^2.0.2",
     "des.js": "^1.0.1",
     "diffie-hellman": "^5.0.3",
-    "elliptic": "^6.5.2",
+    "elliptic": "^6.5.3",
     "errno": "^0.1.7",
     "evp_bytestokey": "^1.0.3",
     "extend-shallow": "^3.0.2",
