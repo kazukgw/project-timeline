@@ -206,6 +206,13 @@ class VisTL {
     // https://visjs.github.io/vis-timeline/docs/timeline/#Configuration_Options
     return {
       orientation: "top",
+      margin: {
+        axis: 5,
+        item: {
+          horizontal: 3,
+          vertical: 3,
+        }
+      },
       preferZoom: false,
       verticalScroll: true,
       multiselect: true,
