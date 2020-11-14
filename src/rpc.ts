@@ -24,12 +24,14 @@ class RPCHandler {
     if (!!sheetId) {
       new Error("sheetId is null");
     }
+    // @ts-ignore
     let app = initApp(sheetId);
 
     return {
       labels: app.labelTable.getAllRecordData(),
       projectGroups: app.projectGroupTable.getAllRecordData(),
       projects: app.projectTable.getAllRecordData(),
+      tasks: app.taskTable.getAllRecordData(),
       schedules: app.scheduleTable.getAllRecordData()
     };
   }
@@ -40,6 +42,7 @@ class RPCHandler {
     if (!!sheetId) {
       new Error("sheetId is null");
     }
+    // @ts-ignore
     let app = initApp(sheetId);
     return app.addSchedule(schedule);
   }
@@ -50,6 +53,7 @@ class RPCHandler {
     if (!!sheetId) {
       new Error("sheetId is null");
     }
+    // @ts-ignore
     let app = initApp(sheetId);
     return app.updateSchedule(schedule);
   }

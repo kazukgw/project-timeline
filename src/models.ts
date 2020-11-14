@@ -20,7 +20,7 @@ export class TableRecord {
     return !!primaryKey;
   }
 
-  public getPrimaryKey(): boolean {
+  public getPrimaryKey(): string {
     let primaryKey = this.values[this.table.primaryKey];
     Logger.log(`getPrimaryKey: ${primaryKey}`);
     return primaryKey;
@@ -104,12 +104,12 @@ export class Table {
 
   public addRecord(recordData: Object) {
     let lck = LockService.getScriptLock();
-    if(lck.tryLock(10000)) {
+    if (lck.tryLock(10000)) {
       let lastRowNumber = this.getLastRowNumber();
       Logger.log(`addRecord: lastRowNumber: ${lastRowNumber}`);
       this.sheetObj.insertRowAfter(lastRowNumber);
       let range = this.sheetObj.getRange(lastRowNumber + 1, 1, 1, this.headers.length);
-      let values = this.headers.map((h)=>{ return recordData[h] });
+      let values = this.headers.map((h) => {return recordData[h]});
       Logger.log(`addRecord: values: ${JSON.stringify(values)}`);
       range.setValues([values]);
       lck.releaseLock()
@@ -121,9 +121,9 @@ export class Table {
   public saveRecord(record: TableRecord): TableRecord {
     let lck = LockService.getScriptLock();
     var rec: TableRecord;
-    if(lck.tryLock(10000)) {
+    if (lck.tryLock(10000)) {
       let rec = this.findRecordByPrimaryKey(record.getPrimaryKey());
-      if(!rec) {
+      if (!rec) {
         new Error(`record not found: ${record.getPrimaryKey()}`);
       }
       rec.values = record.values;
@@ -171,8 +171,8 @@ export class Table {
     let range = this.getPrimaryKeyColRange();
     // Logger.log(`getLastRecordRowNumber: range.getLastRow: ${range.getLastRow()}`);
     var lastRowNumber: number = this.recordRangeFirstRowNumber;
-    range.getValues().forEach((v, i)=>{
-      if(!!v[0]) {
+    range.getValues().forEach((v, i) => {
+      if (!!v[0]) {
         lastRowNumber = (this.recordRangeFirstRowNumber * 1) + i;
       }
       // Logger.log(`getLastRowNumber: lastRowNumber: ${lastRowNumber}`)

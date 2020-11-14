@@ -1,5 +1,5 @@
-import { Config } from "./config";
-import { Table } from "./models";
+import {Config} from "./config";
+import {Table} from "./models";
 
 export function initApp(spreadSheetId: string): App {
   Logger.log(`Init App`);
@@ -18,6 +18,7 @@ export class App {
   readonly labelTable: Table;
   readonly projectGroupTable: Table;
   readonly projectTable: Table;
+  readonly taskTable: Table;
   readonly scheduleTable: Table;
 
   constructor(config: Config) {
@@ -37,6 +38,10 @@ export class App {
       this.spreadSheetId,
       this.config.tableConfigs["projects"]
     );
+    this.taskTable = new Table(
+      this.spreadSheetId,
+      this.config.tableConfigs["tasks"]
+    );
     this.scheduleTable = new Table(
       this.spreadSheetId,
       this.config.tableConfigs["schedules"]
@@ -49,14 +54,14 @@ export class App {
     schedule["end"] = schedule["end"]
       ? moment(schedule["end"]).format("YYYY/MM/DD")
       : moment()
-          .add(1, "month")
-          .format("YYYY/MM/DD");
+        .add(1, "month")
+        .format("YYYY/MM/DD");
     this.scheduleTable.addRecord(schedule);
     return schedule;
   }
 
   public updateSchedule(schedule: Object) {
-    if(!schedule["_id"]) {
+    if (!schedule["_id"]) {
       new Error(`record has no primary key: ${schedule["_id"]}`);
     }
     let record = this.scheduleTable.findRecordByPrimaryKey(schedule["_id"]);
@@ -91,7 +96,7 @@ export class App {
   }
 }
 
-export function initSheetListApp(spreadSheetId: string): App {
+export function initSheetListApp(spreadSheetId: string): SheetListApp {
   Logger.log(`Init SheetListApp`);
   let config = new Config(spreadSheetId, CONFIG_SHEET, CONFIG_CELL);
   let app = new SheetListApp(config);

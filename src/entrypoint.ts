@@ -1,5 +1,5 @@
-import { App, initApp } from "./app";
-import * as moment from "moment";
+import {App, initApp} from "./app";
+// import * as moment from "moment";
 
 function doGet(e: GoogleAppsScript.Events.AppsScriptHttpRequestEvent) {
   return new DoGetHandler(e).handle();
@@ -35,10 +35,11 @@ class DoGetHandler {
 
   private showSheetListPage() {
     let template = HtmlService.createTemplateFromFile("_index");
+    // @ts-ignore
     let app: SheetListApp = initSheetListApp(SHEET_LIST_SHEET_ID);
     let sheetData = app.sheetTable.getAllRecordData();
-    let sheetList = sheetData.map(s => {
-      return { id: s.id, name: s.name, url: s.url};
+    let sheetList = sheetData.map((s: Object) => {
+      return {id: s['id'], name: s['name'], url: s['url']};
     });
 
     template.title = this.title;
@@ -55,18 +56,18 @@ class DoGetHandler {
   private showProjectTimelinePage() {
     let template = HtmlService.createTemplateFromFile("_project_timeline");
     let sheetList = this.sheetIdList.map(id => {
-      var sheet;
+      var sheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
       try {
         sheet = SpreadsheetApp.openById(id);
-      } catch(e) {
+      } catch (e) {
         return null;
       }
-      return { id: id, name: sheet.getName(), url: sheet.getUrl() };
-    }).filter((d)=>{ return d != null });
+      return {id: id, name: sheet.getName(), url: sheet.getUrl()};
+    }).filter((d) => {return d != null});
 
     template.title = this.title;
     template.sheetList = JSON.stringify(sheetList);
-    template.requestUrl = JSON.stringify({ requestUrl: this.requestUrl });
+    template.requestUrl = JSON.stringify({requestUrl: this.requestUrl});
 
     return this.setOutputOption(template.evaluate());
   }
