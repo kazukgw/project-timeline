@@ -31,7 +31,6 @@ class RPCHandler {
       labels: app.labelTable.getAllRecordData(),
       projectGroups: app.projectGroupTable.getAllRecordData(),
       projects: app.projectTable.getAllRecordData(),
-      tasks: app.taskTable.getAllRecordData(),
       schedules: app.scheduleTable.getAllRecordData()
     };
   }

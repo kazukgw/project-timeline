@@ -18,7 +18,6 @@ export class App {
   readonly labelTable: Table;
   readonly projectGroupTable: Table;
   readonly projectTable: Table;
-  readonly taskTable: Table;
   readonly scheduleTable: Table;
 
   constructor(config: Config) {
@@ -37,10 +36,6 @@ export class App {
     this.projectTable = new Table(
       this.spreadSheetId,
       this.config.tableConfigs["projects"]
-    );
-    this.taskTable = new Table(
-      this.spreadSheetId,
-      this.config.tableConfigs["tasks"]
     );
     this.scheduleTable = new Table(
       this.spreadSheetId,

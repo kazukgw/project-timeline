@@ -20,7 +20,7 @@ class RPCClient {
             alert("データ取得に失敗しました: " + error);
             resolve(null);
           })
-          .rpc("getAllData", JSON.stringify({ sheetId: sheetId }));
+          .rpc("getAllData", JSON.stringify({sheetId: sheetId}));
       });
     });
     return Promise.all(promises);
@@ -36,6 +36,7 @@ class RPCClient {
         type: schedule.type,
         name: schedule.name,
         link: schedule.link,
+        task: schedule.task,
         assignee: schedule.assignee,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
@@ -67,11 +68,12 @@ class RPCClient {
       let end = schedule.end
         ? moment(schedule.end).format("YYYY/MM/DD")
         : moment()
-            .add(1, "month")
-            .format("YYYY/MM/DD");
+          .add(1, "month")
+          .format("YYYY/MM/DD");
       var scheduleJson = JSON.stringify({
         sheetId: schedule.sheetId,
         _id: schedule._id,
+        task: schedule.task,
         type: schedule.type,
         name: schedule.name,
         description: schedule.description,

@@ -220,6 +220,9 @@ class VisTL {
       longSelectPressTime: 600,
       // groupOrder: "id",
       groupOrder: "index",
+      groupEditable: {
+        order: true,
+      },
       start: moment().subtract(3, "months"),
       horizontalScroll: true,
       zoomMax: 100000000000,
@@ -245,6 +248,8 @@ class VisTL {
         overrideItems: false
       },
       onMove: this.getOnMoveHandler().bind(this),
+      onMoveGroup: this.getOnMoveGroupHandler().bind(this),
+      groupOrderSwap: this.getGroupOrderSwapFunc().bind(this),
       moment: function (date) {
         return vis.moment(date).utcOffset('+09:00');
       }
@@ -349,7 +354,9 @@ class VisTL {
           {{#if label}}
             <span class="badge badge-secondary">{{label}}</span>
           {{/if}}
+          {{#if isNotTask}}
           <button data-group="{{id}}" class="mybtn mybtn-hide"><i class="fa fa-eye-slash"></i></button>
+          {{/if}}
         </p>
       </div>
     `);
@@ -362,7 +369,8 @@ class VisTL {
         label: group["label"],
         sheetName: group.sheetName,
         sheetUrl: group.sheetUrl,
-        link: group.link
+        link: group.link,
+        isNotTask: !group['task']
       };
       if (group["isLevel0Group"]) {
         $(element)
@@ -427,6 +435,39 @@ class VisTL {
       );
     };
   }
+
+  getOnMoveGroupHandler() {
+    // timeline の オブジェクト移動イベントのハンドラ
+    // サーバ側にデータの変更をリクエストする
+    // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
+    // let visTLData = this.visTLData;
+    return function (item, callback) {
+      //   visTLData.updateSchedule(item).then(
+      //     // callback に null を渡すと 変更がキャンセルされる
+      //     // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
+      //     () => {
+      //       callback(item);
+      //     },
+      //     e => {
+      //       console.log(new Error(e));
+      //       callback(null);
+      //     }
+      //   );
+    };
+  }
+
+  getGroupOrderSwapFunc() {
+    // function(fromGroup: Object, toGroup: Object, groups: DataSet) {
+    return function (fromGroup, toGroup, groups) {
+      console.log("swap group order");
+      let fi = fromGroup.index;
+      let ti = toGroup.index;
+      fromGroup.index = ti;
+      toGroup.index = fi;
+      groups.update(fromGroup);
+      groups.update(toGroup);
+    }
+  }
 }
 
 class VisTLData {
@@ -441,7 +482,6 @@ class VisTLData {
     this.labels = this._newDataSet();
     this.projectGroups = this._newDataSet();
     this.projects = this._newDataSet();
-    this.tasks = this._newDataSet();
     this.schedules = this._newDataSet();
 
     this.currentVisData = null;
@@ -489,7 +529,7 @@ class VisTLData {
 
   addSchedule(schedule) {
     return this.rpcClient.addSchedule(schedule).then(scheduleHasId => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, _) => {
         let sheet = this.sheets[schedule.sheetId];
         let index = this.schedules.length + 1;
         let sched = this.converter.convertSchedule(sheet, scheduleHasId, index);
@@ -503,6 +543,7 @@ class VisTLData {
     let s = this.schedules.get(schedule.id);
     s.projectGroup = schedule.projectGroup;
     s.project = schedule.project;
+    s.task = schedule.task;
     s.type = schedule.type;
     s.name = schedule.name;
     s.description = schedule.description;
@@ -522,7 +563,7 @@ class VisTLData {
       labels: this._newDataSet(this.labels.get()),
       projectGroups: this._newDataSet(this.projectGroups.get()),
       projects: this._newDataSet(this.projects.get()),
-      tasks: this._newDataSet(this.tasks.get()),
+      tasks: this._newDataSet(),
       schedules: this._newDataSet(this.schedules.get())
     };
     d = this._setRelatedAndInheritedProps(d);
@@ -571,7 +612,7 @@ class VisTLData {
           if (!l["name"]) {
             return;
           }
-          var l_ = this.converter.convertLabel(sheet, l, i);
+          var l_ = this.converter.convertLabel(sheet, Object.assign({}, l), i);
           if (!this.labels.get(l_.id)) {
             this.labels.add(l_);
           }
@@ -582,7 +623,7 @@ class VisTLData {
             return;
           }
           let index = sheet.order * 1000 + i;
-          let pg_ = this.converter.convertProjectGroup(sheet, g, index);
+          let pg_ = this.converter.convertProjectGroup(sheet, Object.assign({}, g), index);
           if (!this.projectGroups.get(pg_.id)) {
             this.projectGroups.add(pg_);
           }
@@ -592,19 +633,9 @@ class VisTLData {
           if (!p["name"]) {
             return;
           }
-          let p_ = this.converter.convertProject(sheet, p, i);
+          let p_ = this.converter.convertProject(sheet, Object.assign({}, p), i);
           if (!this.projects.get(p_.id)) {
             this.projects.add(p_);
-          }
-        });
-
-        data["tasks"].forEach((t, i) => {
-          if (!t["name"]) {
-            return;
-          }
-          let t_ = this.converter.convertProject(sheet, t, i);
-          if (!this.tasks.get(t_.id)) {
-            this.tasks.add(t_);
           }
         });
 
@@ -612,7 +643,12 @@ class VisTLData {
           if (!s["_id"] || !s["start"]) {
             return;
           }
-          let s_ = this.converter.convertSchedule(sheet, s, i);
+
+          if (s['task'] && !s["project"]) {
+            return;
+          }
+
+          let s_ = this.converter.convertSchedule(sheet, Object.assign({}, s), i);
           if (!this.schedules.get(s_.id)) {
             this.schedules.add(s_);
           }
@@ -622,8 +658,8 @@ class VisTLData {
   }
 
   _filterVisible(data, hiddenGroupIds, filterSettings) {
-    filterSettings = filterSettings || {projectGroup: {}, project: {}, tasks: {}, schedule: {}};
-    var regexFilter = {projectGroup: {}, project: {}, tasks: {}, schedule: {}};
+    filterSettings = filterSettings || {projectGroup: {}, project: {}, schedule: {}};
+    var regexFilter = {projectGroup: {}, project: {}, schedule: {}};
     for (var k in filterSettings.projectGroup) {
       regexFilter.projectGroup[k] = !!filterSettings.projectGroup[k]
         ? new RegExp(filterSettings.projectGroup[k]) : null
@@ -701,7 +737,6 @@ class VisTLData {
             }
           }
 
-          if (!t.project) return true;
           if (projects.get(t.projectId)) return true;
 
           return false;
@@ -837,37 +872,45 @@ class VisTLData {
       data.projects.update(p);
     });
 
-    data.tasks.forEach(t => {
-      let p = data.projects.get(
-        this.converter.getProjectId(t.sheetId, t.project)
-      );
-      if (p) {
-        p.nestedGroups.push(t.id);
-        data.projects.update(p);
-        t.color = t.color || p.color || "black";
-        if (t.color === "white") {
-          t.color = "black";
-        }
-        t.group = p.id;
-        t.projectId = p.id;
-        t.visible = !t.invalid;
-      }
-      data.tasks.update(t);
-    });
-
     data.schedules.forEach(s => {
+      if (s['task']) {
+        let task = this.converter.convertTaskFromSchedule(s.sheet, Object.assign({}, s), s.index);
+        let p = data.projects.get(
+          this.converter.getProjectId(s.sheetId, s.project)
+        );
+        if (p) {
+          p.nestedGroups.push(task.id);
+          data.projects.update(p);
+
+          task.color = "gray";
+          task.group = p.id;
+          task.projectId = p.id;
+          task.visible = !task.invalid;
+        }
+        data.tasks.add(task);
+        if (task && p) {
+          s.group = task.id;
+          s.taskId = task.id;
+          s.projectId = task.projectId;
+          s.visible = !task.invalid;
+          var color = s.color || p.color || "black";
+          if (color === "white") {
+            color = "black";
+          }
+          s.color = color;
+          data.schedules.update(s);
+        }
+        return;
+      }
+
       let g = data.projectGroups.get(
         this.converter.getProjectGroupId(s.sheetId, s.projectGroup)
       );
       let p = data.projects.get(
         this.converter.getProjectId(s.sheetId, s.project)
       );
-      let t = data.tasks.get(
-        this.converter.getProjectId(s.sheetId, s.task)
-      );
       s.projectId = p ? p.id : null;
-      s.taskId = t ? t.id : null;
-      let parentObj = t || p || g;
+      let parentObj = p || g;
       s.group = parentObj ? parentObj.id : null;
       var color = s.color || (parentObj && parentObj.color) || "black";
       if (color === "white") {
@@ -900,6 +943,7 @@ class VisDataConverter {
         visible: true,
 
         index: index,
+        sheet: sheet,
         sheetId: sheet.id,
         sheetName: sheet.name,
         sheetUrl: sheet.url,
@@ -923,6 +967,7 @@ class VisDataConverter {
         showNested: true,
 
         index: index,
+        sheet: sheet,
         sheetId: sheet.id,
         sheetName: sheet.name,
         sheetUrl: sheet.url,
@@ -943,12 +988,15 @@ class VisDataConverter {
         id: this.getProjectId(sheet.id, project.name),
         group: null,
         visible: !project.invalid,
+        showNested: false,
 
         // NOTE: index (group の並び順 の値を無理やり変更)
         // TODO: もうちょっときれいなやり方にする
         // index: index,
         // index: this.getProjectId(sheet.id, project.name),
+        index: index,
         isProject: true,
+        sheet: sheet,
         sheetId: sheet.id,
         sheetName: sheet.name,
         sheetUrl: sheet.url,
@@ -957,25 +1005,72 @@ class VisDataConverter {
     );
   }
 
-  getTaskId(sheetId, name) {
-    return `${sheetId}##task##${name}`;
+  getTaskId(sheetId, id) {
+    return `${sheetId}##task##${id}`;
   }
 
-  convertTask(sheet, task, index) {
+  convertTaskFromSchedule(sheet, scheduleObj, index) {
     return Object.assign(
-      task,
+      scheduleObj,
       {
-        id: this.getTaskId(sheet.id, task.name),
+        id: this.getTaskId(sheet.id, scheduleObj._id),
         group: null,
-        visible: !task.invalid,
+        visible: !scheduleObj.invalid,
+        editable: {
+          add: false,
+          updateTime: true,
+          updateGroup: false,
+          remove: false,
+          overrideItems: false
+        },
 
-        isTask: true,
+        task: true,
+        index: index,
+        sheet: sheet,
         sheetId: sheet.id,
         sheetName: sheet.name,
         sheetUrl: sheet.url,
         projectId: null
       }
     );
+  }
+
+  getTaskScheduleId(sheetId, id) {
+    // NOTE: ##schedule## となっているが間違いではない
+    return `${sheetId}##schedule##${id}`;
+  }
+
+  // NOTE: scheduleのDataではなく ScheduleObjectを引数としてとる
+  convertTaskScheduleFromSchedule(sheet, scheduleObj, index) {
+    let o = Object.assign(
+      scheduleObj,
+      {
+        id: this.getTaskScheduleId(sheet.id, scheduleObj._id),
+        group: null,
+        type: scheduleObj.type || "range",
+
+        start: scheduleObj.start,
+        end: scheduleObj.end,
+        description: scheduleObj["description"],
+
+        isTaskSchedule: true,
+        isTask: true,
+        index: index,
+        sheet: sheet,
+        sheetId: sheet.id,
+        sheetName: sheet.name,
+        sheetUrl: sheet.url,
+        projectId: null,
+      }
+    );
+    o.editable = {
+      add: false,
+      updateTime: true,
+      updateGroup: false,
+      remove: false,
+      overrideItems: false
+    };
+    return o;
   }
 
   getScheduleId(sheetId, id) {
@@ -1007,12 +1102,14 @@ class VisDataConverter {
         end: end,
         description: schedule["description"],
 
+        isSchedule: true,
         index: index,
+        sheet: sheet,
         sheetId: sheet.id,
         sheetName: sheet.name,
         sheetUrl: sheet.url,
         projectId: null,
-        projectGroupId: null
+        projectGroupId: null,
       }
     );
     o.editable = {

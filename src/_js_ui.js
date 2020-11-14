@@ -72,6 +72,7 @@ class UIAddScheduleModal {
 
     this.$form = $("#form-add-schedule");
     this.$projectSelect = this.$el.find("#form-add-schedule-project");
+    this.$taskInput = this.$el.find("#form-add-schedule-istask");
     this.$typeSelect = this.$el.find("#form-add-schedule-type");
     this.$titleInput = this.$el.find("#form-add-schedule-title");
     this.$descriptionInput = this.$el.find("#form-add-schedule-description");
@@ -82,18 +83,28 @@ class UIAddScheduleModal {
 
     this.$addButton = this.$el.find("#form-add-schedule-button-add");
 
-    this.$projectSelect.select2({ width: "100%" });
+    this.$projectSelect.select2({width: "100%"});
 
     this.$addButton.on("click", () => {
-      this.onClick();
+      this.add();
     });
   }
 
-  onClick() {
+  add() {
     let parentId = this.$projectSelect.val();
-    let g = this.visTL.visTLData.projectGroups.get(parentId);
-    let p = this.visTL.visTLData.projects.get(parentId);
-    let parentObj = p || g;
+    let parentObj =
+      this.visTL.visTLData.projectGroups.get(parentId) ||
+      this.visTL.visTLData.projects.get(parentId) ||
+      this.visTL.visTLData.tasks.get(parentId);
+    var projectGroup, project;
+    if (parentObj['isProject']) {
+      projectGroup = parentObj['projectGroup'];
+      project = parentObj['name'];
+    } else if (parentObj['isProjectGroup']) {
+      projectGroup = parentObj['name'];
+      project = null;
+    }
+
     let start = this.$startInput.val();
     let end = this.$endInput.val();
     let scheduleData = {
@@ -101,10 +112,9 @@ class UIAddScheduleModal {
       sheetId: parentObj.sheetId,
       sheetName: parentObj.sheetName,
       sheetUrl: parentObj.sheetName,
-      projectGroup: parentObj["isProjectGroup"]
-        ? parentObj.name
-        : p.projectGroup,
-      project: parentObj["isProjectGroup"] ? "" : parentObj.name,
+      projectGroup: projectGroup,
+      project: project,
+      task: this.$taskInput.prop('checked'),
       type: this.$typeSelect.val(),
       name: this.$titleInput.val().trim(),
       description: this.$descriptionInput.val().trim(),
@@ -113,6 +123,7 @@ class UIAddScheduleModal {
       start: start ? moment(start) : moment(),
       end: end ? moment(end) : moment().add(1, "month")
     };
+
     this.$addButton.prop("disabled", true);
     this.$addButton.text("Please wait ... ");
 
@@ -120,7 +131,7 @@ class UIAddScheduleModal {
     this.visTL.addSchedule(scheduleData).then(shed => {
       this.visTL.visTL.setSelection(shed.id);
       this.hide();
-      setTimeout(()=>{ $(window).scrollTop(scrollTop); }, 300);
+      setTimeout(() => {$(window).scrollTop(scrollTop);}, 300);
     });
   }
 
@@ -132,18 +143,18 @@ class UIAddScheduleModal {
     this.$projectSelect.empty();
     this.visTL.visTLData.currentVisData.visGroups.get().forEach(p => {
       var $option;
-      if (p["isProject"]) {
-        $option = $("<option>", {
-          value: p.id,
-          text: `${p.sheetName} / ${p["projectGroup"] || "<none>"} / ${p.name}`
-        });
+      var text = `${p.sheetName}`;
+      if (p['task']) {
+        return;
+      } else if (p['isProject']) {
+        text += `/ ${p['projectGroup']} / ${p['name']}`;
+      } else if (p['isProjectGroup']) {
+        text += `/ ${p['name']}`;
       }
-      if (p["isProjectGroup"]) {
-        $option = $("<option>", {
-          value: p.id,
-          text: `${p.sheetName} / ${p.name}`
-        });
-      }
+      $option = $("<option>", {
+        value: p.id,
+        text: text
+      });
       this.$projectSelect.append($option);
     });
     this.$addButton.text("Add");
@@ -162,6 +173,7 @@ class UIEditScheduleModal {
     this.$form = $("#form-edit-schedule");
     this.$idInput = this.$el.find("#form-edit-schedule-id");
     this.$projectSelect = this.$el.find("#form-edit-schedule-project");
+    this.$taskInput = this.$el.find("#form-edit-schedule-istask");
     this.$typeSelect = this.$el.find("#form-edit-schedule-type");
     this.$titleInput = this.$el.find("#form-edit-schedule-title");
     this.$descriptionInput = this.$el.find("#form-edit-schedule-description");
@@ -170,7 +182,7 @@ class UIEditScheduleModal {
     this.$linkInput = this.$el.find("#form-edit-schedule-link");
     this.$updateButton = this.$el.find("#form-edit-schedule-button-update");
 
-    this.$projectSelect.select2({ width: "100%" });
+    this.$projectSelect.select2({width: "100%"});
 
     this.$updateButton.on("click", () => {
       this.update();
@@ -190,6 +202,7 @@ class UIEditScheduleModal {
       ? parentObj.name
       : parentObj.projectGroupName;
     this.schedule.project = parentObj["isProjectGroup"] ? "" : parentObj.name;
+    this.schedule.task = this.$taskInput.prop('checked');
     this.schedule.type = this.$typeSelect.val();
     this.schedule.name = this.$titleInput.val().trim();
     this.schedule.description = this.$descriptionInput.val().trim();
@@ -202,7 +215,7 @@ class UIEditScheduleModal {
       this.schedule = null;
       this.visTL.visTL.setSelection(shed.id);
       this.hide();
-      setTimeout(()=>{ $(window).scrollTop(scrollTop); }, 300);
+      setTimeout(() => {$(window).scrollTop(scrollTop);}, 300);
     });
 
     this.$updateButton.prop("disabled", true);
@@ -241,19 +254,20 @@ class UIEditScheduleModal {
 
     let gId = schedule.projectGroup
       ? this.visTL.visTLData.converter.getProjectGroupId(
-          schedule.sheetId,
-          schedule.projectGroup
-        )
+        schedule.sheetId,
+        schedule.projectGroup
+      )
       : null;
     let pId = schedule.project
       ? this.visTL.visTLData.converter.getProjectId(
-          schedule.sheetId,
-          schedule.project
-        )
+        schedule.sheetId,
+        schedule.project
+      )
       : null;
     this.$projectSelect.val(pId || gId);
     this.$projectSelect.trigger("change");
 
+    this.$taskInput.prop('checked', schedule.task);
     this.$typeSelect.val(schedule.type);
     this.$titleInput.val(schedule.name);
     this.$descriptionInput.val(schedule.description);
@@ -296,9 +310,9 @@ class UIFilter {
     this.$scheduleAssignee.val(null);
 
     let filterSettings = {
-      projectGroup: { name: null },
-      project: { name: null, assignee: null },
-      schedule: { name: null, assignee: null }
+      projectGroup: {name: null},
+      project: {name: null, assignee: null},
+      schedule: {name: null, assignee: null}
     };
 
     this.visTL.applyFilter(filterSettings);

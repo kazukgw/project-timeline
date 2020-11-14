@@ -14,22 +14,27 @@
         <button id="mybtn-reload" class="mybtn">
           <i class="fa fa-repeat"></i>
         </button>
+        <!--
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-toggle-foldings" class="mybtn">
+         <button id="mybtn-toggle-foldings" class="mybtn">
           Toggle Foldings
-        </button>
+          < /button>
+        -->
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-restore-hidden" class="mybtn">
           Restore Hiddens
         </button>
+        <!--
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-group-by-projectgroup" class="mybtn">
           Group By ProjectGroup
         </button>
+        <!--
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-group-by-label" class="mybtn">
           Group By Label
         </button>
+        -->
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-add-schedule" class="mybtn">
           Add Schedule
@@ -92,7 +97,19 @@
               </div>
 
               <div class="form-group">
-                <label for="form-add-schedule-project">Type</label>
+                <label for="form-add-schedule-istask">isTask</label>
+                <br />
+                <input
+                  id="form-add-schedule-istask"
+                  class="form-control"
+                  name="istask"
+                  type="checkbox"
+                >
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-add-schedule-type">Type</label>
                 <br />
                 <select
                   id="form-add-schedule-type"
@@ -225,6 +242,18 @@
                   id="form-edit-schedule-project"
                   class="form-control"
                   name="project"
+                >
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="form-edit-schedule-istask">isTask</label>
+                <br />
+                <input
+                  id="form-edit-schedule-istask"
+                  class="form-control"
+                  name="istask"
+                  type="checkbox"
                 >
                 </select>
               </div>
