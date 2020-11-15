@@ -81,6 +81,11 @@ class VisTL {
     }
   }
 
+  getSelectedScheduleProject() {
+    let schedule = this.getSelectedSchedule();
+    return this.visTLData.project.get(schedule.projectId);
+  }
+
   getSettingsAsUrl() {
     let url = new URL(this.requestUrl);
 
@@ -143,7 +148,16 @@ class VisTL {
   }
 
   resetData() {
+    let showNestedGroupsId = [];
     let visData = this.visTLData.getVisData(this.hiddenGroups, this.filterSettings);
+    // NOTE: showNested の状態を維持
+    this.visTL.groupsData.get().forEach((g) => {
+      if (g.showNested) {
+        let g_ = visData.visGroups.get(g.id);
+        g_.showNested = true;
+        visData.visGroups.update(g_);
+      }
+    })
     this.visTL.setData({
       groups: visData.visGroups,
       items: visData.visItems
@@ -192,6 +206,30 @@ class VisTL {
 
   updateSchedule(schedule) {
     return this.visTLData.updateSchedule(schedule).then(
+      (shed) => {
+        this.resetData();
+        return shed;
+      },
+      e => {
+        console.log(new Error(e));
+      }
+    );
+  }
+
+  addProject(project) {
+    return this.visTLData.addProject(project).then(
+      (shed) => {
+        this.resetData();
+        return shed;
+      },
+      e => {
+        console.log(new Error(e));
+      }
+    );
+  }
+
+  updateProject(project) {
+    return this.visTLData.updateProject(project).then(
       (shed) => {
         this.resetData();
         return shed;
@@ -554,6 +592,31 @@ class VisTLData {
     s.end = moment(schedule.end);
     return this.rpcClient.updateSchedule(s).then(() => {
       this.schedules.update(s);
+      return s;
+    });
+  }
+
+  addProject(project) {
+    return this.rpcClient.addProject(project).then(projectHasId => {
+      return new Promise((resolve, _) => {
+        let sheet = this.sheets[project.sheetId];
+        let index = this.projects.length + 1;
+        let prj = this.converter.convertProject(sheet, projectHasId, index);
+        this.projects.add(prj);
+        resolve(prj);
+      });
+    });
+  }
+
+  updateProject(project) {
+    let s = this.projects.get(project.id);
+    s.projectGroup = project.projectGroup;
+    s.name = project.name;
+    s.assignee = project.assignee;
+    s.label = project.label;
+    s.color = project.color;
+    return this.rpcClient.updateProject(s).then(() => {
+      this.projects.update(s);
       return s;
     });
   }

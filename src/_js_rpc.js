@@ -98,4 +98,53 @@ class RPCClient {
         .rpc("updateSchedule", scheduleJson);
     });
   }
+
+  addProject(project) {
+    let gs = this.gs;
+    return new Promise((resolve, reject) => {
+      var projectJson = JSON.stringify({
+        sheetId: project.sheetId,
+        name: project.name,
+        assignee: project.assignee,
+        projectGroup: project.projectGroup,
+        lable: project.label,
+        color: project.color
+      });
+      gs.run
+        .withSuccessHandler(projectHasId => {
+          console.log("addProject: create sucessfully");
+          console.log(`addProject: ${projectHasId}`);
+          resolve(JSON.parse(projectHasId));
+        })
+        .withFailureHandler(error => {
+          console.log(`failed to create: error: ${error}`);
+          reject();
+        })
+        .rpc("addProject", projectJson);
+    });
+  }
+
+  updateProject(project) {
+    let gs = this.gs;
+    return new Promise((resolve, reject) => {
+      var projectJson = JSON.stringify({
+        sheetId: project.sheetId,
+        name: project.name,
+        assignee: project.assignee,
+        projectGroup: project.projectGroup,
+        lable: project.label,
+        color: project.color
+      });
+      gs.run
+        .withSuccessHandler(project => {
+          console.log("updateProject: update sucessfully");
+          resolve(JSON.parse(project));
+        })
+        .withFailureHandler(error => {
+          console.log(`updateProject: failed to update: error: ${error}`);
+          reject();
+        })
+        .rpc("updateProject", projectJson);
+    });
+  }
 }

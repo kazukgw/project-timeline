@@ -56,4 +56,26 @@ class RPCHandler {
     let app = initApp(sheetId);
     return app.updateSchedule(schedule);
   }
+
+  private addProject(project: Object) {
+    Logger.log(`addSchedule: schedule`);
+    let sheetId = project["sheetId"];
+    if (!!sheetId) {
+      new Error("sheetId is null");
+    }
+    // @ts-ignore
+    let app = initApp(sheetId);
+    return app.addProject(project);
+  }
+
+  private updateProject(project: Object) {
+    Logger.log(`updateSchedule: schedule`);
+    let sheetId = project["sheetId"];
+    if (!!sheetId) {
+      new Error("sheetId is null");
+    }
+    // @ts-ignore
+    let app = initApp(sheetId);
+    return app.updateProject(project);
+  }
 }

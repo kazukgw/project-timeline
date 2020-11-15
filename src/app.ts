@@ -73,6 +73,27 @@ export class App {
     return schedule;
   }
 
+  public addProject(project: Object) {
+    this.projectTable.addRecord(project);
+    return project;
+  }
+
+  public updateProject(project: Object) {
+    let record = this.projectTable.findRecordByPrimaryKey(project["name"]);
+    if (!record) {
+      new Error(`record not found: ${project["name"]}`);
+    }
+    Object.keys(project).forEach(k => {
+      record.values[k] = project[k];
+    });
+    Logger.log(
+      `app updateProject: record.values: ${JSON.stringify(record.values)}`
+    );
+    this.projectTable.saveRecord(record);
+    return project;
+  }
+
+
   private getTableFromRange(
     range: GoogleAppsScript.Spreadsheet.Range
   ): Table | null {
