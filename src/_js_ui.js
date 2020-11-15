@@ -12,7 +12,7 @@ class UI {
   }
 
   init() {
-    $("#mybtn-reload").on("click", e => {
+    $("#mybtn-reload").on("click", (e) => {
       $(e.currentTarget)
         .find("i")
         .removeClass("fa-repeat")
@@ -65,20 +65,19 @@ class UI {
       this.uiEditProjectModal.show(project);
     });
 
-    $("#mybtn-sort").on("click", e => {
+    $("#mybtn-sort").on("click", (e) => {
       this.uiSort.show();
     });
 
-
-    $("#mybtn-filter").on("click", e => {
+    $("#mybtn-filter").on("click", (e) => {
       this.uiFilter.show();
     });
 
-    $("#mybtn-get-settings-as-url").on("click", e => {
+    $("#mybtn-get-settings-as-url").on("click", (e) => {
       this.uiGetSettingsAsUrl.show();
     });
 
-    $(document).on("click", ".mybtn-hide", e => {
+    $(document).on("click", ".mybtn-hide", (e) => {
       let id = $(e.currentTarget).data("group");
       this.visTL.hideGroup(id);
     });
@@ -89,7 +88,6 @@ class UIAddScheduleModal {
   constructor(visTL) {
     this.visTL = visTL;
     this.$el = $("#modal-add-schedule");
-
 
     this.$form = $("#form-add-schedule");
     this.$projectSelect = this.$el.find("#form-add-schedule-project");
@@ -120,11 +118,11 @@ class UIAddScheduleModal {
       this.visTL.visTLData.projects.get(parentId) ||
       this.visTL.visTLData.tasks.get(parentId);
     var projectGroup, project;
-    if (parentObj['isProject']) {
-      projectGroup = parentObj['projectGroup'];
-      project = parentObj['name'];
-    } else if (parentObj['isProjectGroup']) {
-      projectGroup = parentObj['name'];
+    if (parentObj["isProject"]) {
+      projectGroup = parentObj["projectGroup"];
+      project = parentObj["name"];
+    } else if (parentObj["isProjectGroup"]) {
+      projectGroup = parentObj["name"];
       project = null;
     }
 
@@ -137,7 +135,7 @@ class UIAddScheduleModal {
       sheetUrl: parentObj.sheetName,
       projectGroup: projectGroup,
       project: project,
-      task: this.$taskInput.prop('checked'),
+      task: this.$taskInput.prop("checked"),
       type: this.$typeSelect.val(),
       name: this.$titleInput.val().trim(),
       description: this.$descriptionInput.val().trim(),
@@ -145,11 +143,13 @@ class UIAddScheduleModal {
       color: this.$colorInput.val().trim(),
       assignee: this.$assigneeInput.val().trim(),
       start: start ? moment(start) : moment(),
-      end: end ? moment(end) : moment().add(1, "month")
+      end: end ? moment(end) : moment().add(1, "month"),
     };
 
-    if (parentObj['isProjectGroup'] && scheduleData.task) {
-      alert("Task を有効化した場合、Project Group を親として選択することはできません。\n Project を選択しなおしてください。");
+    if (parentObj["isProjectGroup"] && scheduleData.task) {
+      alert(
+        "Task を有効化した場合、Project Group を親として選択することはできません。\n Project を選択しなおしてください。"
+      );
       return;
     }
 
@@ -157,11 +157,13 @@ class UIAddScheduleModal {
     this.$addButton.text("Please wait ... ");
 
     let scrollTop = $(window).scrollTop();
-    this.visTL.addSchedule(scheduleData).then(shed => {
+    this.visTL.addSchedule(scheduleData).then((shed) => {
       this.visTL.visTL.setSelection(shed.id);
       this.lastProjectSelectValue = this.$projectSelect.val();
       this.hide();
-      setTimeout(() => {$(window).scrollTop(scrollTop);}, 300);
+      setTimeout(() => {
+        $(window).scrollTop(scrollTop);
+      }, 300);
     });
   }
 
@@ -171,19 +173,19 @@ class UIAddScheduleModal {
 
   show() {
     this.$projectSelect.empty();
-    this.visTL.visTLData.currentVisData.visGroups.get().forEach(p => {
+    this.visTL.visTLData.currentVisData.visGroups.get().forEach((p) => {
       var $option;
       var text = `${p.sheetName}`;
-      if (p['task']) {
+      if (p["task"]) {
         return;
-      } else if (p['isProject']) {
-        text += `/ ${p['projectGroup']} / ${p['name']}`;
-      } else if (p['isProjectGroup']) {
-        text += `/ ${p['name']}`;
+      } else if (p["isProject"]) {
+        text += `/ ${p["projectGroup"]} / ${p["name"]}`;
+      } else if (p["isProjectGroup"]) {
+        text += `/ ${p["name"]}`;
       }
       $option = $("<option>", {
         value: p.id,
-        text: text
+        text: text,
       });
       this.$projectSelect.append($option);
     });
@@ -214,6 +216,7 @@ class UIEditScheduleModal {
     this.$progressInput = this.$el.find("#form-edit-schedule-progress");
     this.$linkInput = this.$el.find("#form-edit-schedule-link");
     this.$colorInput = this.$el.find("#form-edit-schedule-color");
+    this.$archiveInput = this.$el.find("#form-edit-schedule-archive");
     this.$updateButton = this.$el.find("#form-edit-schedule-button-update");
 
     this.$projectSelect.select2({width: "100%"});
@@ -236,7 +239,7 @@ class UIEditScheduleModal {
       ? parentObj.name
       : parentObj.projectGroupName;
     this.schedule.project = parentObj["isProjectGroup"] ? "" : parentObj.name;
-    this.schedule.task = this.$taskInput.prop('checked');
+    this.schedule.task = this.$taskInput.prop("checked");
     this.schedule.type = this.$typeSelect.val();
     this.schedule.name = this.$titleInput.val().trim();
     this.schedule.description = this.$descriptionInput.val().trim();
@@ -244,18 +247,23 @@ class UIEditScheduleModal {
     this.schedule.progress = this.$progressInput.val().trim();
     this.schedule.link = this.$linkInput.val().trim();
     this.schedule.color = this.$colorInput.val().trim();
+    this.schedule.archive = this.$archiveInput.prop("checked");
 
-    if (parentObj['isProjectGroup'] && this.schedule.task) {
-      alert("Task を有効化した場合、Project Group を親として選択することはできません。\n Project を選択しなおしてください。");
+    if (parentObj["isProjectGroup"] && this.schedule.task) {
+      alert(
+        "Task を有効化した場合、Project Group を親として選択することはできません。\n Project を選択しなおしてください。"
+      );
       return;
     }
 
     let scrollTop = $(window).scrollTop();
-    this.visTL.updateSchedule(this.schedule).then(shed => {
+    this.visTL.updateSchedule(this.schedule).then((shed) => {
       this.schedule = null;
       this.visTL.visTL.setSelection(shed.id);
       this.hide();
-      setTimeout(() => {$(window).scrollTop(scrollTop);}, 300);
+      setTimeout(() => {
+        $(window).scrollTop(scrollTop);
+      }, 300);
     });
 
     this.$updateButton.prop("disabled", true);
@@ -269,7 +277,7 @@ class UIEditScheduleModal {
   show(schedule) {
     this.schedule = schedule;
     this.$projectSelect.empty();
-    this.visTL.visTLData.currentVisData.visGroups.get().forEach(p => {
+    this.visTL.visTLData.currentVisData.visGroups.get().forEach((p) => {
       // sheet またぎのプロジェクトの変更はできないので 選択肢に列挙しない
       if (this.schedule.sheetId !== p.sheetId) {
         return;
@@ -278,13 +286,13 @@ class UIEditScheduleModal {
       if (p["isProject"]) {
         $option = $("<option>", {
           value: p.id,
-          text: `${p.sheetName} / ${p["projectGroup"] || "<none>"} / ${p.name}`
+          text: `${p.sheetName} / ${p["projectGroup"] || "<none>"} / ${p.name}`,
         });
       }
       if (p["isProjectGroup"]) {
         $option = $("<option>", {
           value: p.id,
-          text: `${p.sheetName} / ${p.name}`
+          text: `${p.sheetName} / ${p.name}`,
         });
       }
       this.$projectSelect.append($option);
@@ -307,13 +315,14 @@ class UIEditScheduleModal {
     this.$projectSelect.val(pId || gId);
     this.$projectSelect.trigger("change");
 
-    this.$taskInput.prop('checked', schedule.task);
+    this.$taskInput.prop("checked", schedule.task);
     this.$typeSelect.val(schedule.type);
     this.$titleInput.val(schedule.name);
     this.$descriptionInput.val(schedule.description);
     this.$assigneeInput.val(schedule.assignee);
     this.$progressInput.val(schedule.progress);
     this.$linkInput.val(schedule.link);
+    this.$archiveInput.prop("checked", schedule.archive);
 
     this.$updateButton.text("Update");
     this.$updateButton.prop("disabled", false);
@@ -361,11 +370,13 @@ class UIAddProjectModal {
     this.$addButton.text("Please wait ... ");
 
     let scrollTop = $(window).scrollTop();
-    this.visTL.addProject(projectData).then(shed => {
+    this.visTL.addProject(projectData).then((shed) => {
       this.visTL.visTL.setSelection(shed.id);
       this.lastProjectGroupSelectValue = this.$projectGroupSelect.val();
       this.hide();
-      setTimeout(() => {$(window).scrollTop(scrollTop);}, 300);
+      setTimeout(() => {
+        $(window).scrollTop(scrollTop);
+      }, 300);
     });
   }
 
@@ -375,24 +386,26 @@ class UIAddProjectModal {
 
   show() {
     this.$projectGroupSelect.empty();
-    this.visTL.visTLData.currentVisData.visGroups.get().forEach(p => {
+    this.visTL.visTLData.currentVisData.visGroups.get().forEach((p) => {
       var $option;
       var text = `${p.sheetName}`;
-      if (p['task']) {
+      if (p["task"]) {
         return;
-      } else if (p['isProject']) {
+      } else if (p["isProject"]) {
         return;
-      } else if (p['isProjectGroup']) {
-        text += `/ ${p['name']}`;
+      } else if (p["isProjectGroup"]) {
+        text += `/ ${p["name"]}`;
       }
       $option = $("<option>", {
         value: p.id,
-        text: text
+        text: text,
       });
       this.$projectGroupSelect.append($option);
     });
 
-    this.$projectGroupSelect.val(this.lastProjectGroupSelectValue).trigger("change");
+    this.$projectGroupSelect
+      .val(this.lastProjectGroupSelectValue)
+      .trigger("change");
     this.$addButton.text("Add");
     this.$addButton.prop("disabled", false);
     this.$el.modal("show");
@@ -411,6 +424,7 @@ class UIEditProjectModal {
     this.$projectGroupSelect = this.$el.find("#form-edit-project-projectgroup");
     this.$assigneeInput = this.$el.find("#form-edit-project-assignee");
     this.$colorInput = this.$el.find("#form-edit-project-color");
+    this.$archiveInput = this.$el.find("#form-edit-project-archive");
 
     this.$updateButton = this.$el.find("#form-edit-project-button-update");
 
@@ -432,13 +446,16 @@ class UIEditProjectModal {
     this.project.name = this.$nameInput.val().trim();
     this.project.assignee = this.$assigneeInput.val().trim();
     this.project.color = this.$colorInput.val().trim();
+    this.project.archive = this.$archiveInput.prop("checked")
 
     let scrollTop = $(window).scrollTop();
-    this.visTL.updateProject(this.project).then(p => {
+    this.visTL.updateProject(this.project).then((p) => {
       this.project = null;
       this.visTL.visTL.setSelection(p.id);
       this.hide();
-      setTimeout(() => {$(window).scrollTop(scrollTop);}, 300);
+      setTimeout(() => {
+        $(window).scrollTop(scrollTop);
+      }, 300);
     });
 
     this.$updateButton.prop("disabled", true);
@@ -452,7 +469,7 @@ class UIEditProjectModal {
   show(project) {
     this.project = project;
     this.$projectGroupSelect.empty();
-    this.visTL.visTLData.currentVisData.visGroups.get().forEach(p => {
+    this.visTL.visTLData.currentVisData.visGroups.get().forEach((p) => {
       // sheet またぎのプロジェクトの変更はできないので 選択肢に列挙しない
       if (this.project.sheetId !== p.sheetId) {
         return;
@@ -464,7 +481,7 @@ class UIEditProjectModal {
       if (p["isProjectGroup"]) {
         $option = $("<option>", {
           value: p.id,
-          text: `${p.sheetName} / ${p.name}`
+          text: `${p.sheetName} / ${p.name}`,
         });
       }
       this.$projectGroupSelect.append($option);
@@ -483,6 +500,7 @@ class UIEditProjectModal {
 
     this.$assigneeInput.val(project.assignee);
     this.$colorInput.val(project.color);
+    this.$archiveInput.prop("checked", project.archive);
 
     this.$updateButton.text("Update");
     this.$updateButton.prop("disabled", false);
@@ -529,14 +547,18 @@ class UISort {
     this.visTL.sheetList.forEach((s) => {
       var $option = $("<option>", {
         value: s.id,
-        text: s.name
+        text: s.name,
       });
       this.$spreadSheetSelect.append($option);
     });
 
     this.$sheetSelect.empty();
-    this.$sheetSelect.append($("<option>", {value: "Schedules", text: "Schedules"}));
-    this.$sheetSelect.append($("<option>", {value: "Projects", text: "Projects"}));
+    this.$sheetSelect.append(
+      $("<option>", {value: "Schedules", text: "Schedules"})
+    );
+    this.$sheetSelect.append(
+      $("<option>", {value: "Projects", text: "Projects"})
+    );
 
     this.$sortButton.text("Sort");
     this.$sortButton.prop("disabled", false);
@@ -554,6 +576,7 @@ class UIFilter {
     this.$projectAssignee = $("#form-filter-project-assignee");
     this.$scheduleName = $("#form-filter-schedule-name");
     this.$scheduleAssignee = $("#form-filter-schedule-assignee");
+    this.$showArchived = $("#form-filter-showarchived");
 
     this.$clearButton = $("#form-filter-clear");
     this.$clearButton.on("click", () => {
@@ -572,11 +595,13 @@ class UIFilter {
     this.$projectAssignee.val(null);
     this.$scheduleName.val(null);
     this.$scheduleAssignee.val(null);
+    this.$showArchived.prop("checked", false);
 
     let filterSettings = {
+      showArchived: false,
       projectGroup: {name: null},
       project: {name: null, assignee: null},
-      schedule: {name: null, assignee: null}
+      schedule: {name: null, assignee: null},
     };
 
     this.visTL.applyFilter(filterSettings);
@@ -584,21 +609,19 @@ class UIFilter {
   }
 
   apply() {
-    let scheduleName = this.$scheduleName.val();
-    let scheduleAssignee = this.$scheduleAssignee.val();
-
     let filterSettings = {
+      showArchived: this.$showArchived.prop("checked"),
       projectGroup: {
-        name: this.$projectGroupName.val()
+        name: this.$projectGroupName.val(),
       },
       project: {
         name: this.$projectName.val(),
-        assignee: this.$projectAssignee.val()
+        assignee: this.$projectAssignee.val(),
       },
       schedule: {
         name: this.$scheduleName.val(),
-        assignee: this.$scheduleAssignee.val()
-      }
+        assignee: this.$scheduleAssignee.val(),
+      },
     };
 
     this.visTL.applyFilter(filterSettings);
@@ -611,6 +634,7 @@ class UIFilter {
 
   show() {
     this.$el.modal("show");
+    this.$showArchived.prop("checked", this.visTL.filterSettings.showArchived);
     this.$projectGroupName.val(this.visTL.filterSettings.projectGroup.name);
     this.$projectName.val(this.visTL.filterSettings.project.name);
     this.$projectAssignee.val(this.visTL.filterSettings.project.assignee);

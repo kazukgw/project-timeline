@@ -26,7 +26,7 @@ class VisTL {
     }
 
     let filterSettings = url.searchParams.get("filter");
-    this.filterSettings = {projectGroup: {}, project: {}, schedule: {}};
+    this.filterSettings = {projectGroup: {}, project: {}, schedule: {}, showArchived: false};
     if (filterSettings) {
       this.filterSettings = inflateJson(filterSettings);
     }
@@ -593,6 +593,7 @@ class VisTLData {
     s.assignee = schedule.assignee;
     s.progress = schedule.progress;
     s.link = schedule.link;
+    s.archive = schedule.archive;
     s.start = moment(schedule.start);
     s.end = moment(schedule.end);
     return this.rpcClient.updateSchedule(s).then(() => {
@@ -620,6 +621,7 @@ class VisTLData {
     s.assignee = project.assignee;
     s.label = project.label;
     s.color = project.color;
+    s.archive = project.archive;
     return this.rpcClient.updateProject(s).then(() => {
       this.projects.update(s);
       return s;
@@ -736,6 +738,7 @@ class VisTLData {
 
   _filterVisible(data, hiddenGroupIds, filterSettings) {
     filterSettings = filterSettings || {
+      showArchived: false,
       projectGroup: {},
       project: {},
       schedule: {},
@@ -762,6 +765,7 @@ class VisTLData {
       data.projectGroups.get({
         filter: (g) => {
           if (g.invalid) return false;
+          if (!filterSettings.showArchived && g["archive"]) return false;
           if (!g.visible) return false;
           if (hiddenGroupIds.indexOf(g.id) > -1) return false;
           for (var k in regexFilter.projectGroup) {
@@ -781,6 +785,7 @@ class VisTLData {
       data.projects.get({
         filter: (p) => {
           if (p.invalid) return false;
+          if (!filterSettings.showArchived && p["archive"]) return false;
           if (!p.visible) return false;
           if (hiddenGroupIds.indexOf(p.id) > -1) return false;
 
@@ -867,6 +872,7 @@ class VisTLData {
       data.schedules.get({
         filter: (s) => {
           if (s.invalid) return false;
+          if (!filterSettings.showArchived && s["archive"]) return false;
 
           for (var k in regexFilter.schedule) {
             if (regexFilter.schedule[k] == null) {

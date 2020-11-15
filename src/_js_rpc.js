@@ -101,6 +101,7 @@ class RPCClient {
         projectGroup: schedule.projectGroup,
         color: schedule.color,
         link: schedule.link,
+        archive: schedule.archive,
         start: start,
         end: end,
         editable: true
@@ -153,7 +154,8 @@ class RPCClient {
         projectGroup: project.projectGroup,
         lable: project.label,
         color: project.color,
-        index: project.index
+        index: project.index,
+        archive: project.archive
       });
       gs.run
         .withSuccessHandler(project => {

@@ -21,9 +21,7 @@
           < /button>
         -->
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-restore-hidden" class="mybtn">
-          Restore Hiddens
-        </button>
+        <button id="mybtn-restore-hidden" class="mybtn">Restore Hiddens</button>
         <!--
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-group-by-projectgroup" class="mybtn">
@@ -36,43 +34,35 @@
         </button>
         -->
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-add-project" class="mybtn">
-          Add Project
-        </button>
+        <button id="mybtn-add-project" class="mybtn">Add Project</button>
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-edit-project" class="mybtn">
-          Edit Project
-        </button>
+        <button id="mybtn-edit-project" class="mybtn">Edit Project</button>
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-add-schedule" class="mybtn">
-          Add Schedule
-        </button>
+        <button id="mybtn-add-schedule" class="mybtn">Add Schedule</button>
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-edit-schedule" class="mybtn">
-          Edit Schedule
-        </button>
+        <button id="mybtn-edit-schedule" class="mybtn">Edit Schedule</button>
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-sort" class="mybtn">
-          Sort
-        </button>
+        <button id="mybtn-sort" class="mybtn">Sort</button>
         <span class="mybtn-separator"> | </span>
-        <button id="mybtn-filter" class="mybtn">
-          Filter
-        </button>
+        <button id="mybtn-filter" class="mybtn">Filter</button>
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-get-settings-as-url" class="mybtn">
           Get Settings As URL
         </button>
         <? if(message != null) { ?>
-          <span class="mybtn-separator"> | </span>
-          <button class="mybtn">
-            <?!= message ?>
-          </button>
+        <span class="mybtn-separator"> | </span>
+        <button class="mybtn">
+          <?!= message ?>
+        </button>
         <? } ?>
       </nav>
       <div id="vistl-container">
-        <div id="spinner-wrapper"class="d-flex justify-content-center">
-          <div class="spinner-border text-secondary" style="margin-top: 100px; width: 120px; height: 120px;" role="status">
+        <div id="spinner-wrapper" class="d-flex justify-content-center">
+          <div
+            class="spinner-border text-secondary"
+            style="margin-top: 100px; width: 120px; height: 120px"
+            role="status"
+          >
             <span class="sr-only">Loading...</span>
           </div>
         </div>
@@ -110,8 +100,7 @@
                   id="form-add-schedule-project"
                   class="form-control"
                   name="project"
-                >
-                </select>
+                ></select>
               </div>
 
               <div class="form-group">
@@ -122,8 +111,7 @@
                   class="form-control"
                   name="istask"
                   type="checkbox"
-                >
-                </select>
+                />
               </div>
 
               <div class="form-group">
@@ -134,8 +122,8 @@
                   class="form-control"
                   name="type"
                 >
-                  <option value="range"> Range (Default)</option>
-                  <option value="point"> Point </option>
+                  <option value="range">Range (Default)</option>
+                  <option value="point">Point</option>
                 </select>
               </div>
 
@@ -154,7 +142,7 @@
                 <textarea
                   id="form-add-schedule-description"
                   class="form-control"
-                  ></textarea>
+                ></textarea>
               </div>
 
               <div class="form-group">
@@ -270,8 +258,7 @@
                   id="form-edit-schedule-project"
                   class="form-control"
                   name="project"
-                >
-                </select>
+                ></select>
               </div>
 
               <div class="form-group">
@@ -282,8 +269,7 @@
                   class="form-control"
                   name="istask"
                   type="checkbox"
-                >
-                </select>
+                />
               </div>
 
               <div class="form-group">
@@ -294,8 +280,8 @@
                   class="form-control"
                   name="type"
                 >
-                  <option value="range"> Range (Default)</option>
-                  <option value="point"> Point </option>
+                  <option value="range">Range (Default)</option>
+                  <option value="point">Point</option>
                 </select>
               </div>
 
@@ -356,6 +342,16 @@
                   name="color"
                 />
               </div>
+
+              <div class="form-group">
+                <label for="form-edit-schedule-archive">Archive</label>
+                <input
+                  type="checkbox"
+                  id="form-edit-schedule-archive"
+                  class="form-control"
+                  name="archive"
+                />
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -409,8 +405,7 @@
                   id="form-add-project-projectgroup"
                   class="form-control"
                   name="projectGroup"
-                >
-                </select>
+                ></select>
               </div>
 
               <div class="form-group">
@@ -506,8 +501,7 @@
                   id="form-edit-project-projectgroup"
                   class="form-control"
                   name="projectgroup"
-                >
-                </select>
+                ></select>
               </div>
 
               <div class="form-group">
@@ -527,6 +521,16 @@
                   id="form-edit-project-color"
                   class="form-control"
                   name="color"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-edit-project-archive">Archive</label>
+                <input
+                  type="checkbox"
+                  id="form-edit-project-archive"
+                  class="form-control"
+                  name="archive"
                 />
               </div>
             </form>
@@ -550,7 +554,6 @@
         </div>
       </div>
     </div>
-
 
     <!-- Sort -->
     <div
@@ -579,8 +582,8 @@
               <h5 class="bg-danger text-center">注意</h5>
               <p>指定された SpreadSheet の実際の行を以下の通り並び替えます。</p>
               <ul>
-              <li>Schedules: Project と Start の値で昇順</li>
-              <li>Projects: ProjectGroup の値で昇順</li>
+                <li>Schedules: Project と Start の値で昇順</li>
+                <li>Projects: ProjectGroup の値で昇順</li>
               </ul>
             </div>
             <form>
@@ -591,8 +594,7 @@
                   id="form-sort-spreadsheet"
                   class="form-control"
                   name="spreadsheet"
-                >
-                </select>
+                ></select>
               </div>
               <div class="form-group">
                 <label for="form-sort-sheet">Sheet</label>
@@ -601,10 +603,8 @@
                   id="form-sort-sheet"
                   class="form-control"
                   name="sheet"
-                >
-                </select>
+                ></select>
               </div>
-
             </form>
           </div>
           <div class="modal-footer">
@@ -615,19 +615,13 @@
             >
               Close
             </button>
-            </button>
-            <button
-              id="form-sort-sort"
-              type="button"
-              class="btn btn-primary"
-            >
+            <button id="form-sort-sort" type="button" class="btn btn-primary">
               Sort
             </button>
           </div>
         </div>
       </div>
     </div>
-
 
     <!-- Filter -->
     <div
@@ -656,7 +650,7 @@
               <p>入力された値にマッチ(正規表現)するもののみ表示します。</p>
             </div>
             <form>
-              <h5> ProjectGroup </h5>
+              <h5>ProjectGroup</h5>
               <div class="form-group">
                 <label for="form-filter-project-group-name">Name</label>
                 <input
@@ -665,7 +659,7 @@
                   class="form-control"
                 />
               </div>
-              <h5> Project </h5>
+              <h5>Project</h5>
               <div class="form-group">
                 <label for="form-filter-project-name">Name</label>
                 <input
@@ -682,7 +676,7 @@
                   class="form-control"
                 />
               </div>
-              <h5> Schedule </h5>
+              <h5>Schedule</h5>
               <div class="form-group">
                 <label for="form-filter-schedule-name">Name</label>
                 <input
@@ -696,6 +690,14 @@
                 <input
                   type="text"
                   id="form-filter-schedule-assignee"
+                  class="form-control"
+                />
+              </div>
+              <h5>Show Archived</h5>
+              <div class="form-group">
+                <input
+                  type="checkbox"
+                  id="form-filter-showarchived"
                   class="form-control"
                 />
               </div>
@@ -728,7 +730,6 @@
       </div>
     </div>
 
-
     <!-- Settings URL Modal -->
     <div
       class="modal fade"
@@ -754,7 +755,7 @@
           <div class="modal-body">
             <form>
               <div class="form-group">
-                <p> URL </p>
+                <p>URL</p>
                 <textarea
                   id="modal-get-settings-as-url-url"
                   class="form-control"
