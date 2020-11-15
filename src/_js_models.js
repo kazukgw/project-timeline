@@ -377,8 +377,10 @@ class VisTL {
         <p style="font-weight: 600">
           {{#if link}}
             <a href="{{link}}" target="_blank">{{name}}</a>
+            {{#if nestedGroupNum}} <span class="badge badge-dark">{{nestedGroupNum}}</span> {{/if}}
           {{else}}
             {{name}}
+            {{#if nestedGroupNum}} <span class="badge badge-dark">{{nestedGroupNum}}</span> {{/if}}
           {{/if}}
 
           {{#if sheetName}}
@@ -393,8 +395,10 @@ class VisTL {
         <p style="font-weight: 500">
           {{#if link}}
             <a style="color: {{color}}" href="{{link}}" target="_blank">{{name}}</a>
+            {{#if nestedGroupNum}} <span class="badge badge-dark">{{nestedGroupNum}}</span> {{/if}}
           {{else}}
             {{name}}
+            {{#if nestedGroupNum}} <span class="badge badge-dark">{{nestedGroupNum}}</span> {{/if}}
           {{/if}}
 
           {{#if assignee}} <span class="badge badge-info">{{assignee}}</span> {{/if}}
@@ -415,6 +419,9 @@ class VisTL {
         color: group.color,
         assignee: group["assignee"],
         label: group["label"],
+        nestedGroupNum: group["nestedGroups"] ?
+          (group["nestedGroups"].length > 0 ? group["nestedGroups"].length : null)
+          : null,
         sheetName: group.sheetName,
         sheetUrl: group.sheetUrl,
         link: group.link,
