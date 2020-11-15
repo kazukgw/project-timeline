@@ -93,7 +93,6 @@ export class App {
     return project;
   }
 
-
   private getTableFromRange(
     range: GoogleAppsScript.Spreadsheet.Range
   ): Table | null {

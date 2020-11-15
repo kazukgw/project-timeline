@@ -52,6 +52,10 @@
           Edit Schedule
         </button>
         <span class="mybtn-separator"> | </span>
+        <button id="mybtn-sort" class="mybtn">
+          Sort
+        </button>
+        <span class="mybtn-separator"> | </span>
         <button id="mybtn-filter" class="mybtn">
           Filter
         </button>
@@ -59,6 +63,12 @@
         <button id="mybtn-get-settings-as-url" class="mybtn">
           Get Settings As URL
         </button>
+        <? if(message != null) { ?>
+          <span class="mybtn-separator"> | </span>
+          <button class="mybtn">
+            <?!= message ?>
+          </button>
+        <? } ?>
       </nav>
       <div id="vistl-container">
         <div id="spinner-wrapper"class="d-flex justify-content-center">
@@ -105,7 +115,7 @@
               </div>
 
               <div class="form-group">
-                <label for="form-add-schedule-istask">isTask</label>
+                <label for="form-add-schedule-istask">Task</label>
                 <br />
                 <input
                   id="form-add-schedule-istask"
@@ -153,7 +163,7 @@
                   type="text"
                   id="form-add-schedule-assignee"
                   class="form-control"
-                  name="title"
+                  name="assignee"
                 />
               </div>
 
@@ -163,7 +173,17 @@
                   type="text"
                   id="form-add-schedule-link"
                   class="form-control"
-                  name="title"
+                  name="link"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-add-schedule-color">Color</label>
+                <input
+                  type="text"
+                  id="form-add-schedule-color"
+                  class="form-control"
+                  name="color"
                 />
               </div>
 
@@ -324,6 +344,16 @@
                   id="form-edit-schedule-link"
                   class="form-control"
                   name="Link"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-edit-schedule-color">Color</label>
+                <input
+                  type="text"
+                  id="form-edit-schedule-color"
+                  class="form-control"
+                  name="color"
                 />
               </div>
             </form>
@@ -522,6 +552,83 @@
     </div>
 
 
+    <!-- Sort -->
+    <div
+      class="modal fade"
+      id="modal-sort"
+      data-backdrop="static"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Sort</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="border" style="padding: 10px; margin: 10px">
+              <h5 class="bg-danger text-center">注意</h5>
+              <p>指定された SpreadSheet の実際の行を以下の通り並び替えます。</p>
+              <ul>
+              <li>Schedules: Project と Start の値で昇順</li>
+              <li>Projects: ProjectGroup の値で昇順</li>
+              </ul>
+            </div>
+            <form>
+              <div class="form-group">
+                <label for="form-sort-spreadsheet">SpreadSheet</label>
+                <br />
+                <select
+                  id="form-sort-spreadsheet"
+                  class="form-control"
+                  name="spreadsheet"
+                >
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="form-sort-sheet">Sheet</label>
+                <br />
+                <select
+                  id="form-sort-sheet"
+                  class="form-control"
+                  name="sheet"
+                >
+                </select>
+              </div>
+
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            </button>
+            <button
+              id="form-sort-sort"
+              type="button"
+              class="btn btn-primary"
+            >
+              Sort
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Filter -->
     <div
       class="modal fade"
@@ -545,6 +652,9 @@
             </button>
           </div>
           <div class="modal-body">
+            <div class="" style="margin: 10px">
+              <p>入力された値にマッチ(正規表現)するもののみ表示します。</p>
+            </div>
             <form>
               <h5> ProjectGroup </h5>
               <div class="form-group">

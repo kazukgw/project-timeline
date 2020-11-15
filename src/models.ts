@@ -86,9 +86,9 @@ export class Table {
     this.recordRangeFirstRowNumber = tableConfig.recordRangeFirstRowNumber;
     this.primaryKey = tableConfig.primaryKey;
 
-    // header の数は最大 20
+    // header の数は最大 30
     let headers = <Array<string>>(
-      this.sheetObj.getRange(this.headerRangeFirstRowNumber, 1, 1, 20).getValues()[0]
+      this.sheetObj.getRange(this.headerRangeFirstRowNumber, 1, 1, 30).getValues()[0]
     );
     this.headers = [];
     headers.forEach(v => {
@@ -100,6 +100,18 @@ export class Table {
       new Error(`${this.sheetName} の primaryKey:${this.primaryKey} が存在しません`);
     }
     this.primaryKeyColumnNumber = index + 1;
+  }
+
+  public sort(sortSpec: Array<Object>) {
+    let range = this.getAllRecordRange();
+    let ss = sortSpec.map((o) => {
+      let i = this.headers.indexOf(o['column']);
+      if (i === -1) {
+        new Error(`sort spec column not found: ${o['column']}`)
+      }
+      return {column: i + 1, ascending: o['ascending'] || true};
+    });
+    range.sort(ss);
   }
 
   public addRecord(recordData: Object) {
@@ -157,6 +169,17 @@ export class Table {
     return rows;
   }
 
+  // TODO: リファクタ: メソッド名修正
+  public getAllRecordsHasNoPrimaryKey(): Array<TableRecord> {
+    let lastRowNumber = this.getLastRowNumber();
+    let rows = [];
+    for (var i = this.recordRangeFirstRowNumber; i <= lastRowNumber; i++) {
+      let record = new TableRecord(this, this.getRangeByRowNumber(i));
+      rows.push(record);
+    }
+    return rows;
+  }
+
   public findRecordByPrimaryKey(key: string): TableRecord | null {
     Logger.log(`findRecordByPrimaryKey: ${this.sheetName} primaryKey: ${key}`);
     let range = this.findRangeByPrimaryKey(key);
@@ -167,14 +190,25 @@ export class Table {
     return new TableRecord(this, range);
   }
 
+  public getAllRecordRowRangeArray(): Array<GoogleAppsScript.Spreadsheet.Range> {
+    let allrange = this.getAllRecordRange();
+    var s = allrange.getRow();
+    let e = allrange.getLastRow();
+    let ranges = [];
+    for (; s <= e; s++) {
+      ranges.push(this.sheetObj.getRange(s, 1, 1, this.headers.length));
+    }
+    return ranges;
+  }
+
   private getLastRowNumber(): number {
     let range = this.getPrimaryKeyColRange();
     // Logger.log(`getLastRecordRowNumber: range.getLastRow: ${range.getLastRow()}`);
     var lastRowNumber: number = this.recordRangeFirstRowNumber;
     range.getValues().forEach((v, i) => {
-      if (!!v[0]) {
-        lastRowNumber = (this.recordRangeFirstRowNumber * 1) + i;
-      }
+      // if (!!v[0]) {
+      lastRowNumber = (this.recordRangeFirstRowNumber * 1) + i;
+      // }
       // Logger.log(`getLastRowNumber: lastRowNumber: ${lastRowNumber}`)
     });
     return lastRowNumber;

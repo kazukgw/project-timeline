@@ -16,21 +16,21 @@ $(() => {
 
     setTimeout(() => {
       $visTLContainer.find("#spinner-wrapper").remove();
-      if(visTL.defaultRange) {
-        if(visTL.defaultRange['start']) {
+      if (visTL.defaultRange) {
+        if (visTL.defaultRange['start']) {
           visTL.visTL.setWindow(
             new Date(visTL.defaultRange.start),
             new Date(visTL.defaultRange.end)
           );
         }
-      } else if(visTL.defaultDuration) {
+      } else if (visTL.defaultDuration) {
         var m = visTL.defaultDuration.match(/^[0-9]+/);
-        if(m) {
+        if (m) {
           var k;
           k = ((k = visTL.defaultDuration.match(/[a-z]+$/)) && k[0]) || "month";
           var dur = moment.duration(moment().diff(moment().subtract(m[0], k)));
-          var start = moment().subtract(dur.asSeconds()/5, 'seconds');
-          var end = moment().add(4 * dur.asSeconds()/5, 'seconds');
+          var start = moment().subtract(dur.asSeconds() / 5, 'seconds');
+          var end = moment().add(4 * dur.asSeconds() / 5, 'seconds');
           visTL.visTL.setWindow(start, end);
         }
       } else {
@@ -40,10 +40,7 @@ $(() => {
         );
       }
 
-      var start = visTL.visTL.getWindow().start;
-      var end = visTL.visTL.getWindow().end;
-      var dur = moment.duration(moment(end).diff(moment(start)));
-      visTL.visTL.addCustomTime(moment(start).add(dur.asSeconds()/4 * 3, 'seconds'), 1);
+      visTL.visTL.addCustomTime(moment().add(2, 'weeks'), 1);
       visTL.visTL.setCustomTimeMarker("Point Sum: (Drag me ...)", 1);
 
       new UI(visTL).init();
@@ -52,9 +49,9 @@ $(() => {
 });
 
 function inflateJson(data) {
-  return JSON.parse(pako.inflate(atob(data), { to: "string" }));
+  return JSON.parse(pako.inflate(atob(data), {to: "string"}));
 }
 
 function deflateJson(data) {
-  return btoa(pako.deflate(JSON.stringify(data), { to: "string" }));
+  return btoa(pako.deflate(JSON.stringify(data), {to: "string"}));
 }

@@ -26,6 +26,22 @@ class RPCClient {
     return Promise.all(promises);
   }
 
+  sort(sheetId, sheetName) {
+    let gs = this.gs;
+    return new Promise((resolve, reject) => {
+      gs.run
+        .withSuccessHandler(() => {
+          console.log(`sort: ${sheetId}.${sheetName} sorted sucessfully`);
+          resolve();
+        })
+        .withFailureHandler(error => {
+          console.log(`failed to sort: error: ${error}`);
+          reject();
+        })
+        .rpc("sort", JSON.stringify({sheetId: sheetId, sheetName: sheetName}));
+    });
+  }
+
   addSchedule(schedule) {
     let gs = this.gs;
     let start = moment(schedule.start).format("YYYY/MM/DD");
@@ -40,6 +56,7 @@ class RPCClient {
         assignee: schedule.assignee,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
+        color: schedule.color,
         start: start,
         description: schedule.description,
         end: end,
@@ -75,12 +92,14 @@ class RPCClient {
         _id: schedule._id,
         task: schedule.task,
         type: schedule.type,
+        index: schedule.index,
         name: schedule.name,
         description: schedule.description,
         assignee: schedule.assignee,
         progress: schedule.progress,
         project: schedule.project,
         projectGroup: schedule.projectGroup,
+        color: schedule.color,
         link: schedule.link,
         start: start,
         end: end,
@@ -133,7 +152,8 @@ class RPCClient {
         assignee: project.assignee,
         projectGroup: project.projectGroup,
         lable: project.label,
-        color: project.color
+        color: project.color,
+        index: project.index
       });
       gs.run
         .withSuccessHandler(project => {

@@ -27,12 +27,42 @@ class RPCHandler {
     // @ts-ignore
     let app = initApp(sheetId);
 
+    // TODO: リファクタ: こんなところでレコードの値を変更するな
+    // NOTE: データ取得時にSchedules シートの条件にマッチするレコードについては PrimaryKey をセットする
+    let records = app.scheduleTable.getAllRecordsHasNoPrimaryKey();
+    // @ts-ignore
+    records.forEach((r: TableRecord) => {
+      if (!r.hasPrimaryKey() && r.values["name"] != null && r.values["name"] !== "") {
+        r.values["_id"] = Utilities.getUuid();
+        r.save();
+      }
+    });
+
     return {
       labels: app.labelTable.getAllRecordData(),
       projectGroups: app.projectGroupTable.getAllRecordData(),
       projects: app.projectTable.getAllRecordData(),
       schedules: app.scheduleTable.getAllRecordData()
     };
+  }
+
+  private sort(param: Object) {
+    // @ts-ignore
+    let app = initApp(param["sheetId"]);
+
+    switch (param["sheetName"].toLowerCase()) {
+      case "schedules":
+        app.scheduleTable.sort([
+          {column: "project", ascending: true},
+          {column: "start", ascending: true},
+        ]);
+        return;
+      case "projects":
+        app.projectTable.sort([
+          {column: "projectGroup", ascending: true}
+        ]);
+        return;
+    }
   }
 
   private addSchedule(schedule: Object) {

@@ -65,6 +65,7 @@ class DoGetHandler {
       return {id: id, name: sheet.getName(), url: sheet.getUrl()};
     }).filter((d) => {return d != null});
 
+    template.message = ScriptProperties.getProperty("message");
     template.title = this.title;
     template.sheetList = JSON.stringify(sheetList);
     template.requestUrl = JSON.stringify({requestUrl: this.requestUrl});
