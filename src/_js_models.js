@@ -298,8 +298,6 @@ class VisTL {
         overrideItems: false
       },
       onMove: this.getOnMoveHandler().bind(this),
-      onMoveGroup: this.getOnMoveGroupHandler().bind(this),
-      groupOrderSwap: this.getGroupOrderSwapFunc().bind(this),
       moment: function (date) {
         return vis.moment(date).utcOffset('+09:00');
       }
