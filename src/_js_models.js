@@ -485,66 +485,6 @@ class VisTL {
       );
     };
   }
-
-  getOnMoveGroupHandler() {
-    // timeline の オブジェクト移動イベントのハンドラ
-    // サーバ側にデータの変更をリクエストする
-    // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
-    // let visTLData = this.visTLData;
-    return function (group, callback) {
-      // console.log("====> move group handler");
-      // console.dir(group);
-      // if (group['isProject']) {
-      //   this.visTLData.updateProject(group).then(
-      //     // callback に null を渡すと 変更がキャンセルされる
-      //     // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
-      //     () => {
-      //       callback(group);
-      //     },
-      //     e => {
-      //       console.log(new Error(e));
-      //       callback(null);
-      //     }
-      //   );
-      // } else if (group['task']) {
-      //   let s = this.visTLData.schedules.get(group['scheduleId']);
-      //   console.log(`update task index: ${s.index}`);
-      //   this.visTLData.updateSchedule(s).then(
-      //     // callback に null を渡すと 変更がキャンセルされる
-      //     // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
-      //     () => {
-      //       callback(group);
-      //     },
-      //     e => {
-      //       console.log(new Error(e));
-      //       callback(null);
-      //     }
-      //   );
-      // }
-    };
-  }
-
-  getGroupOrderSwapFunc() {
-    // function(fromGroup: Object, toGroup: Object, groups: DataSet) {
-    return function (fromGroup, toGroup, groups) {
-      let fi = fromGroup.index;
-      let ti = toGroup.index;
-      fromGroup.index = ti;
-      toGroup.index = fi;
-      groups.update(fromGroup);
-      groups.update(toGroup);
-      if (fromGroup['task']) {
-        let fs = this.visTLData.schedules.get(fromGroup['scheduleId']);
-        let ts = this.visTLData.schedules.get(toGroup['scheduleId']);
-        let fsi = fs.index;
-        let tsi = ts.index;
-        fs.index = tsi;
-        ts.index = fsi;
-        this.visTLData.schedules.update(fs);
-        this.visTLData.schedules.update(ts);
-      }
-    }
-  }
 }
 
 class VisTLData {
