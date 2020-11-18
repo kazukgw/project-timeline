@@ -163,7 +163,7 @@ class VisTL {
       let g_ = visData.visGroups.get(g.id);
       if (g_) {
         if (
-          (resourceType === "projectGroups" && g_['isProjectGroup'])
+          (resourceType === "projectGroups")
           || (resourceType === "projects" && g['isProject'])
         ) {
           g_.showNested = showNested != null ? showNested : g['showNested'];
