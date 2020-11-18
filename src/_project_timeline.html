@@ -14,14 +14,12 @@
         <button id="mybtn-reload" class="mybtn">
           <i class="fa fa-repeat"></i>
         </button>
-        <!--
-        <span class="mybtn-separator"> | </span>
-         <button id="mybtn-toggle-foldings" class="mybtn">
-          Toggle Foldings
-          < /button>
-        -->
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-restore-hidden" class="mybtn">Restore Hiddens</button>
+        <span class="mybtn-separator"> | </span>
+        <button id="mybtn-change-foldings" class="mybtn">
+          Toggle Foldings
+        </button>
         <!--
         <span class="mybtn-separator"> | </span>
         <button id="mybtn-group-by-projectgroup" class="mybtn">
@@ -64,6 +62,89 @@
             role="status"
           >
             <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Folding Modal -->
+    <div
+      class="modal fade"
+      id="modal-folding"
+      data-backdrop="static"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Change Folding</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="form-folding">
+              <div class="form-group">
+                <label for="form-folding">Project Group</label>
+                <br />
+                <div class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-lg modal-folding-button"
+                    data-resource-type="projectGroups"
+                    data-open-or-close="open"
+                  >
+                    OPEN
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-lg modal-folding-button"
+                    data-resource-type="projectGroups"
+                    data-open-or-close="close"
+                  >
+                    CLOSE
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="form-folding">Project</label>
+                <br />
+                <div class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-lg modal-folding-button"
+                    data-resource-type="projects"
+                    data-open-or-close="open"
+                  >
+                    OPEN
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-lg modal-folding-button"
+                    data-resource-type="projects"
+                    data-open-or-close="close"
+                  >
+                    CLOSE
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>

@@ -143,47 +143,34 @@ class VisTL {
     }
   }
 
-  toggleFoldings() {
-    var showNested;
-    if (this.currentFoldings === this.foldingsState.OPEN) {
-      this.currentFoldings = this.foldingsState.CLOSE;
-      showNested = false;
-    } else {
-      this.currentFoldings = this.foldingsState.OPEN;
-      showNested = true;
-    }
-
-    this.visTLData.projectGroups.forEach((g) => {
-      this.visTLData.projectGroups.update({
-        id: g.id,
-        showNested: showNested,
-      });
-    });
-
-    this.visTLData.labels.forEach((l) => {
-      this.visTLData.labels.update({id: l.id, showNested: showNested});
-    });
+  changeFoldings(resourceType, openOrClose) {
+    let showNested = openOrClose === "open";
 
     if (this.currrentGrouping === this.groupingState.GROUP) {
-      this.resetData();
+      this.resetData(resourceType, showNested);
     } else {
       this.resetDataWithLabel();
     }
   }
 
-  resetData() {
+  resetData(resourceType, showNested) {
     let visData = this.visTLData.getVisData(
       this.hiddenGroups,
       this.filterSettings
     );
     // NOTE: showNested の状態を維持
     this.visTL.groupsData.get().forEach((g) => {
-      if (g["showNested"]) {
-        let g_ = visData.visGroups.get(g.id);
-        if (g_) {
-          g_.showNested = true;
-          visData.visGroups.update(g_);
+      let g_ = visData.visGroups.get(g.id);
+      if (g_) {
+        if (
+          (resourceType === "projectGroups" && g_['isProjectGroup'])
+          || (resourceType === "projects" && g['isProject'])
+        ) {
+          g_.showNested = showNested != null ? showNested : g['showNested'];
+        } else {
+          g_.showNested = g['showNested'];
         }
+        visData.visGroups.update(g_);
       }
     });
     this.visTL.setData({

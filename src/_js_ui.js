@@ -2,6 +2,7 @@ class UI {
   constructor(visTL) {
     this.visTL = visTL;
 
+    this.uiChangeFoldingsModal = new UIChageFoldingsModal(visTL);
     this.uiAddScheduleModal = new UIAddScheduleModal(visTL);
     this.uiEditScheduleModal = new UIEditScheduleModal(visTL);
     this.uiAddProjectModal = new UIAddProjectModal(visTL);
@@ -25,8 +26,8 @@ class UI {
       });
     });
 
-    $("#mybtn-toggle-foldings").on("click", () => {
-      this.visTL.toggleFoldings();
+    $("#mybtn-change-foldings").on("click", () => {
+      this.uiChangeFoldingsModal.show();
     });
 
     $("#mybtn-group-by-projectgroup").on("click", () => {
@@ -81,6 +82,29 @@ class UI {
       let id = $(e.currentTarget).data("group");
       this.visTL.hideGroup(id);
     });
+  }
+}
+
+class UIChageFoldingsModal {
+  constructor(visTL) {
+    this.visTL = visTL;
+    this.$el = $("#modal-folding");
+
+    this.$el.find(".modal-folding-button").bind("click", (e) => {
+      this.changeFoldings(
+        $(e.target).data("resource-type"),
+        $(e.target).data("open-or-close")
+      );
+    })
+  }
+
+  changeFoldings(resourceType, openOrClose) {
+    this.visTL.changeFoldings(resourceType, openOrClose);
+    this.$el.modal("hide");
+  }
+
+  show() {
+    this.$el.modal("show");
   }
 }
 
