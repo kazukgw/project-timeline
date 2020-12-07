@@ -1154,18 +1154,15 @@ class VisDataConverter {
   }
 
   convertSchedule(sheet, schedule, index) {
-    var start = schedule.start.replace("Z", "");
-    start = moment.tz(start, moment.HTML5_FMT.DATETIME_LOCAL_MS, "Asia/Tokyo");
+    // NOTE: schedule の start と end は SpreadSheet の日時を JST として評価した上で UTC で返却されるので
+    // 一日すすめてからさらに時刻を指定する。
+    var start = moment(schedule.start.replace("Z", "")).add(1, "day").hours(0).minutes(0).seconds(0);
     var end = schedule["end"]
-      ? moment.tz(
-        schedule.end.replace("Z", ""),
-        moment.HTML5_FMT.DATETIME_LOCAL_MS,
-        "Asia/Tokyo"
-      )
-      : moment(start).add(1, "month");
+      ? moment(schedule.end.replace("Z", "")).add(1, "day")
+      : moment(start).add(2, "week");
 
-    // 終了日の 23:59:59 を設定
-    end.add(1, "day").hours(23).minutes(59).seconds(59);
+    // NOTE: 終了日の 23:59:59 を設定
+    end.hours(23).minutes(59).seconds(59);
 
     let o = Object.assign(schedule, {
       id: this.getScheduleId(sheet.id, schedule._id),

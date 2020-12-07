@@ -49,7 +49,7 @@ export class App {
     schedule["end"] = schedule["end"]
       ? moment(schedule["end"]).format("YYYY/MM/DD")
       : moment()
-        .add(1, "month")
+        .add(2, "week")
         .format("YYYY/MM/DD");
     this.scheduleTable.addRecord(schedule);
     return schedule;

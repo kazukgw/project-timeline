@@ -176,6 +176,12 @@ class UIAddScheduleModal {
       );
       return;
     }
+    if (scheduleData.type !== "range" && scheduleData.task) {
+      alert(
+        "Task を有効化した場合、Schedule の Type として range 以外を選択することはできません。\n Type を選択しなおしてください。"
+      );
+      return;
+    }
 
     this.$addButton.prop("disabled", true);
     this.$addButton.text("Please wait ... ");
