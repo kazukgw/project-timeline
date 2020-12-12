@@ -73,10 +73,7 @@ export class Table {
   private sheetObj: GoogleAppsScript.Spreadsheet.Sheet;
   private primaryKeyColumnNumber: number;
 
-  constructor(
-    spreadSheetId: string,
-    tableConfig: TableConfig
-  ) {
+  constructor(spreadSheetId: string, tableConfig: TableConfig) {
     this.spreadSheetId = spreadSheetId;
     this.spreadSheetObj = SpreadsheetApp.openById(this.spreadSheetId);
     this.sheetName = tableConfig.sheetName;
@@ -88,16 +85,20 @@ export class Table {
 
     // header の数は最大 30
     let headers = <Array<string>>(
-      this.sheetObj.getRange(this.headerRangeFirstRowNumber, 1, 1, 30).getValues()[0]
+      this.sheetObj
+        .getRange(this.headerRangeFirstRowNumber, 1, 1, 30)
+        .getValues()[0]
     );
     this.headers = [];
-    headers.forEach(v => {
+    headers.forEach((v) => {
       if (v !== undefined && v !== "") this.headers.push(v);
     });
 
     let index = this.headers.indexOf(this.primaryKey);
     if (index === -1) {
-      new Error(`${this.sheetName} の primaryKey:${this.primaryKey} が存在しません`);
+      new Error(
+        `${this.sheetName} の primaryKey:${this.primaryKey} が存在しません`
+      );
     }
     this.primaryKeyColumnNumber = index + 1;
   }
@@ -105,11 +106,11 @@ export class Table {
   public sort(sortSpec: Array<Object>) {
     let range = this.getAllRecordRange();
     let ss = sortSpec.map((o) => {
-      let i = this.headers.indexOf(o['column']);
+      let i = this.headers.indexOf(o["column"]);
       if (i === -1) {
-        new Error(`sort spec column not found: ${o['column']}`)
+        new Error(`sort spec column not found: ${o["column"]}`);
       }
-      return {column: i + 1, ascending: o['ascending'] || true};
+      return {column: i + 1, ascending: o["ascending"] || true};
     });
     range.sort(ss);
   }
@@ -120,13 +121,20 @@ export class Table {
       let lastRowNumber = this.getLastRowNumber();
       Logger.log(`addRecord: lastRowNumber: ${lastRowNumber}`);
       this.sheetObj.insertRowAfter(lastRowNumber);
-      let range = this.sheetObj.getRange(lastRowNumber + 1, 1, 1, this.headers.length);
-      let values = this.headers.map((h) => {return recordData[h]});
+      let range = this.sheetObj.getRange(
+        lastRowNumber + 1,
+        1,
+        1,
+        this.headers.length
+      );
+      let values = this.headers.map((h) => {
+        return recordData[h];
+      });
       Logger.log(`addRecord: values: ${JSON.stringify(values)}`);
       range.setValues([values]);
-      lck.releaseLock()
+      lck.releaseLock();
     } else {
-      new Error('faild to get script lock');
+      new Error("faild to get script lock");
     }
   }
 
@@ -207,7 +215,7 @@ export class Table {
     var lastRowNumber: number = this.recordRangeFirstRowNumber;
     range.getValues().forEach((v, i) => {
       // if (!!v[0]) {
-      lastRowNumber = (this.recordRangeFirstRowNumber * 1) + i;
+      lastRowNumber = this.recordRangeFirstRowNumber * 1 + i;
       // }
       // Logger.log(`getLastRowNumber: lastRowNumber: ${lastRowNumber}`)
     });
@@ -238,7 +246,7 @@ export class Table {
         });
         return data;
       })
-      .filter(v => !!v[this.primaryKey]);
+      .filter((v) => !!v[this.primaryKey]);
   }
 
   private getRangeByRowNumber(
@@ -252,7 +260,9 @@ export class Table {
   ): GoogleAppsScript.Spreadsheet.Range {
     Logger.log(`findRangeByPrimaryKey: ${this.sheetName} key: ${key}`);
     let pkColRange = this.getPrimaryKeyColRange();
-    Logger.log(`findRangeByPrimaryKey: pkColRange: ${pkColRange.getA1Notation()}`);
+    Logger.log(
+      `findRangeByPrimaryKey: pkColRange: ${pkColRange.getA1Notation()}`
+    );
     let textFinder = pkColRange.createTextFinder(key);
     let range = textFinder.findNext();
     if (range == null) {
@@ -262,7 +272,8 @@ export class Table {
   }
 
   private getPrimaryKeyColRange(): GoogleAppsScript.Spreadsheet.Range {
-    var rowNum = (this.sheetObj.getLastRow() - this.recordRangeFirstRowNumber) + 1;
+    var rowNum =
+      this.sheetObj.getLastRow() - this.recordRangeFirstRowNumber + 1;
     rowNum = rowNum < 1 ? 1 : rowNum;
     return this.sheetObj.getRange(
       this.recordRangeFirstRowNumber,

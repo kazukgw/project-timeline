@@ -32,7 +32,11 @@ class RPCHandler {
     let records = app.scheduleTable.getAllRecordsHasNoPrimaryKey();
     // @ts-ignore
     records.forEach((r: TableRecord) => {
-      if (!r.hasPrimaryKey() && r.values["name"] != null && r.values["name"] !== "") {
+      if (
+        !r.hasPrimaryKey() &&
+        r.values["name"] != null &&
+        r.values["name"] !== ""
+      ) {
         r.values["_id"] = Utilities.getUuid();
         r.save();
       }
@@ -42,7 +46,7 @@ class RPCHandler {
       labels: app.labelTable.getAllRecordData(),
       projectGroups: app.projectGroupTable.getAllRecordData(),
       projects: app.projectTable.getAllRecordData(),
-      schedules: app.scheduleTable.getAllRecordData()
+      schedules: app.scheduleTable.getAllRecordData(),
     };
   }
 
@@ -58,9 +62,7 @@ class RPCHandler {
         ]);
         return;
       case "projects":
-        app.projectTable.sort([
-          {column: "projectGroup", ascending: true}
-        ]);
+        app.projectTable.sort([{column: "projectGroup", ascending: true}]);
         return;
     }
   }

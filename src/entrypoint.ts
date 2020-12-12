@@ -39,12 +39,12 @@ class DoGetHandler {
     let app: SheetListApp = initSheetListApp(SHEET_LIST_SHEET_ID);
     let sheetData = app.sheetTable.getAllRecordData();
     let sheetList = sheetData.map((s: Object) => {
-      return {id: s['id'], name: s['name'], url: s['url']};
+      return {id: s["id"], name: s["name"], url: s["url"]};
     });
 
     template.title = this.title;
     template.scriptWebAppUrl = JSON.stringify({
-      url: ScriptApp.getService().getUrl()
+      url: ScriptApp.getService().getUrl(),
     });
     template.sheetList = JSON.stringify(sheetList);
     template.sheetListSheetName = app.spreadSheet.getName();
@@ -55,15 +55,19 @@ class DoGetHandler {
 
   private showProjectTimelinePage() {
     let template = HtmlService.createTemplateFromFile("_project_timeline");
-    let sheetList = this.sheetIdList.map(id => {
-      var sheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
-      try {
-        sheet = SpreadsheetApp.openById(id);
-      } catch (e) {
-        return null;
-      }
-      return {id: id, name: sheet.getName(), url: sheet.getUrl()};
-    }).filter((d) => {return d != null});
+    let sheetList = this.sheetIdList
+      .map((id) => {
+        var sheet: GoogleAppsScript.Spreadsheet.Spreadsheet;
+        try {
+          sheet = SpreadsheetApp.openById(id);
+        } catch (e) {
+          return null;
+        }
+        return {id: id, name: sheet.getName(), url: sheet.getUrl()};
+      })
+      .filter((d) => {
+        return d != null;
+      });
 
     template.message = ScriptProperties.getProperty("message");
     template.title = this.title;
@@ -78,6 +82,7 @@ class DoGetHandler {
   ): GoogleAppsScript.HTML.HtmlOutput {
     output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     output.setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    output.setTitle(this.title);
     return output;
   }
 }

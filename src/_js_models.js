@@ -26,7 +26,12 @@ class VisTL {
     }
 
     let filterSettings = url.searchParams.get("filter");
-    this.filterSettings = {projectGroup: {}, project: {}, schedule: {}, showArchived: false};
+    this.filterSettings = {
+      projectGroup: {},
+      project: {},
+      schedule: {},
+      showArchived: false,
+    };
     if (filterSettings) {
       this.filterSettings = inflateJson(filterSettings);
     }
@@ -163,12 +168,12 @@ class VisTL {
       let g_ = visData.visGroups.get(g.id);
       if (g_) {
         if (
-          (resourceType === "projectGroups")
-          || (resourceType === "projects" && g['isProject'])
+          resourceType === "projectGroups" ||
+          (resourceType === "projects" && g["isProject"])
         ) {
-          g_.showNested = showNested != null ? showNested : g['showNested'];
+          g_.showNested = showNested != null ? showNested : g["showNested"];
         } else {
-          g_.showNested = g['showNested'];
+          g_.showNested = g["showNested"];
         }
         visData.visGroups.update(g_);
       }
@@ -293,7 +298,7 @@ class VisTL {
       template: this.getItemTemplateFunc(),
       visibleFrameTemplate: this.getVisibleFrameTempate(),
       groupTemplate: this.getGroupTemplateFunc(),
-      snap: function (date, scale, step) {
+      snap: function (date, _scale, _step) {
         return date;
       },
       editable: {
@@ -324,7 +329,7 @@ class VisTL {
         </p>
         {{/if}}
     `);
-    return function (schedule, element, data) {
+    return function (schedule, element, _data) {
       let d = {
         link: schedule.link,
         name: schedule.name,
@@ -367,7 +372,7 @@ class VisTL {
         </div>
         {{/if}}
     `);
-    return function (schedule, element, data) {
+    return function (schedule, _element, _data) {
       let progress = parseInt(schedule.progress);
       var d = {progress: progress};
       switch (schedule.type) {
@@ -419,7 +424,7 @@ class VisTL {
         </p>
       </div>
     `);
-    return function (group, element, data) {
+    return function (group, element, _data) {
       let d = {
         id: group.id,
         name: group.name,
@@ -459,7 +464,7 @@ class VisTL {
       <br>
       <pre>{{description}}</pre>
     `);
-    return function (item, element, data) {
+    return function (item, _element, _data) {
       let d = {
         name: item.name,
         description: item.description,
@@ -581,8 +586,19 @@ class VisTLData {
     s.progress = schedule.progress;
     s.link = schedule.link;
     s.archive = schedule.archive;
+    s.invalid = schedule.invalid;
+    // NOTE: 引数として渡される schedule の start, end, estimated_start, estimated_end が
+    // moment の objectになっていないケースがあるのでここで wrap する。
+    // (全体的にどこで moment の Object にするかちゃんと定まってないからなのでリファクタの必要がある)
+    // また end については再度時刻を設定する(これをしないと Timeline での表示が1日分過去にずれる)。
     s.start = moment(schedule.start);
-    s.end = moment(schedule.end);
+    s.end = moment(schedule.end).hours(23).minutes(59).seconds(59);
+    s.estimated_start = schedule.estimated_start
+      ? moment(schedule.estimated_start)
+      : null;
+    s.estimated_end = schedule.estimated_end
+      ? moment(schedule.estimated_end).hours(23).minutes(59).seconds(59)
+      : null;
     return this.rpcClient.updateSchedule(s).then(() => {
       this.schedules.update(s);
       return s;
@@ -640,7 +656,21 @@ class VisTLData {
       d.labels.get().concat(grps).concat(d.projects.get())
     );
 
-    let visItems = this._newDataSet(d.schedules.get());
+    let estimated_tasks = this._newDataSet();
+    d.schedules.forEach((s) => {
+      if (s["task"] && s["estimated_start"] && s["estimated_end"]) {
+        let et = Object.assign({}, s);
+        et["id"] = et["id"] + "_estimated";
+        et["start"] = et["estimated_start"];
+        et["end"] = et["estimated_end"];
+        et["type"] = "background";
+        estimated_tasks.add(et);
+      }
+    });
+
+    let visItems = this._newDataSet(
+      d.schedules.get().concat(estimated_tasks.get())
+    );
 
     this.currentVisData = {
       visGroups: visGroups,
@@ -1156,13 +1186,35 @@ class VisDataConverter {
   convertSchedule(sheet, schedule, index) {
     // NOTE: schedule の start と end は SpreadSheet の日時を JST として評価した上で UTC で返却されるので
     // 一日すすめてからさらに時刻を指定する。
-    var start = moment(schedule.start.replace("Z", "")).add(1, "day").hours(0).minutes(0).seconds(0);
+    var start = moment(schedule.start.replace("Z", ""))
+      .add(1, "day")
+      .hours(0)
+      .minutes(0)
+      .seconds(0);
     var end = schedule["end"]
       ? moment(schedule.end.replace("Z", "")).add(1, "day")
       : moment(start).add(2, "week");
 
     // NOTE: 終了日の 23:59:59 を設定
     end.hours(23).minutes(59).seconds(59);
+
+    var estimated_start, estimated_end;
+    if (
+      schedule["task"] &&
+      schedule["estimated_start"] &&
+      schedule["estimated_end"]
+    ) {
+      estimated_start = moment(schedule["estimated_start"].replace("Z", ""))
+        .add(1, "day")
+        .hours(0)
+        .minutes(0)
+        .seconds(0);
+      estimated_end = moment(schedule["estimated_end"].replace("Z", "")).add(
+        1,
+        "day"
+      );
+      estimated_end.hours(23).minutes(59).seconds(59);
+    }
 
     let o = Object.assign(schedule, {
       id: this.getScheduleId(sheet.id, schedule._id),
@@ -1173,6 +1225,8 @@ class VisDataConverter {
       end: end,
       description: schedule["description"],
 
+      estimated_start: estimated_start,
+      estimated_end: estimated_end,
       isSchedule: true,
       index: index,
       sheet: sheet,

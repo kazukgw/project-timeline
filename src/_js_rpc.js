@@ -5,18 +5,18 @@ class RPCClient {
 
   getAllData(sheetIdList) {
     let gs = this.gs;
-    let promises = sheetIdList.map(sheetId => {
-      return new Promise((resolve, reject) => {
+    let promises = sheetIdList.map((sheetId) => {
+      return new Promise((resolve, _) => {
         gs.run
-          .withSuccessHandler(dataFromGAS => {
+          .withSuccessHandler((dataFromGAS) => {
             let d = {
               sheetId: sheetId,
-              data: JSON.parse(dataFromGAS)
+              data: JSON.parse(dataFromGAS),
             };
             // console.log(`getAllData: ${sheetId}: data: ${dataFromGAS}`);
             resolve(d);
           })
-          .withFailureHandler(error => {
+          .withFailureHandler((error) => {
             alert("データ取得に失敗しました: " + error);
             resolve(null);
           })
@@ -34,18 +34,37 @@ class RPCClient {
           console.log(`sort: ${sheetId}.${sheetName} sorted sucessfully`);
           resolve();
         })
-        .withFailureHandler(error => {
+        .withFailureHandler((error) => {
           console.log(`failed to sort: error: ${error}`);
           reject();
         })
-        .rpc("sort", JSON.stringify({sheetId: sheetId, sheetName: sheetName}));
+        .rpc(
+          "sort",
+          JSON.stringify({sheetId: sheetId, sheetName: sheetName})
+        );
     });
   }
 
   addSchedule(schedule) {
     let gs = this.gs;
-    let start = moment(schedule.start).format("YYYY/MM/DD");
-    let end = moment(schedule.end).format("YYYY/MM/DD");
+    let estimated_start = schedule["estimated_start"]
+      ? moment(schedule.estimated_start).format("YYYY/MM/DD")
+      : null;
+    let estimated_end = schedule["estimated_end"]
+      ? moment(schedule.estimated_end).format("YYYY/MM/DD")
+      : null;
+    var start;
+    if (schedule.start != null && estimated_start) {
+      start = estimated_start;
+    } else {
+      start = moment(schedule.start).format("YYYY/MM/DD");
+    }
+    var end;
+    if (schedule.end != null && estimated_end) {
+      end = estimated_end;
+    } else {
+      end = moment(schedule.end).format("YYYY/MM/DD");
+    }
     return new Promise((resolve, reject) => {
       var scheduleJson = JSON.stringify({
         sheetId: schedule.sheetId,
@@ -60,15 +79,17 @@ class RPCClient {
         start: start,
         description: schedule.description,
         end: end,
-        editable: true
+        estimated_start: estimated_start,
+        estimated_end: estimated_end,
+        editable: true,
       });
       gs.run
-        .withSuccessHandler(scheduleHasId => {
+        .withSuccessHandler((scheduleHasId) => {
           console.log("addSchedule: create sucessfully");
           console.log(`addSchedule: ${scheduleHasId}`);
           resolve(JSON.parse(scheduleHasId));
         })
-        .withFailureHandler(error => {
+        .withFailureHandler((error) => {
           console.log(`failed to create: error: ${error}`);
           reject();
         })
@@ -84,9 +105,13 @@ class RPCClient {
         : moment().format("YYYY/MM/DD");
       let end = schedule.end
         ? moment(schedule.end).format("YYYY/MM/DD")
-        : moment()
-          .add(1, "month")
-          .format("YYYY/MM/DD");
+        : moment().add(1, "month").format("YYYY/MM/DD");
+      let estimated_start = schedule["estimated_start"]
+        ? moment(schedule.estimated_start).format("YYYY/MM/DD")
+        : null;
+      let estimated_end = schedule["estimated_end"]
+        ? moment(schedule.estimated_end).format("YYYY/MM/DD")
+        : null;
       var scheduleJson = JSON.stringify({
         sheetId: schedule.sheetId,
         _id: schedule._id,
@@ -102,16 +127,19 @@ class RPCClient {
         color: schedule.color,
         link: schedule.link,
         archive: schedule.archive,
+        invalid: schedule.invalid,
         start: start,
         end: end,
-        editable: true
+        estimated_start: estimated_start,
+        estimated_end: estimated_end,
+        editable: true,
       });
       gs.run
-        .withSuccessHandler(schedule => {
+        .withSuccessHandler((schedule) => {
           console.log("updateSchedule: update sucessfully");
           resolve(JSON.parse(schedule));
         })
-        .withFailureHandler(error => {
+        .withFailureHandler((error) => {
           console.log(`updateSchedule: failed to update: error: ${error}`);
           reject();
         })
@@ -128,15 +156,15 @@ class RPCClient {
         assignee: project.assignee,
         projectGroup: project.projectGroup,
         lable: project.label,
-        color: project.color
+        color: project.color,
       });
       gs.run
-        .withSuccessHandler(projectHasId => {
+        .withSuccessHandler((projectHasId) => {
           console.log("addProject: create sucessfully");
           console.log(`addProject: ${projectHasId}`);
           resolve(JSON.parse(projectHasId));
         })
-        .withFailureHandler(error => {
+        .withFailureHandler((error) => {
           console.log(`failed to create: error: ${error}`);
           reject();
         })
@@ -155,14 +183,14 @@ class RPCClient {
         lable: project.label,
         color: project.color,
         index: project.index,
-        archive: project.archive
+        archive: project.archive,
       });
       gs.run
-        .withSuccessHandler(project => {
+        .withSuccessHandler((project) => {
           console.log("updateProject: update sucessfully");
           resolve(JSON.parse(project));
         })
-        .withFailureHandler(error => {
+        .withFailureHandler((error) => {
           console.log(`updateProject: failed to update: error: ${error}`);
           reject();
         })

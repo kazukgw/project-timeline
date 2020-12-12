@@ -66,15 +66,15 @@ class UI {
       this.uiEditProjectModal.show(project);
     });
 
-    $("#mybtn-sort").on("click", (e) => {
+    $("#mybtn-sort").on("click", () => {
       this.uiSort.show();
     });
 
-    $("#mybtn-filter").on("click", (e) => {
+    $("#mybtn-filter").on("click", () => {
       this.uiFilter.show();
     });
 
-    $("#mybtn-get-settings-as-url").on("click", (e) => {
+    $("#mybtn-get-settings-as-url").on("click", () => {
       this.uiGetSettingsAsUrl.show();
     });
 
@@ -95,7 +95,7 @@ class UIChageFoldingsModal {
         $(e.target).data("resource-type"),
         $(e.target).data("open-or-close")
       );
-    })
+    });
   }
 
   changeFoldings(resourceType, openOrClose) {
@@ -124,6 +124,10 @@ class UIAddScheduleModal {
     this.$colorInput = this.$el.find("#form-add-schedule-color");
     this.$startInput = this.$el.find("#form-add-schedule-start");
     this.$endInput = this.$el.find("#form-add-schedule-end");
+    this.$estimatedStartInput = this.$el.find(
+      "#form-add-estimated-schedule-start"
+    );
+    this.$estimatedEndInput = this.$el.find("#form-add-estimated-schedule-end");
 
     this.$addButton = this.$el.find("#form-add-schedule-button-add");
 
@@ -152,6 +156,8 @@ class UIAddScheduleModal {
 
     let start = this.$startInput.val();
     let end = this.$endInput.val();
+    let estimated_start = this.$estimatedStartInput.val();
+    let estimated_end = this.$estimatedEndInput.val();
     let scheduleData = {
       group: parentObj.id,
       sheetId: parentObj.sheetId,
@@ -168,6 +174,8 @@ class UIAddScheduleModal {
       assignee: this.$assigneeInput.val().trim(),
       start: start ? moment(start) : moment(),
       end: end ? moment(end) : moment().add(1, "month"),
+      estimated_start: estimated_start ? moment(estimated_start) : null,
+      estimated_end: estimated_end ? moment(estimated_end) : null,
     };
 
     if (parentObj["isProjectGroup"] && scheduleData.task) {
@@ -180,6 +188,11 @@ class UIAddScheduleModal {
       alert(
         "Task を有効化した場合、Schedule の Type として range 以外を選択することはできません。\n Type を選択しなおしてください。"
       );
+      return;
+    }
+
+    if (scheduleData.name == null || scheduleData.name.length === "") {
+      alert("Title を入力してください。");
       return;
     }
 
@@ -246,7 +259,14 @@ class UIEditScheduleModal {
     this.$progressInput = this.$el.find("#form-edit-schedule-progress");
     this.$linkInput = this.$el.find("#form-edit-schedule-link");
     this.$colorInput = this.$el.find("#form-edit-schedule-color");
+    this.$estimatedStartInput = this.$el.find(
+      "#form-edit-estimated-schedule-start"
+    );
+    this.$estimatedEndInput = this.$el.find(
+      "#form-edit-estimated-schedule-end"
+    );
     this.$archiveInput = this.$el.find("#form-edit-schedule-archive");
+    this.$invalidInput = this.$el.find("#form-edit-schedule-invalid");
     this.$updateButton = this.$el.find("#form-edit-schedule-button-update");
 
     this.$projectSelect.select2({width: "100%"});
@@ -261,6 +281,9 @@ class UIEditScheduleModal {
     let g = this.visTL.visTLData.projectGroups.get(parentId);
     let p = this.visTL.visTLData.projects.get(parentId);
     let parentObj = p || g;
+    let estimated_start = this.$estimatedStartInput.val();
+    let estimated_end = this.$estimatedEndInput.val();
+
     this.schedule.group = parentObj.id;
     this.schedule.sheetId = parentObj.sheetId;
     this.schedule.sheetName = parentObj.sheetName;
@@ -277,12 +300,21 @@ class UIEditScheduleModal {
     this.schedule.progress = this.$progressInput.val().trim();
     this.schedule.link = this.$linkInput.val().trim();
     this.schedule.color = this.$colorInput.val().trim();
+    this.schedule.estimated_start = estimated_start
+      ? moment(estimated_start)
+      : null;
+    this.schedule.estimated_end = estimated_end ? moment(estimated_end) : null;
     this.schedule.archive = this.$archiveInput.prop("checked");
+    this.schedule.invalid = this.$invalidInput.prop("checked");
 
     if (parentObj["isProjectGroup"] && this.schedule.task) {
       alert(
         "Task を有効化した場合、Project Group を親として選択することはできません。\n Project を選択しなおしてください。"
       );
+      return;
+    }
+    if (this.schedule.name == null || this.schedule.name === "") {
+      alert("Title を入力してください。");
       return;
     }
 
@@ -352,7 +384,16 @@ class UIEditScheduleModal {
     this.$assigneeInput.val(schedule.assignee);
     this.$progressInput.val(schedule.progress);
     this.$linkInput.val(schedule.link);
+    let estimated_start = schedule["estimated_start"]
+      ? schedule["estimated_start"].format("YYYY-MM-DD")
+      : null;
+    let estimated_end = schedule["estimated_end"]
+      ? schedule["estimated_end"].format("YYYY-MM-DD")
+      : null;
+    this.$estimatedStartInput.val(estimated_start);
+    this.$estimatedEndInput.val(estimated_end);
     this.$archiveInput.prop("checked", schedule.archive);
+    this.$invalidInput.prop("checked", schedule.invalid);
 
     this.$updateButton.text("Update");
     this.$updateButton.prop("disabled", false);
@@ -395,6 +436,11 @@ class UIAddProjectModal {
       assignee: this.$assigneeInput.val().trim(),
       color: this.$colorInput.val().trim(),
     };
+
+    if (projectData.name == null || projectData.name === "") {
+      alert("Name を入力してください。");
+      return;
+    }
 
     this.$addButton.prop("disabled", true);
     this.$addButton.text("Please wait ... ");
@@ -476,7 +522,12 @@ class UIEditProjectModal {
     this.project.name = this.$nameInput.val().trim();
     this.project.assignee = this.$assigneeInput.val().trim();
     this.project.color = this.$colorInput.val().trim();
-    this.project.archive = this.$archiveInput.prop("checked")
+    this.project.archive = this.$archiveInput.prop("checked");
+
+    if (this.project.name == null || this.project.name === "") {
+      alert("Name を入力してください。");
+      return;
+    }
 
     let scrollTop = $(window).scrollTop();
     this.visTL.updateProject(this.project).then((p) => {
@@ -685,7 +736,7 @@ class UIGetSettingsAsURLModal {
     this.$el.modal("hide");
   }
 
-  show(schedule) {
+  show() {
     let url = this.visTL.getSettingsAsUrl();
     this.$urlInput.val(url.url);
     this.$urlWithRangeInput.val(url.withRange);

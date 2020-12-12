@@ -275,6 +275,36 @@
                   name="end"
                 />
               </div>
+
+              <div class="form-group">
+                <label for="form-add-estimated-schedule-start"
+                  >Estimated Start</label
+                >
+                <p class="text-muted">
+                  Estimated Start は Task にのみ設定可能です。
+                </p>
+                <input
+                  type="date"
+                  id="form-add-estimated-schedule-start"
+                  class="form-control"
+                  name="start"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-add-estimated-schedule-end"
+                  >Estimated End</label
+                >
+                <p class="text-muted">
+                  Estimated End は Task にのみ設定可能です。
+                </p>
+                <input
+                  type="date"
+                  id="form-add-estimated-schedule-end"
+                  class="form-control"
+                  name="end"
+                />
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -425,10 +455,61 @@
               </div>
 
               <div class="form-group">
+                <label for="form-edit-estimated-schedule-start"
+                  >Estimated Start</label
+                >
+                <p class="text-muted">
+                  Estimated Start は Task にのみ設定可能です。
+                </p>
+                <input
+                  type="date"
+                  id="form-edit-estimated-schedule-start"
+                  class="form-control"
+                  name="start"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-edit-estimated-schedule-end"
+                  >Estimated End</label
+                >
+                <p class="text-muted">
+                  Estimated End は Task にのみ設定可能です。
+                </p>
+                <input
+                  type="date"
+                  id="form-edit-estimated-schedule-end"
+                  class="form-control"
+                  name="end"
+                />
+              </div>
+
+              <div class="form-group">
                 <label for="form-edit-schedule-archive">Archive</label>
+                <p class="text-muted">
+                  Archive した Schedule は表示されなくなります。
+                  <br />またメニューのFilter から Archive した Schedule
+                  を表示するように変更できます。
+                </p>
                 <input
                   type="checkbox"
                   id="form-edit-schedule-archive"
+                  class="form-control"
+                  name="archive"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="form-edit-schedule-invalid">Invalid</label>
+                <p class="text-muted">
+                  Invalid した Schedule は表示されなくなります。
+                  <br />
+                  SpreadSheet 上で Invalid を FALSE
+                  にしない限り表示することはできません。
+                </p>
+                <input
+                  type="checkbox"
+                  id="form-edit-schedule-invalid"
                   class="form-control"
                   name="archive"
                 />
