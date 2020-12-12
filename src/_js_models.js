@@ -436,7 +436,7 @@ class VisTL {
             ? group["nestedGroups"].length
             : null
           : null,
-        sheetName: group.sheetName,
+        sheetName: group.sheetName.trim().replace("Project Roadmap:", "").trim(),
         sheetUrl: group.sheetUrl,
         link: group.link,
         isNotTask: !group["task"],
