@@ -178,6 +178,10 @@ class UIAddScheduleModal {
       estimated_end: estimated_end ? moment(estimated_end) : null,
     };
 
+    if (parentId == null) {
+      alert("Project を選択してください。");
+      return;
+    }
     if (parentObj["isProjectGroup"] && scheduleData.task) {
       alert(
         "Task を有効化した場合、Project Group を親として選択することはできません。\n Project を選択しなおしてください。"

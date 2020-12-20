@@ -91,6 +91,7 @@ class RPCClient {
         })
         .withFailureHandler((error) => {
           console.log(`failed to create: error: ${error}`);
+          alert(error);
           reject();
         })
         .rpc("addSchedule", scheduleJson);
@@ -141,6 +142,7 @@ class RPCClient {
         })
         .withFailureHandler((error) => {
           console.log(`updateSchedule: failed to update: error: ${error}`);
+          alert(error);
           reject();
         })
         .rpc("updateSchedule", scheduleJson);
@@ -166,6 +168,7 @@ class RPCClient {
         })
         .withFailureHandler((error) => {
           console.log(`failed to create: error: ${error}`);
+          alert(error);
           reject();
         })
         .rpc("addProject", projectJson);
@@ -192,6 +195,7 @@ class RPCClient {
         })
         .withFailureHandler((error) => {
           console.log(`updateProject: failed to update: error: ${error}`);
+          alert(error);
           reject();
         })
         .rpc("updateProject", projectJson);

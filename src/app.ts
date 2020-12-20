@@ -52,7 +52,8 @@ export class App {
         .add(2, "week")
         .format("YYYY/MM/DD");
     this.scheduleTable.addRecord(schedule);
-    return schedule;
+    let rec = this.scheduleTable.findRecordByPrimaryKey(schedule['_id']);
+    return rec.values
   }
 
   public updateSchedule(schedule: Object) {
