@@ -9,10 +9,10 @@ class VisTL {
 
     this.visTL = null;
 
-    this.groupingState = {GROUP: "group", LABEL: "label"};
+    this.groupingState = { GROUP: "group", LABEL: "label" };
     this.currrentGrouping = this.groupingState.GROUP;
 
-    this.foldingsState = {OPEN: "open", CLOSE: "close"};
+    this.foldingsState = { OPEN: "open", CLOSE: "close" };
     this.currentFoldings = this.foldingsState.OPEN;
 
     this.hiddenGroups = [];
@@ -298,7 +298,7 @@ class VisTL {
       template: this.getItemTemplateFunc(),
       visibleFrameTemplate: this.getVisibleFrameTempate(),
       groupTemplate: this.getGroupTemplateFunc(),
-      snap: function (date, _scale, _step) {
+      snap: function(date, _scale, _step) {
         return date;
       },
       editable: {
@@ -309,7 +309,7 @@ class VisTL {
         overrideItems: false,
       },
       onMove: this.getOnMoveHandler().bind(this),
-      moment: function (date) {
+      moment: function(date) {
         return vis.moment(date).utcOffset("+09:00");
       },
     };
@@ -329,7 +329,7 @@ class VisTL {
         </p>
         {{/if}}
     `);
-    return function (schedule, element, _data) {
+    return function(schedule, element, _data) {
       let d = {
         link: schedule.link,
         name: schedule.name,
@@ -372,9 +372,9 @@ class VisTL {
         </div>
         {{/if}}
     `);
-    return function (schedule, _element, _data) {
+    return function(schedule, _element, _data) {
       let progress = parseInt(schedule.progress);
-      var d = {progress: progress};
+      var d = { progress: progress };
       switch (schedule.type) {
         case "range":
           return defaulTemplate(d);
@@ -424,7 +424,7 @@ class VisTL {
         </p>
       </div>
     `);
-    return function (group, element, _data) {
+    return function(group, element, _data) {
       let d = {
         id: group.id,
         name: group.name,
@@ -464,7 +464,7 @@ class VisTL {
       <br>
       <pre>{{description}}</pre>
     `);
-    return function (item, _element, _data) {
+    return function(item, _element, _data) {
       let d = {
         name: item.name,
         description: item.description,
@@ -490,7 +490,7 @@ class VisTL {
     // サーバ側にデータの変更をリクエストする
     // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
     let visTLData = this.visTLData;
-    return function (item, callback) {
+    return function(item, callback) {
       visTLData.updateSchedule(item).then(
         // callback に null を渡すと 変更がキャンセルされる
         // https://visjs.github.io/vis-timeline/docs/timeline/#Editing_Items
@@ -538,9 +538,9 @@ class VisTLData {
   }
 
   setVisibleTrueAllVisGroup() {
-    let setVisibleTrue = function (groups) {
+    let setVisibleTrue = function(groups) {
       groups.forEach((g) => {
-        groups.update({id: g.id, visible: true});
+        groups.update({ id: g.id, visible: true });
       });
     };
     setVisibleTrue(this.labels);
@@ -549,12 +549,12 @@ class VisTLData {
   }
 
   setVisibleFalseAllVisGroup(id) {
-    let setVisibleFalse = function (id, groups) {
+    let setVisibleFalse = function(id, groups) {
       let g = groups.get(id);
       if (!g) {
         return;
       }
-      groups.update({id: g.id, visible: false});
+      groups.update({ id: g.id, visible: false });
     };
     setVisibleFalse(id, this.labels);
     setVisibleFalse(id, this.projectGroups);
@@ -760,7 +760,7 @@ class VisTLData {
       project: {},
       schedule: {},
     };
-    var regexFilter = {projectGroup: {}, project: {}, schedule: {}};
+    var regexFilter = { projectGroup: {}, project: {}, schedule: {} };
     for (var k in filterSettings.projectGroup) {
       regexFilter.projectGroup[k] = !!filterSettings.projectGroup[k]
         ? new RegExp(filterSettings.projectGroup[k])

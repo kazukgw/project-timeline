@@ -13,7 +13,9 @@ class UI {
   }
 
   init() {
+
     $("#mybtn-reload").on("click", (e) => {
+      let scrollTop = $(window).scrollTop();
       $(e.currentTarget)
         .find("i")
         .removeClass("fa-repeat")
@@ -23,6 +25,9 @@ class UI {
           .find("i")
           .removeClass("fa-ellipsis-h")
           .addClass("fa-repeat");
+        setTimeout(() => {
+          $(window).scrollTop(scrollTop);
+        }, 50);
       });
     });
 
@@ -131,7 +136,7 @@ class UIAddScheduleModal {
 
     this.$addButton = this.$el.find("#form-add-schedule-button-add");
 
-    this.$projectSelect.select2({width: "100%"});
+    this.$projectSelect.select2({ width: "100%" });
     this.lastProjectSelectValue = null;
 
     this.$addButton.on("click", () => {
@@ -188,12 +193,6 @@ class UIAddScheduleModal {
       );
       return;
     }
-    if (scheduleData.type !== "range" && scheduleData.task) {
-      alert(
-        "Task を有効化した場合、Schedule の Type として range 以外を選択することはできません。\n Type を選択しなおしてください。"
-      );
-      return;
-    }
 
     if (scheduleData.name == null || scheduleData.name.length === "") {
       alert("Title を入力してください。");
@@ -210,7 +209,7 @@ class UIAddScheduleModal {
       this.hide();
       setTimeout(() => {
         $(window).scrollTop(scrollTop);
-      }, 300);
+      }, 100);
     });
   }
 
@@ -273,7 +272,7 @@ class UIEditScheduleModal {
     this.$invalidInput = this.$el.find("#form-edit-schedule-invalid");
     this.$updateButton = this.$el.find("#form-edit-schedule-button-update");
 
-    this.$projectSelect.select2({width: "100%"});
+    this.$projectSelect.select2({ width: "100%" });
 
     this.$updateButton.on("click", () => {
       this.update();
@@ -329,7 +328,7 @@ class UIEditScheduleModal {
       this.hide();
       setTimeout(() => {
         $(window).scrollTop(scrollTop);
-      }, 300);
+      }, 100);
     });
 
     this.$updateButton.prop("disabled", true);
@@ -418,7 +417,7 @@ class UIAddProjectModal {
 
     this.$addButton = this.$el.find("#form-add-project-button-add");
 
-    this.$projectGroupSelect.select2({width: "100%"});
+    this.$projectGroupSelect.select2({ width: "100%" });
     this.lastProjectGroupSelectValue = null;
 
     this.$addButton.on("click", () => {
@@ -456,7 +455,7 @@ class UIAddProjectModal {
       this.hide();
       setTimeout(() => {
         $(window).scrollTop(scrollTop);
-      }, 300);
+      }, 100);
     });
   }
 
@@ -508,7 +507,7 @@ class UIEditProjectModal {
 
     this.$updateButton = this.$el.find("#form-edit-project-button-update");
 
-    this.$projectGroupSelect.select2({width: "100%"});
+    this.$projectGroupSelect.select2({ width: "100%" });
 
     this.$updateButton.on("click", () => {
       this.update();
@@ -540,7 +539,7 @@ class UIEditProjectModal {
       this.hide();
       setTimeout(() => {
         $(window).scrollTop(scrollTop);
-      }, 300);
+      }, 100);
     });
 
     this.$updateButton.prop("disabled", true);
@@ -599,10 +598,10 @@ class UISort {
     this.$el = $("#modal-sort");
 
     this.$spreadSheetSelect = $("#form-sort-spreadsheet");
-    this.$spreadSheetSelect.select2({width: "100%"});
+    this.$spreadSheetSelect.select2({ width: "100%" });
 
     this.$sheetSelect = $("#form-sort-sheet");
-    this.$sheetSelect.select2({width: "100%"});
+    this.$sheetSelect.select2({ width: "100%" });
 
     this.$sortButton = $("#form-sort-sort");
     this.$sortButton.on("click", () => {
@@ -618,7 +617,12 @@ class UISort {
     this.$sortButton.text("Please wait ... ");
 
     this.visTL.sort(sheetId, sheetName).then(() => {
-      this.visTL.reload();
+      let scrollTop = $(window).scrollTop();
+      this.visTL.reload().then(() => {
+        setTimeout(() => {
+          $(window).scrollTop(scrollTop);
+        }, 100);
+      });
       this.hide();
     });
   }
@@ -639,10 +643,10 @@ class UISort {
 
     this.$sheetSelect.empty();
     this.$sheetSelect.append(
-      $("<option>", {value: "Schedules", text: "Schedules"})
+      $("<option>", { value: "Schedules", text: "Schedules" })
     );
     this.$sheetSelect.append(
-      $("<option>", {value: "Projects", text: "Projects"})
+      $("<option>", { value: "Projects", text: "Projects" })
     );
 
     this.$sortButton.text("Sort");
@@ -684,9 +688,9 @@ class UIFilter {
 
     let filterSettings = {
       showArchived: false,
-      projectGroup: {name: null},
-      project: {name: null, assignee: null},
-      schedule: {name: null, assignee: null},
+      projectGroup: { name: null },
+      project: { name: null, assignee: null },
+      schedule: { name: null, assignee: null },
     };
 
     this.visTL.applyFilter(filterSettings);

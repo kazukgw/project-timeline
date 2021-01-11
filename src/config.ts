@@ -35,7 +35,7 @@ export class Config {
     }
 
     this.tableConfigs = {};
-    Object.keys(tables).forEach(k => {
+    Object.keys(tables).forEach((k) => {
       let t = tables[k];
       this.tableConfigs[k] = new TableConfig(
         t["sheetName"],
