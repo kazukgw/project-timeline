@@ -459,6 +459,8 @@ class VisTL {
         const progress = group["progress"] * 1;
         if (progress >= 100) {
           d["before"] = "✅";
+        } else if (group["type"] === "point" && moment().isAfter(group["start"])) {
+          d["before"] = "✅";
         } else if (100 > progress && moment().isBetween(group["start"], group["end"])) {
           d["before"] = "🏃";
         } else if (100 > progress && progress > 0 && moment().isAfter(group["end"])) {
