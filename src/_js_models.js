@@ -320,12 +320,12 @@ class VisTL {
         {{#if link}}
         <a href="{{link}}" target="_blank">
           {{#if assignee}} <span class="badge badge-secondary">{{assignee}}</span> {{/if}}
-          {{name}}
+          {{before}} {{name}}
         </a>
         {{else}}
         <p style="margin: 0">
           {{#if assignee}} <span class="badge badge-secondary">{{assignee}}</span> {{/if}}
-          {{name}}
+          {{before}} {{name}}
         </p>
         {{/if}}
     `);
@@ -335,6 +335,7 @@ class VisTL {
         name: schedule.name,
         color: schedule.color,
         assignee: schedule.assignee,
+        before: "",
       };
       switch (schedule.type) {
         case "range":
@@ -348,6 +349,12 @@ class VisTL {
               "background-image",
               "repeating-linear-gradient(135deg, transparent, transparent 5px, rgba(230, 230, 230, 1) 5px, rgba(230, 230, 230, 1) 10px )"
             );
+          }
+          const progress = schedule["progress"] * 1;
+          if (progress >= 100) {
+            d["before"] = "✅";
+          } else if (100 > progress && moment().isBetween(schedule["start"], schedule["end"])) {
+            d["before"] = "🏃";
           }
 
           return defaulTemplate(d);
@@ -406,10 +413,10 @@ class VisTL {
       <div style="color: {{color}}">
         <p style="font-weight: 500">
           {{#if link}}
-            <a style="color: {{color}}" href="{{link}}" target="_blank">{{name}}</a>
+            <a style="color: {{color}}" href="{{link}}" target="_blank">{{before}} {{name}}</a>
             {{#if nestedGroupNum}} <span class="badge badge-dark">{{nestedGroupNum}}</span> {{/if}}
           {{else}}
-            {{name}}
+            {{before}} {{name}}
             {{#if nestedGroupNum}} <span class="badge badge-dark">{{nestedGroupNum}}</span> {{/if}}
           {{/if}}
 
@@ -440,10 +447,19 @@ class VisTL {
         sheetUrl: group.sheetUrl,
         link: group.link,
         isNotTask: !group["task"],
+        before: "",
       };
       if (group["isLevel0Group"]) {
         $(element).closest(".vis-label").css("background-color", group.color);
         return defaulTemplate(d);
+      }
+      if (group["task"]) {
+        const progress = group["progress"] * 1;
+        if (progress >= 100) {
+          d["before"] = "✅";
+        } else if (100 > progress && moment().isBetween(group["start"], group["end"])) {
+          d["before"] = "🏃";
+        }
       }
       return nestedGroupTemplate(d);
     };

@@ -110,7 +110,7 @@ export class Table {
       if (i === -1) {
         new Error(`sort spec column not found: ${o["column"]}`);
       }
-      return {column: i + 1, ascending: o["ascending"] || true};
+      return { column: i + 1, ascending: o["ascending"] || true };
     });
     range.sort(ss);
   }
