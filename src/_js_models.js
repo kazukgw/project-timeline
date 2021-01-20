@@ -355,6 +355,8 @@ class VisTL {
             d["before"] = "✅";
           } else if (100 > progress && moment().isBetween(schedule["start"], schedule["end"])) {
             d["before"] = "🏃";
+          } else if (100 > progress && progress > 0 && moment().isAfter(schedule["end"])) {
+            d["before"] = "🚩";
           }
 
           return defaulTemplate(d);
@@ -459,6 +461,8 @@ class VisTL {
           d["before"] = "✅";
         } else if (100 > progress && moment().isBetween(group["start"], group["end"])) {
           d["before"] = "🏃";
+        } else if (100 > progress && progress > 0 && moment().isAfter(group["end"])) {
+          d["before"] = "🚩";
         }
       }
       return nestedGroupTemplate(d);
