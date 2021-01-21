@@ -664,8 +664,11 @@ class VisTLData {
     d = this._setRelatedAndInheritedProps(d);
     d = this._filterVisible(d, hiddenGroupIds, filterSettings);
 
+    const tasks = d.tasks.get({ order: "start" });
+    tasks.forEach((t, i) => t["index"] = i);
+
     let visGroups = this._newDataSet(
-      d.projectGroups.get().concat(d.projects.get()).concat(d.tasks.get())
+      d.projectGroups.get().concat(d.projects.get()).concat(tasks)
     );
 
     // 多段ネストになるのを防ぐために projectGroups 複製 & nestedGroups は null を設定してから初期化
